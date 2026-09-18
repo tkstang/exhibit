@@ -69,10 +69,24 @@ the provider boundary; `state/` local receipts; `core/` contracts and file/confi
 helpers. `assets/` must be included in the published package. Runtime import maps
 point to `dist`, and source/test aliases mirror the same named domains.
 
-`tools/check-build.mjs` checks both executable names, emitted library declarations,
-assets, and a spawned version JSON response. `tools/check-contracts.mjs` checks
+`tools/verification/build.ts` checks both executable names, emitted library declarations,
+assets, and a spawned version JSON response. `tools/verification/contracts.ts` checks
 source import/console conventions and skill identities. Tests/test-support files
 are excluded from release build output.
+
+## Repository tools
+
+- `tools/packaging/`: skill generation/parity and npm archive verification.
+- `tools/verification/`: build, source-contract, and documentation checks.
+- `tools/release/`: release metadata, changelog extraction, preparation, publishing, and tests.
+- `tools/git-hooks/`: hook entrypoints and the dependency-free installer.
+- `tools/preview/`: the local example server consuming the built application.
+
+Substantial tooling is TypeScript, executed directly by Node 24 with erasable
+types. `tsconfig.tools.json` applies the application's strict checks without
+emitting files; `pnpm typecheck` checks both configurations. The hook installer
+stays JavaScript because it runs before dependencies are available. The small
+preview adapter also remains JavaScript and runs after `pnpm build`.
 
 ## Infrastructure checks
 
@@ -161,8 +175,11 @@ live provider and route qualification in `docs/engineering/verification.md`; com
 [delivery-path checks](../user-guide/deployment/cloudfront.md#verify-each-delivery-path) before relying on
 the work deployment for sensitive content.
 
-Review the implementation/security checks and dependency licenses; commit a genuine
-lockfile; set `private: false` only when release is approved. Verify `pnpm pack`
-contains `dist`, `assets`, docs, skills, examples, and licenses, but no secrets,
-receipts, or build caches. Use your reviewed trusted-publishing workflow; no npm
-credentials or speculative publish action is supplied in this initial repo.
+Follow [npm releases](releases.md) for archive validation, the first-publication
+checklist, trusted publisher configuration, stable version/tag releases, and retry
+handling. Each release PR includes a version bump and a reviewed matching section
+in `CHANGELOG.md`; validation extracts the notes automatically for GitHub Release.
+Keep `private: true` until first-release approval and `NPM_RELEASE_ENABLED` disabled
+until bootstrap publication and trust setup are complete. The private GitHub
+repository remains private when the npm package becomes public, and cannot supply
+npm provenance. No registry publication or remote setup is implied by these docs.

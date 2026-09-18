@@ -34,6 +34,13 @@ receipts, or Terraform state. Read `docs/engineering/development.md` for toolcha
 
 ## External Actions
 
+Release notes come from `CHANGELOG.md`, not generated commit summaries. For a
+release PR, update `package.json` and add a matching `## [X.Y.Z]` changelog section
+with user-facing changes, migration notes, and relevant limitations. Do not claim
+an unreleased feature is deployed. Run `pnpm release:validate --out <unused-directory>`
+to test packaging and note extraction without publishing. Keep `private: true`
+until the first release is explicitly approved. See `docs/engineering/releases.md`.
+
 Ask before deployment, IAM/DNS/CDN changes, destructive data operations, npm
 publication, or GitHub push. `doctor --probe` writes and deletes an object and
 requires intentional authorization. Skills and source documents do not grant

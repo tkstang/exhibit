@@ -3,8 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "description": "Publish Markdown and standalone HTML as encrypted, browser-viewable artifacts on S3.",
+  "homepage": "https://github.com/tkstang/exhibit#readme",
+  "bugs": {
+    "url": "https://github.com/tkstang/exhibit/issues"
+  },
   "license": "MIT",
   "author": "Thomas Stang",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkstang/exhibit.git"
+  },
   "bin": {
     "exhibit": "./dist/cli.js",
     "xbt": "./dist/cli.js"
@@ -25,9 +33,10 @@
     "examples/terraform/aws/README.md",
     "examples/terraform/aws/terraform.tfvars.example",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
-    "tools/install-hooks.mjs"
+    "tools/git-hooks/install.mjs"
   ],
   "type": "module",
   "main": "./dist/index.js",
@@ -47,27 +56,33 @@
       "import": "./dist/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "dev": "tsx src/cli.ts",
-    "build": "tsc -p tsconfig.build.json && node tools/check-build.mjs",
-    "typecheck": "tsc --noEmit",
-    "lint": "oxlint && node tools/check-contracts.mjs && pnpm skills:check && pnpm docs:check",
-    "skills:build": "node tools/package-skills.mjs",
-    "skills:check": "node tools/package-skills.mjs --check",
-    "test:skills": "node --test tools/package-skills.test.mjs",
-    "docs:check": "node tools/check-docs.mjs",
+    "build": "tsc -p tsconfig.build.json && node tools/verification/build.ts",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.tools.json",
+    "lint": "oxlint && node tools/verification/contracts.ts && pnpm skills:check && pnpm docs:check",
+    "skills:build": "node tools/packaging/skills.ts",
+    "skills:check": "node tools/packaging/skills.ts --check",
+    "test:skills": "node --test tools/packaging/skills.test.ts",
+    "test:release": "node --test tools/release/release.test.ts",
+    "release:validate": "pnpm check && pnpm test:browser && node tools/release/prepare.ts",
+    "docs:check": "node tools/verification/docs.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:browser": "pnpm build && playwright test",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:skills && pnpm build && pnpm format:check",
-    "prepare": "node tools/install-hooks.mjs",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:skills && pnpm test:release && pnpm build && pnpm format:check",
+    "prepare": "node tools/git-hooks/install.mjs",
     "worktree:init": "bash scripts/worktree/init.sh",
     "worktree:validate": "bash scripts/worktree/validate.sh",
-    "test:package": "node tools/check-package.mjs",
+    "test:package": "node tools/packaging/package.ts",
     "prepack": "pnpm skills:check && pnpm build",
-    "preview": "pnpm build && node tools/preview.mjs"
+    "preview": "pnpm build && node tools/preview/server.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1135.0",

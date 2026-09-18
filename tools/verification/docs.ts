@@ -4,11 +4,11 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { marked } from 'marked';
 
-const pages = new Map();
-function readDirectory(directory) {
+const pages = new Map<string, string>();
+function readDirectory(directory: string): void {
   const index = join(directory, 'index.md');
   assert.ok(existsSync(index), `${directory}: missing index.md`);
-  const expected = [];
+  const expected: string[] = [];
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) {
@@ -18,19 +18,22 @@ function readDirectory(directory) {
       const text = readFileSync(path, 'utf8');
       const metadata = text.match(/^---\n([\s\S]*?)\n---\n/);
       assert.ok(metadata, `${path}: missing frontmatter`);
+      assert.ok(metadata[1] !== undefined, `${path}: missing metadata fields`);
       for (const field of ['title', 'description'])
         assert.match(metadata[1], new RegExp(`^${field}:\\s*\\S.+$`, 'm'), `${path}: ${field}`);
       pages.set(path, text.slice(metadata[0].length));
       if (entry.name !== 'index.md') expected.push(resolve(path));
     }
   }
-  const tokens = marked.lexer(pages.get(index));
+  const indexText = pages.get(index);
+  assert.ok(indexText !== undefined, `${index}: missing page content`);
+  const tokens = marked.lexer(indexText);
   const start = tokens.findIndex((token) => token.type === 'heading' && token.text === 'Contents');
   assert.ok(start >= 0, `${index}: missing Contents heading`);
   const end = tokens.findIndex((token, i) => i > start && token.type === 'heading');
-  const linked = new Set();
+  const linked = new Set<string>();
   marked.walkTokens(tokens.slice(start + 1, end < 0 ? undefined : end), (token) => {
-    if (token.type === 'link') linked.add(resolve(directory, token.href.split('#')[0]));
+    if (token.type === 'link') linked.add(resolve(directory, token.href.split('#')[0] ?? ''));
   });
   for (const path of expected)
     assert.ok(linked.has(path), `${index}: missing Contents link to ${path}`);
@@ -47,7 +50,7 @@ for (const path of files) {
   const text = pages.get(path) ?? readFileSync(path, 'utf8');
   if (path.endsWith('.md')) {
     marked.walkTokens(marked.lexer(text), (token) => {
-      if (!['link', 'image'].includes(token.type)) return;
+      if (token.type !== 'link' && token.type !== 'image') return;
       if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(token.href)) return;
       const target = token.href.split('#')[0];
       if (!target) return;
@@ -61,11 +64,13 @@ for (const path of files) {
   for (const match of text.matchAll(/\bdocs\/[a-zA-Z0-9_./-]+\.md\b/g))
     assert.ok(existsSync(match[0]), `${path}: stale docs path ${match[0]}`);
   if (path.endsWith('/SKILL.md')) {
-    for (const match of text.matchAll(/`((?:user-guide|engineering)\/[a-zA-Z0-9_./-]+\.md)`/g))
+    for (const match of text.matchAll(/`((?:user-guide|engineering)\/[a-zA-Z0-9_./-]+\.md)`/g)) {
+      assert.ok(match[1] !== undefined);
       assert.ok(
         existsSync(join('docs', match[1])),
         `${path}: stale installed docs path ${match[1]}`,
       );
+    }
   }
 }
 process.stdout.write(

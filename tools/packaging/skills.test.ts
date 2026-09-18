@@ -2,19 +2,13 @@ import assert from 'node:assert/strict';
 import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { CONTENT_SECURITY_POLICY } from '../src/security/policy.ts';
-import {
-  expectedBundles,
-  inventory,
-  packageSkills,
-  skillNames,
-  validateBundle,
-} from './package-skills.mjs';
+import { CONTENT_SECURITY_POLICY } from '../../src/security/policy.ts';
+import { expectedBundles, inventory, packageSkills, skillNames, validateBundle } from './skills.ts';
 
-const repository = fileURLToPath(new URL('../', import.meta.url));
-async function fixture(t) {
+const repository = fileURLToPath(new URL('../../', import.meta.url));
+async function fixture(t: TestContext): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'exhibit-skill-test-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const path of ['src/skills', 'src/plugin', 'docs/user-guide/installation.md', 'LICENSE']) {
@@ -36,7 +30,9 @@ test('standalone and plugin bundles are identical and work after isolated reloca
     await cp(join(root, 'skills', name), destination, { recursive: true });
     const isolated = await inventory(destination);
     validateBundle(isolated);
-    const skill = isolated.get('SKILL.md').toString();
+    const skillBytes = isolated.get('SKILL.md');
+    assert.ok(skillBytes);
+    const skill = skillBytes.toString();
     assert.match(skill, /\]\(references\/installation\.md\)/);
     assert.doesNotMatch(skill, /data\.resources\.docs|docs\/engineering|\.\.\/.*\.md/);
     for (const command of ['exhibit --version --json', 'xbt --version --json', '--help --json'])

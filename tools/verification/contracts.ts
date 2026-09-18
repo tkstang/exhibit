@@ -2,8 +2,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
 
-async function files(dir) {
-  const out = [];
+async function files(dir: string): Promise<string[]> {
+  const out: string[] = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) out.push(...(await files(path)));
@@ -32,8 +32,23 @@ for (const name of ['exhibit-publish', 'exhibit-setup']) {
   assert.match(text, /\ndescription: .+/);
   assert.ok(text.includes('exhibit'));
 }
-const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+const pkg: unknown = JSON.parse(await readFile('package.json', 'utf8'));
+assert.ok(
+  typeof pkg === 'object' &&
+    pkg !== null &&
+    'bin' in pkg &&
+    'private' in pkg &&
+    'dependencies' in pkg,
+);
+assert.ok(
+  typeof pkg.bin === 'object' && pkg.bin !== null && 'exhibit' in pkg.bin && 'xbt' in pkg.bin,
+);
+assert.ok(
+  typeof pkg.dependencies === 'object' &&
+    pkg.dependencies !== null &&
+    'staticrypt' in pkg.dependencies,
+);
 assert.equal(pkg.bin.exhibit, pkg.bin.xbt);
-assert.ok(pkg.private);
+assert.equal(typeof pkg.private, 'boolean', 'Package private must explicitly be true or false.');
 assert.ok(pkg.dependencies.staticrypt === '3.5.4');
 process.stdout.write('Source import, output, package, and skill contracts verified.\n');

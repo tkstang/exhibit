@@ -13,6 +13,7 @@ coverage/
 .cursor/mcp.json
 .exhibit/
 *.tgz
+.release/
 .DS_Store
 **/.terraform/
 **/terraform.tfstate*

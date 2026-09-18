@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 // Never modify an ancestor repo when Exhibit has merely been unzipped into a subfolder.
-const root = fileURLToPath(new URL('../', import.meta.url));
+const root = fileURLToPath(new URL('../../', import.meta.url));
 if (existsSync(join(root, '.git'))) {
   const result = spawnSync(
     'git',
