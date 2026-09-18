@@ -1,5 +1,21 @@
 # Verification report
 
+## Directory and Encryption Flags
+
+**2026-09-18, macOS arm64, Node 24.18.0 / pnpm 11.8.0.** `pnpm check` passes
+with 110 Vitest tests in 20 files, strict typechecking, lint/contracts, build, and
+formatting. The 12 HTTP Chromium desktop/mobile tests and `pnpm test:package`
+also pass; the package still contains 95 files with the required resources.
+
+The directory regression uses the real CLI session, pinned AWS SDK against a
+loopback HTTP fixture, actual StatiCrypt, and disk receipts. It verifies scoped
+keys/URLs/listing, same-slug isolation, conditional overwrite/removal, trailing-slash
+receipt identity, preserved old receipts, both plaintext flag names, plaintext
+payload decoding, secret blocking, and no HTTP requests for publish dry runs.
+Additional tests reject unsafe directories and password/plaintext flag conflicts
+before a session opens. SDK fixtures explicitly clear inherited `AWS_PROFILE`
+and use fixture credentials. No live provider or CDN access-policy check ran.
+
 ## Mini Installed-Toolchain Qualification
 
 **2026-09-17, macOS arm64.** The laptop source manifest passed before import.

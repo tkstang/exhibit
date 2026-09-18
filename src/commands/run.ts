@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 import { ExhibitError, normalizeError } from '#core/errors';
 import { readTextFile } from '#core/files';
+import { normalizeDirectory, scopeDirectory } from '#core/identity';
 import { userPaths } from '#core/paths';
 import type { Config, ArtifactStore, PublicationState } from '#core/types';
 import { publishArtifact } from '#artifacts/publish';
@@ -22,7 +23,8 @@ export interface Session {
 export interface RuntimeDependencies {
   readonly env?: NodeJS.ProcessEnv;
   readonly cwd?: string;
-  readonly session?: (configFile: string, stateDir: string) => Promise<Session>;
+  /** Factories must scope config, storage, and receipts to the normalized directory. */
+  readonly session?: (configFile: string, stateDir: string, directory?: string) => Promise<Session>;
   readonly initialize?: (configFile: string, data: unknown, force: boolean) => Promise<Config>;
 }
 export interface SuccessEnvelope {
@@ -44,7 +46,11 @@ export interface FailureEnvelope {
 }
 export type Envelope = SuccessEnvelope | FailureEnvelope;
 
-async function openSession(configFile: string, stateDir: string): Promise<Session> {
+async function openSession(
+  configFile: string,
+  stateDir: string,
+  directory?: string,
+): Promise<Session> {
   const [{ loadConfig }, { createAwsTransport }, { createS3Store }, { createPublicationState }] =
     await Promise.all([
       import('#core/config'),
@@ -52,7 +58,7 @@ async function openSession(configFile: string, stateDir: string): Promise<Sessio
       import('#storage/s3-store'),
       import('#state/store'),
     ]);
-  const config = await loadConfig(configFile);
+  const config = scopeDirectory(await loadConfig(configFile), directory);
   const aws = createAwsTransport(config);
   return {
     config,
@@ -71,8 +77,14 @@ async function resolvePassword(
   const variable = args.text('password-env');
   if ([literal, file, variable].filter((value) => value !== undefined).length > 1)
     throw new ExhibitError('E_USAGE', 'Choose only one custom password source.');
-  if (args.flag('public') && [literal, file, variable].some((value) => value !== undefined))
-    throw new ExhibitError('E_USAGE', '--public cannot be combined with a password source.');
+  if (
+    (args.flag('no-encrypt') || args.flag('public')) &&
+    [literal, file, variable].some((value) => value !== undefined)
+  )
+    throw new ExhibitError(
+      'E_USAGE',
+      '--no-encrypt / --public cannot be combined with a password source.',
+    );
   let password = literal;
   if (file !== undefined)
     password = (await readTextFile(resolve(cwd, file), 1026)).replace(/\r?\n$/, '');
@@ -148,9 +160,15 @@ export async function run(
         next: 'Run exhibit doctor --probe after your CDN and IAM configuration is ready.',
       });
     }
-    // Validate password options before touching cloud resources.
+    // Validate paths and password options before touching cloud resources.
+    const directory = args.text('dir');
+    const normalizedDirectory = directory === undefined ? undefined : normalizeDirectory(directory);
     const password = args.command === 'publish' ? await resolvePassword(args, env, cwd) : undefined;
-    session = await (dependencies.session ?? openSession)(configFile, locations.stateDir);
+    session = await (dependencies.session ?? openSession)(
+      configFile,
+      locations.stateDir,
+      normalizedDirectory,
+    );
     if (args.command === 'publish') {
       const file = args.positionals[0];
       if (!file) throw new ExhibitError('E_USAGE', 'A source file is required.');
@@ -160,7 +178,7 @@ export async function run(
           title: args.text('title'),
           slug: args.text('slug'),
           password,
-          public: args.flag('public'),
+          public: args.flag('no-encrypt') || args.flag('public'),
           overwrite: args.flag('overwrite'),
           allowSecrets: args.flag('allow-secrets'),
           strictSecrets: args.flag('strict-secrets'),

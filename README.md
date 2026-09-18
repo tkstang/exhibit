@@ -107,13 +107,27 @@ secret because it contains the password. Diagnostics never include passwords.
 xbt publish plan.md                           # New opaque URL, fresh random password.
 xbt publish report.html --slug review         # Deliberately named URL.
 xbt publish report.html --slug review --overwrite
-xbt publish announcement.md --public          # Readable plaintext, NOT encrypted.
+xbt publish announcement.md --no-encrypt      # Readable plaintext, NOT encrypted.
 xbt publish plan.md --dry-run --json          # Render/scan; no S3 request or mutation.
 xbt list --json                              # Remote objects, no passwords by default.
 xbt list --show-passwords --json              # Explicitly include matching local receipts.
 xbt rm review --dry-run
 xbt rm review
 ```
+
+Use `--dir` to place artifacts beneath the configured storage prefix and URL base:
+
+```bash
+xbt publish plan.md --dir repositories/exhibit --json
+xbt list --dir repositories/exhibit --json
+xbt rm <slug> --dir repositories/exhibit --json
+xbt publish report.html --dir internal/reviews --no-encrypt --json
+```
+
+Encryption stays on by default in every directory. `--no-encrypt` deliberately
+disables it; `--public` remains a compatibility alias. Naming a directory `internal`
+does not restrict access: VPN/Basic Auth must already be enforced by your hosting
+infrastructure. See [directory scope](docs/cli.md#directory-and-encryption).
 
 Overwrites are explicit and conditional on the observed ETag. Deletion is limited
 to a recognized Exhibit artifact at an exact slug. There is no bucket-wide delete.

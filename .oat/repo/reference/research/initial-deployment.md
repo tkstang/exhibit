@@ -10,7 +10,7 @@ infrastructure decision.
   needs the artifact password to decrypt, not an infrastructure credential.
 - `/internal/...` is for work: VPN access OR Basic Auth is required before delivery.
   Exhibit still encrypts by default. Plaintext publication remains an explicit
-  `--public` choice, separate from whether the CDN route is public.
+  `--no-encrypt` choice (`--public` remains an alias), separate from whether the CDN route is public.
 - Keep OAT project archives and published exhibits separate. Support repository,
   project, and standalone artifact namespaces without adding a service or database.
 
@@ -86,26 +86,41 @@ OAC policy remains an alternative if reviewing same-host routing proves cumberso
 
 ## CLI Configuration Today
 
-The current CLI already supports nested prefixes and path-bearing base URLs. Use
-explicit config files per destination; there is no implicit repository detection.
+Updated 2026-09-18: `--dir` selects a relative directory beneath a configured
+destination. There is no implicit repository detection. For a common `exhibits/`
+origin prefix mapped to `https://share.example.com`, use:
+
+```bash
+xbt publish plan.md --dir repositories/demo --json
+xbt publish plan.md --dir internal/repositories/demo --json
+xbt list --dir internal/repositories/demo --json
+```
+
+Those commands target `exhibits/repositories/demo/` and
+`exhibits/internal/repositories/demo/`, respectively. Both encrypt by default;
+`--no-encrypt` is an independent, deliberate opt-out. This simpler common-root
+mapping is an alternative to the disjoint `shared/` rewrite proposal above, not an
+implemented CDN policy. Internal routes still need separately reviewed enforcement.
+
+If adopting the disjoint `shared/` rewrite proposal above, use explicit config
+files per access class because their origin roots differ. For the shared destination:
 
 ```json
 {
   "storage": {
     "bucket": "reviewed-work-bucket",
     "region": "us-east-1",
-    "prefix": "exhibits/shared/repositories/demo/"
+    "prefix": "exhibits/shared/"
   },
-  "publicBaseUrl": "https://share.example.com/repositories/demo"
+  "publicBaseUrl": "https://share.example.com"
 }
 ```
 
 For the internal destination, use prefix
-`exhibits/internal/repositories/demo/` and base URL
-`https://share.example.com/internal/repositories/demo`. Select either with
-`xbt publish plan.md --config <reviewed-config.json> --json`. Slugs remain flat;
-the config prefix owns hierarchy. `list` and `remove` operate on that configured
-leaf prefix, not a recursive all-repositories inventory.
+`exhibits/internal/` and base URL `https://share.example.com/internal`. Select either
+with `xbt publish plan.md --config <reviewed-config.json> --dir repositories/demo --json`.
+Slugs remain flat; `--dir` supplies hierarchy beneath the chosen root. `list` and
+`remove` operate on that effective directory, not a recursive all-repositories inventory.
 
 ## Reviewable Deployment Work
 
@@ -130,5 +145,5 @@ leaf prefix, not a recursive all-repositories inventory.
    authenticated checks, since the CLI does not accept Basic Auth credentials.
 
 Bucket/CDN policy cannot inspect Exhibit ciphertext semantics. The public route's
-encrypted-only convention depends on using protected publication; `--public` would
+encrypted-only convention depends on using protected publication; `--no-encrypt` would
 intentionally expose plaintext there. Do not claim that the path enforces encryption.

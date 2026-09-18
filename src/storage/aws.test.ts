@@ -11,6 +11,7 @@ afterEach(() => vi.unstubAllEnvs());
 
 it('serializes conditional writes and deletes through the pinned SDK over HTTP', async () => {
   // Fixture credentials keep the real SDK off the machine credential chain.
+  vi.stubEnv('AWS_PROFILE', undefined);
   vi.stubEnv('AWS_ACCESS_KEY_ID', 'exhibit-fixture-access');
   vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'exhibit-fixture-secret');
   vi.stubEnv('AWS_SESSION_TOKEN', 'exhibit-fixture-session');

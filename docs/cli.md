@@ -25,6 +25,46 @@ a mutation is intentional, while `--dry-run` is explicit preview.
 `<title>` and receives a warning if this option is supplied; protected gate titles
 remain generic in both cases.
 
+## Directory and encryption
+
+`publish`, `list`, and `remove` (including `rm`) accept `--dir <path>` or
+`--dir=<path>`. The path is relative to both the configured storage prefix and its
+matching public URL base. Omit it to use the configured root. No repository name
+or directory is inferred from the source file.
+
+```bash
+xbt publish plan.md --dir repositories/exhibit --json
+xbt list --dir repositories/exhibit --show-passwords --json
+xbt rm <slug> --dir repositories/exhibit --dry-run --json
+```
+
+Use the same directory when listing, overwriting, or removing an artifact.
+`list` includes only immediate artifacts, not subdirectories or a recursive inventory;
+keep the directory unchanged when continuing with `--cursor`. The same slug can
+exist independently in different directories, with separate password receipts.
+
+Segments start with an ASCII letter or digit and may then contain letters, digits,
+periods, underscores, or hyphens. A single trailing slash is optional. Empty paths,
+absolute paths, `.`/`..`, repeated slashes, backslashes, URL encoding, queries, and
+fragments are rejected. Combined paths must fit the existing prefix/URL limits.
+Directory names are visible in URLs and storage keys; do not put secrets in them.
+
+Encryption is on by default, including under `internal/`. `--no-encrypt` opts out;
+`--public` remains an alias with exactly the same behavior. Neither flag configures
+network access, and `--dir internal` does not create a VPN or Basic Auth gate.
+
+```bash
+# Encrypted even on an internal route.
+xbt publish plan.md --dir internal/projects/redesign --json
+# Readable plaintext: use only after deliberately choosing that exposure.
+xbt publish plan.md --dir internal/projects/redesign --no-encrypt --json
+```
+
+Plaintext mode cannot be combined with any password source. It still scans for
+potential secrets and blocks matches unless `--allow-secrets` is explicitly given.
+Its base64 payload is not protection. Infrastructure restrictions must be configured
+and verified separately before relying on them.
+
 ## JSON
 
 ```json

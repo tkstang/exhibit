@@ -69,6 +69,21 @@ Do not configure both a path-bearing public URL and an origin rewrite that adds
 the same prefix twice. `doctor --probe` catches the resulting wrong-object route.
 `.html` is intentional: no directory index or extension rewrite is needed.
 
+`--dir` appends the same relative path to the configured prefix and public URL
+base. For example, with prefix `exhibits/` and base URL `https://share.example.com`:
+
+```text
+command:      xbt publish plan.md --slug review --dir internal/projects/redesign
+object key:   exhibits/internal/projects/redesign/review.html
+returned URL: https://share.example.com/internal/projects/redesign/review.html
+```
+
+This does not change CDN routing or access rules. The configured URL must map to
+the configured prefix for every directory used. If different routes use different
+origin rewrites, use separate matching configurations; `--dir` is not a routing
+table and does not switch deployments. Receipt identity includes the effective
+directory, so use the same `--dir` for subsequent management commands.
+
 ## Credentials
 
 Exhibit supplies no `credentials` option to the AWS SDK. Use the normal provider

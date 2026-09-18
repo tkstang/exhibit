@@ -37,6 +37,30 @@ export function normalizePrefix(value: string): string {
   return `${raw}/`;
 }
 
+export function normalizeDirectory(value: string): string {
+  if (value !== '') {
+    try {
+      return normalizePrefix(value);
+    } catch {
+      // CLI paths use a usage error, without echoing the supplied value.
+    }
+  }
+  throw new ExhibitError('E_USAGE', 'Invalid --dir path.', {
+    hint: 'Use a relative slash-separated path with alphanumeric segments; no traversal, %, or backslashes.',
+  });
+}
+
+/** Scope storage, URLs, and receipt identity together beneath the configured root. */
+export function scopeDirectory(config: Config, directory?: string): Config {
+  if (directory === undefined) return config;
+  const suffix = normalizeDirectory(directory);
+  const prefix = `${normalizePrefix(config.storage.prefix)}${suffix}`;
+  const publicBaseUrl = `${config.publicBaseUrl.replace(/\/$/, '')}/${suffix.slice(0, -1)}`;
+  if (prefix.length > 513 || publicBaseUrl.length > 2048)
+    throw new ExhibitError('E_USAGE', '--dir exceeds the configured path length limit.');
+  return { ...config, storage: { ...config.storage, prefix }, publicBaseUrl };
+}
+
 export function objectKey(config: Config, slug: string): string {
   return `${normalizePrefix(config.storage.prefix)}${requireSlug(slug)}.html`;
 }

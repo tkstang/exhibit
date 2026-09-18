@@ -5,6 +5,8 @@ import {
   deploymentId,
   generateSlug,
   normalizePrefix,
+  normalizeDirectory,
+  scopeDirectory,
   objectKey,
   publicUrl,
   requireSlug,
@@ -59,6 +61,71 @@ describe('artifact identity', () => {
     assert.notEqual(
       deploymentId(config),
       deploymentId({ ...config, storage: { ...config.storage, prefix: 'other/' } }),
+    );
+  });
+  it('scopes keys, URLs, and receipt identity together without changing the root', () => {
+    const scoped = scopeDirectory(config, 'internal/projects/redesign');
+    assert.equal(objectKey(scoped, 'plan'), 'exhibit/internal/projects/redesign/plan.html');
+    assert.equal(
+      publicUrl(scoped, 'plan'),
+      'https://share.example.test/internal/projects/redesign/plan.html',
+    );
+    assert.notEqual(deploymentId(scoped), deploymentId(config));
+    assert.equal(
+      deploymentId(scoped),
+      deploymentId(scopeDirectory(config, 'internal/projects/redesign/')),
+    );
+    assert.equal(scopeDirectory(config), config);
+    assert.equal(config.storage.prefix, 'exhibit/');
+    const pathBase = scopeDirectory(
+      {
+        ...config,
+        storage: { ...config.storage, prefix: '' },
+        publicBaseUrl: 'https://example.test/share/',
+      },
+      'team',
+    );
+    assert.equal(objectKey(pathBase, 'plan'), 'team/plan.html');
+    assert.equal(publicUrl(pathBase, 'plan'), 'https://example.test/share/team/plan.html');
+  });
+  it('rejects unsafe or ambiguous directories without echoing their contents', () => {
+    for (const directory of [
+      '',
+      '/',
+      '/internal',
+      '.',
+      '..',
+      'a/../b',
+      'a/./b',
+      'a//b',
+      'a//',
+      'a\\b',
+      'C:/secret',
+      '%2e%2e',
+      'a/%252f',
+      'https://host',
+      'a?token=secret',
+      'a#secret',
+      'a\n',
+      'a ',
+      'a'.repeat(513),
+    ]) {
+      assert.throws(() => normalizeDirectory(directory), {
+        code: 'E_USAGE',
+        message: 'Invalid --dir path.',
+      });
+    }
+    assert.equal(normalizeDirectory('repositories/Example_1.0/'), 'repositories/Example_1.0/');
+  });
+  it('bounds the combined directory and configured prefix/URL', () => {
+    assert.throws(() => scopeDirectory(config, 'a'.repeat(512)), { code: 'E_USAGE' });
+    assert.throws(
+      () =>
+        scopeDirectory(
+          { ...config, publicBaseUrl: `https://example.test/${'a'.repeat(2025)}` },
+          'team',
+        ),
+      { code: 'E_USAGE' },
     );
   });
 });

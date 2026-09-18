@@ -17,10 +17,15 @@ Global options:
   -h, --help                Show help
   -v, --version             Show version
 
+Artifact scope (publish, list, remove):
+  --dir <path>              Relative directory beneath the configured prefix and URL base
+                            Does not set access controls; encryption stays on by default
+
 Publish:
   --slug <slug>             1–64 lowercase letters/digits/interior hyphens; default opaque
   --title <title>           Markdown title (HTML keeps its authored title; gate is generic)
-  --public                  Deliberately publish readable plaintext (base64 is NOT encryption)
+  --no-encrypt              Deliberately publish readable plaintext (base64 is NOT encryption)
+  --public                  Compatibility alias for --no-encrypt
   --password <value>        Custom 16+ character password; visible in shell history/process args
   --password-env <NAME>     Safer custom password source
   --password-file <path>    Read password from a regular UTF-8 file
@@ -56,7 +61,9 @@ Examples:
   xbt doctor --probe --json
   xbt publish plan.md --json
   xbt publish report.html --slug weekly-review --overwrite --json
-  xbt publish announcement.md --public --json
+  xbt publish plan.md --dir repositories/exhibit --json
+  xbt publish report.html --dir internal/reviews --no-encrypt --json
+  xbt list --dir internal/reviews --json
 
 No account, database, service deployment, or MCP server is required.
 Read docs/security-model.md before sharing sensitive material.

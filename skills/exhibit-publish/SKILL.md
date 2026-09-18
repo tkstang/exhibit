@@ -26,7 +26,9 @@ Resolve the exact file the user intends to share. For an OAT project, use OAT's
 actual current checkout/path; do not guess a synced directory or change refs.
 Only Markdown and standalone HTML are supported. This is a snapshot, not syncing.
 
-Use protected publication unless the user explicitly asks for public access.
+Use protected publication unless the user explicitly asks to skip encryption.
+An externally accessible URL can still require an Exhibit password; a public route
+is not permission to publish plaintext.
 Do not choose a sensitive slug/title for convenience: default slugs are opaque.
 No bundling, directory upload, or adjacent-file discovery is performed.
 
@@ -37,8 +39,14 @@ exhibit publish "/absolute/path/to/artifact.md" --json
 ```
 
 For a dry run, add `--dry-run`; a dry-run URL is not a live publication. Only add
-`--public`, `--overwrite`, `--allow-secrets`, or `--no-store-password` when the user
+`--no-encrypt` (alias `--public`), `--overwrite`, `--allow-secrets`, or `--no-store-password` when the user
 has deliberately authorized that behavior. Never use them as automatic error fixes.
+
+Use `--dir <relative/path>` only for the intended destination beneath the configured
+storage prefix and URL base. Reuse it for `list`, `remove`, and overwrites. It does
+not select additional source files or set access controls. An `internal/` directory
+still encrypts by default and only has VPN/Basic Auth protection if the hosting
+infrastructure already enforces it; do not infer that protection from the name.
 
 A custom password should come from the user's secret environment variable or
 private file. Prefer `--password-env NAME` / `--password-file PATH`; the literal
