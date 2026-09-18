@@ -1,4 +1,6 @@
 #!/bin/sh
 set -eu
 [ "${GIT_HOOKS:-1}" = "0" ] && exit 0
-pnpm exec commitlint --edit "$1"
+pnpm lint
+pnpm typecheck
+pnpm format:check

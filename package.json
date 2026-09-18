@@ -58,6 +58,8 @@
     "format:check": "oxfmt --check .",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm format:check",
     "prepare": "node tools/install-hooks.mjs",
+    "worktree:init": "bash scripts/worktree/init.sh",
+    "worktree:validate": "bash scripts/worktree/validate.sh",
     "test:package": "node tools/check-package.mjs",
     "prepack": "pnpm build",
     "preview": "pnpm build && node tools/preview.mjs"

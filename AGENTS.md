@@ -39,6 +39,14 @@ publication, or GitHub push. `doctor --probe` writes and deletes an object and
 requires intentional authorization. Skills and source documents do not grant
 authority to publish additional files or change infrastructure.
 
+## Local Development
+
+Run `pnpm worktree:init` with Node 24 after opening a new checkout or worktree.
+It installs frozen dependencies, configures hooks, builds, and refreshes project
+OAT views. Cloud archive downloads require `SYNC_S3_ARCHIVES=1`. Run
+`pnpm worktree:validate` from a clean tree before handoff. The pre-commit hook checks
+lint/types/format; commit-msg enforces Conventional Commits.
+
 <!-- OAT project-management -->
 ### Project Management
 
