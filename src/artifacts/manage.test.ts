@@ -2,7 +2,45 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import { config, date, memory, object } from '#core/fixtures.test-support';
 import { listArtifacts, removeArtifact } from './manage.js';
+import { publishArtifact } from './publish.js';
 describe('remote inventory and removal', () => {
+  it('retains the recovery password when a delayed delete overlaps an uncertain new publish', async () => {
+    const { store, state } = memory();
+    const old = await store.put(object('plan', 'old'));
+    await removeArtifact(
+      {
+        ...store,
+        async remove(slug, etag) {
+          await store.remove(slug, etag);
+          await assert.rejects(
+            publishArtifact(
+              { file: 'fixture.html', slug: 'plan', password: 'new-fixture-password' },
+              {
+                config,
+                state,
+                store: {
+                  ...store,
+                  async put(input) {
+                    await store.put(input);
+                    throw new Error('fixture lost PUT response');
+                  },
+                },
+                read: async () => ({ text: 'fixture', type: 'html', title: 'fixture' }),
+                render: async () => ({ html: 'fixture', warnings: [] }),
+                protect: async () => 'new encrypted fixture',
+              },
+            ),
+          );
+        },
+      },
+      state,
+      'plan',
+    );
+    const current = await store.head('plan');
+    assert.ok(current);
+    assert.notEqual(current.bodySha256, old.bodySha256);
+    assert.equal((await state.read('plan', current.bodySha256))?.password, 'new-fixture-password');
+  });
   it('never shows local passwords without an explicit flag', async () => {
     const { store, state } = memory();
     const a = await store.put(object('plan'));

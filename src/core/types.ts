@@ -80,7 +80,7 @@ export interface PublicationReceipt {
 export interface PublicationState {
   read(slug: string, bodySha256: string): Promise<PublicationReceipt | null>;
   save(receipt: PublicationReceipt): Promise<void>;
-  remove(slug: string): Promise<void>;
+  remove(slug: string, bodySha256: string): Promise<void>;
 }
 
 export type Result<T, E> =

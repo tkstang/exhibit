@@ -1,8 +1,13 @@
-import { lstat, rm } from 'node:fs/promises';
+import { lstat, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { ExhibitError, hasCode } from '#core/errors';
-import { ensurePrivateDirectory, readTextFile, writePrivateJson } from '#core/files';
+import {
+  assertPrivateDirectory,
+  ensurePrivateDirectory,
+  readTextFile,
+  writePrivateJson,
+} from '#core/files';
 import { deploymentId, requireSlug } from '#core/identity';
 import type { Config, PublicationReceipt, PublicationState } from '#core/types';
 
@@ -26,6 +31,11 @@ function validReceipt(value: unknown): value is PublicationReceipt {
 export function createPublicationState(config: Config, stateRoot: string): PublicationState {
   const deployment = join(stateRoot, deploymentId(config));
   const directory = (slug: string) => join(deployment, requireSlug(slug));
+  const inspectDirectories = async (slug: string) => {
+    for (const parent of [stateRoot, deployment, directory(slug)]) {
+      await assertPrivateDirectory(parent);
+    }
+  };
   const path = (slug: string, digest: string) => {
     if (!/^[a-f0-9]{64}$/.test(digest))
       throw new ExhibitError('E_STATE', 'Invalid local publication identity.');
@@ -35,6 +45,7 @@ export function createPublicationState(config: Config, stateRoot: string): Publi
     async read(slug, digest) {
       const target = path(slug, digest);
       try {
+        await inspectDirectories(slug);
         const info = await lstat(target);
         if (
           !info.isFile() ||
@@ -73,13 +84,15 @@ export function createPublicationState(config: Config, stateRoot: string): Publi
       await ensurePrivateDirectory(directory(receipt.slug));
       await writePrivateJson(path(receipt.slug, receipt.bodySha256), receipt);
     },
-    async remove(slug) {
-      const dir = directory(slug);
+    async remove(slug, digest) {
+      const target = path(slug, digest);
       try {
-        const info = await lstat(dir);
-        if (!info.isDirectory() || info.isSymbolicLink())
-          throw new ExhibitError('E_STATE', 'Refusing an unsafe local state directory.');
-        await rm(dir, { recursive: true, force: false });
+        await inspectDirectories(slug);
+        const info = await lstat(target);
+        if (!info.isFile() || info.isSymbolicLink())
+          throw new ExhibitError('E_STATE', 'Refusing an unsafe local receipt.');
+        // A delayed delete response must not erase receipts from a concurrent publication.
+        await unlink(target);
       } catch (error) {
         if (hasCode(error, 'ENOENT')) return;
         if (error instanceof ExhibitError) throw error;

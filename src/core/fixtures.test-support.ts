@@ -85,8 +85,8 @@ export function memory() {
     async save(receipt) {
       receipts.set(`${receipt.slug}/${receipt.bodySha256}`, receipt);
     },
-    async remove(slug) {
-      for (const key of receipts.keys()) if (key.startsWith(`${slug}/`)) receipts.delete(key);
+    async remove(slug, digest) {
+      receipts.delete(`${slug}/${digest}`);
     },
   };
   return { transport, store: createS3Store(config, transport), state, receipts };

@@ -41,13 +41,25 @@ export async function readTextFile(path: string, maximum: number): Promise<strin
   }
 }
 
+/** Inspect only; callers may handle ENOENT without creating state during reads. */
+export async function assertPrivateDirectory(path: string): Promise<void> {
+  const stat = await lstat(path);
+  if (
+    !stat.isDirectory() ||
+    stat.isSymbolicLink() ||
+    (process.platform !== 'win32' && ((stat.mode & 0o077) !== 0 || stat.uid !== process.getuid?.()))
+  ) {
+    throw new ExhibitError(
+      'E_STATE',
+      'Local state requires owned, private, non-symlink directories.',
+    );
+  }
+}
+
 export async function ensurePrivateDirectory(path: string): Promise<void> {
   try {
     await mkdir(path, { recursive: true, mode: 0o700 });
-    const stat = await lstat(path);
-    if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error('unsafe directory');
-    if (process.platform !== 'win32' && (stat.mode & 0o077) !== 0)
-      throw new Error('directory not private');
+    await assertPrivateDirectory(path);
   } catch {
     throw new ExhibitError('E_STATE', 'Cannot create a private local directory.', {
       hint: 'Use an owned, non-symlink directory. Check EXHIBIT_STATE_DIR and EXHIBIT_CONFIG.',

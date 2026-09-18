@@ -69,11 +69,11 @@ export async function removeArtifact(
     },
   ];
   try {
-    await state.remove(slug);
+    await state.remove(slug, existing.bodySha256);
   } catch {
     warnings.push({
       code: 'W_STATE_REMOVE',
-      message: 'Remote deletion succeeded; local password receipts still need removal.',
+      message: 'Remote deletion succeeded; its local password receipt still needs removal.',
     });
   }
   return { slug, key: existing.key, removed: true, dry_run: false, warnings };
