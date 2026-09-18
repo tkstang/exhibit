@@ -1,8 +1,8 @@
 # Exhibit Engineering Contract
 
 Exhibit publishes Markdown and standalone HTML to S3-compatible storage. It is a
-single-package Node 24 / TypeScript ESM CLI. Read `LOCAL-HANDOFF.md`,
-`VERIFICATION.md`, and `docs/decisions.md` before changing this initial implementation.
+single-package Node 24 / TypeScript ESM CLI. Read `README.md`, `VERIFICATION.md`,
+and `docs/decisions.md` before changing the implementation.
 
 ## Invariants
 

@@ -23,7 +23,6 @@ try {
     'LICENSE',
     'THIRD-PARTY-NOTICES.md',
     'VERIFICATION.md',
-    'LOCAL-HANDOFF.md',
     'docs/security-model.md',
     'docs/organization-skill.md',
     'skills/exhibit-publish/SKILL.md',

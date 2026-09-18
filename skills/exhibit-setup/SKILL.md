@@ -16,7 +16,7 @@ configuration. Never provision resources or weaken bucket protections silently.
 
 Try `exhibit --version --json` or `xbt --version --json`. Use
 `data.resources.docs` and `data.resources.terraform` for the canonical files.
-When starting from source, read its README, `LOCAL-HANDOFF.md`, and
+When starting from source, read its README, `VERIFICATION.md`, and
 `docs/development.md`, install the pinned toolchain, run local checks, and build
 before linking the binaries. Do not assume an npm release exists.
 

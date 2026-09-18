@@ -20,4 +20,3 @@
 - [Development and release](development.md)
 - [Source references](sources.md)
 - [Validation report](../VERIFICATION.md)
-- [Local iteration handoff](../LOCAL-HANDOFF.md)

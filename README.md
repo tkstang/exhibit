@@ -155,7 +155,7 @@ supported but can expose the secret in shell history and process arguments.
 - [Publishing](skills/exhibit-publish/SKILL.md) and [setup](skills/exhibit-setup/SKILL.md) agent skills.
 - An [organization wrapper example](docs/organization-skill.md) with bundled deployment and branding config.
 - [AWS Terraform](examples/terraform/aws/README.md), Fastly guidance, and S3-compatible notes.
-- Unit/contract tests, browser tests, a local preview, and a [local iteration handoff](LOCAL-HANDOFF.md).
+- Unit/contract tests, browser tests, a local preview, and [development guidance](docs/development.md).
 
 No ZIP/directory hosting, exact expiry, burn-after-read, remote MCP, accounts,
 comments, or collaboration in this version. External images/scripts/fonts and
@@ -169,3 +169,9 @@ covers infrastructure, agent usage, implementation decisions, and troubleshootin
 
 MIT licensed. `private: true` prevents accidental npm publication; see
 [Development](docs/development.md) for deliberate release steps.
+
+## Acknowledgments
+
+Inspired by [Hushdrop](https://github.com/maxtechera/hushdrop). Encryption uses
+[StatiCrypt](https://github.com/robinmoisson/staticrypt). See
+[third-party notices](THIRD-PARTY-NOTICES.md) for attribution and licenses.

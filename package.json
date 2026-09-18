@@ -27,7 +27,6 @@
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
     "VERIFICATION.md",
-    "LOCAL-HANDOFF.md",
     "tools/install-hooks.mjs"
   ],
   "type": "module",
