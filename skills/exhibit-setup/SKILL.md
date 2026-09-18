@@ -34,6 +34,13 @@ Choose the appropriate documentation path:
 - New AWS stack: reference Terraform README, then a reviewed plan.
 - S3-compatible provider: `s3-compatible.md`; endpoint configuration alone is not private-CDN provisioning.
 
+For mixed public/internal access, read `bucket-layout.md` and the split-DNS
+example in `cloudfront.md`. Confirm the route policy separately from encryption.
+The primary example gates everything except `/public/` descendants. The shipped
+new-bucket Terraform does not implement VPN or Basic Auth. Verify the viewer's
+HTTP security headers on every delivery path, including an ALB that bypasses
+CloudFront; a VPN is not a substitute for anti-framing protection.
+
 Reuse safe existing infrastructure instead of creating a redundant stack. Keep
 Block Public Access enabled. The publicly accessible layer delivers ciphertext;
 it does not need a public bucket or viewer AWS credentials.
@@ -62,6 +69,12 @@ Start with read-only `exhibit doctor --json`. Once an active test is authorized,
 run `exhibit doctor --probe --json`. Interpret every failed check and review header
 warnings. A non-null `cleanup_key` needs identity-aware manual cleanup of that
 specific non-sensitive probe. Do not claim the deployment passed while hiding it.
+
+The probe checks the configured root, does not accept `--dir`, and cannot supply
+Basic Auth credentials. For split DNS, follow `cloudfront.md` to test the normal
+config on VPN and a reviewed public-subtree config off VPN. Both probes need
+authorization. Separately test unauthorized/authorized gated requests and the
+public exception. Do not weaken a gate to make a probe pass.
 
 Publish one explicitly non-sensitive sample. Open the returned HTTPS URL in a fresh
 browser window, check wrong/right passwords, Markdown layout, and standalone HTML

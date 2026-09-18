@@ -35,9 +35,11 @@ Before distributing the bundle in your organization's skills repo:
    [the config](../examples/skills/share-exhibit/references/exhibit-config.json)
    with the reviewed deployment values. Set its `brand` fields as described below.
 2. Confirm the route policy in `SKILL.md`. The example uses the
-   [public-directory-only proposal](bucket-layout.md#alternative-public-directory-only):
+   [public-directory-only proposal](bucket-layout.md#public-directory-only):
    everything requires VPN or Basic Auth except `/public/` descendants.
    This is an example assumption, not a deployed gate.
+   The [split-DNS example](cloudfront.md#split-dns-delivery-example) shows how one
+   hostname can serve the same keys through public and VPN delivery paths.
 3. Document the approved AWS profile/SSO setup in the organization-owned skill.
    Profile names can be non-secret instructions; credentials, passwords, and
    session tokens must not go in the bundle. The config has no credential fields.

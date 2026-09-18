@@ -121,7 +121,8 @@ Use `--dir` to place artifacts beneath the configured storage prefix and URL bas
 xbt publish plan.md --dir repositories/exhibit --json
 xbt list --dir repositories/exhibit --json
 xbt rm <slug> --dir repositories/exhibit --json
-xbt publish report.html --dir internal/reviews --no-encrypt --json
+xbt publish plan.md --dir public/repositories/exhibit --json
+xbt publish report.html --dir projects/reviews --no-encrypt --json
 ```
 
 Encryption stays on by default in every directory. `--no-encrypt` deliberately
@@ -131,8 +132,11 @@ infrastructure. See [directory scope](docs/cli.md#directory-and-encryption).
 
 For a suggested `exhibits/` hierarchy and matching config, see the
 [proposed bucket layout](docs/bucket-layout.md). It includes repository/project
-namespaces and public versus internal route examples, without assuming those
-access rules are already deployed.
+namespaces and leads with a gated-by-default policy: only `/public/` descendants
+bypass VPN or Basic Auth. The [`/internal/`-only policy](docs/bucket-layout.md#alternative-internal-directory-only)
+is an alternative. Neither policy is enforced by the CLI or the unmodified
+new-bucket Terraform example. The [split-DNS example](docs/cloudfront.md#split-dns-delivery-example)
+shows public and VPN delivery through one hostname without assuming deployment.
 
 Overwrites are explicit and conditional on the observed ETag. Deletion is limited
 to a recognized Exhibit artifact at an exact slug. There is no bucket-wide delete.

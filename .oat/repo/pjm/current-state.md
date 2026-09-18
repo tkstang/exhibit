@@ -8,7 +8,8 @@ sections another branch may also touch.
 ## Canonical References
 
 - [Verification](../../../VERIFICATION.md): current installed-toolchain results and remaining boundaries.
-- [Deployment proposal](../reference/research/initial-deployment.md): public encrypted routes and VPN-or-Basic-Auth `/internal/` routes.
+- [Deployment context](../reference/research/initial-deployment.md): selected public-directory-only direction and historical alternatives.
+- [Split-DNS example](../../../docs/cloudfront.md#split-dns-delivery-example): public/VPN mappings, security headers, and acceptance checks.
 - [Product decisions](../../../docs/decisions.md): initial implementation constraints.
 
 <!-- List durable repo references, source-of-truth docs, dashboards, or processes here.
@@ -22,15 +23,23 @@ copying their content here. -->
 - Revision-specific receipt cleanup and non-symlink private state-directory checks.
 - Git hooks, worktree bootstrap/validation, and OAT archive settings aligned with existing personal repositories.
 - Reference Terraform initialized and validated locally; both CLI binary names installed on the Mini.
+- Directory-scoped publication/list/removal, explicit `--no-encrypt`, and organization wrapper/branding examples.
+- The `mvp` branch is pushed. Current local checks pass with 110 unit tests, 12 HTTP browser tests, and a 100-file package check.
 
 <!-- Summarize shipped capabilities and important repo conventions here. -->
 
 ## What's Next
 
-Review the deployment proposal and select work/personal targets and hostname. The
-owning Vox infrastructure needs a reviewed adaptation plan before any apply.
-Live S3/CDN qualification and Windows ACL qualification remain unexecuted. Exhibit
-has not been pushed or published. Foundations improvements are in PR #1.
+The selected first work target is the existing OAT bucket with a dedicated
+`exhibits.voxops.net` hostname and `exhibits/` prefix. All routes are gated except
+`/public/` descendants; encryption remains independently enabled by default.
+The owning infrastructure change is [Terraform PR #1841](https://github.com/voxmedia/terraform/pull/1841).
+Its deployment and route/header qualification are not established by Exhibit tests.
+
+Review the initial Exhibit PR, then merge after green PR CI. npm release
+remains separate and the package stays private. Live S3/CDN qualification, Windows
+ACL qualification, and the personal hosting target remain pending. Foundations
+improvements were submitted in PR #1; their merge status is not tracked here.
 
 <!-- Track near-term follow-up work, known gaps, and active handoff context here.
 Track concrete items in pjm/backlog/ and sequencing in pjm/roadmap.md; keep this

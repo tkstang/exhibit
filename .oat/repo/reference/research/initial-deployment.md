@@ -1,5 +1,34 @@
 # Initial Exhibit Deployment Proposal
 
+## Selected direction update, 2026-09-18
+
+The first work deployment now targets the existing `vox-media-open-agent-toolkit`
+bucket in `us-east-1`, prefix `exhibits/`, and dedicated hostname
+`exhibits.voxops.net`. [Terraform PR #1841](https://github.com/voxmedia/terraform/pull/1841)
+owns the adaptation; it was open when this update was written. No deployment or
+live acceptance result is recorded here.
+
+The selected route policy supersedes the original `/internal/` proposal below.
+Only `/public/` descendants bypass Basic Auth on public DNS. Other routes require
+Basic Auth off VPN; private DNS routes VPN/VPC clients through the internal ALB
+without Basic Auth. Both delivery paths add the common `exhibits/` origin prefix
+exactly once. Encryption stays on by default in every directory.
+
+Generic documentation lives in [bucket layout](../../../../docs/bucket-layout.md)
+and [CloudFront split DNS](../../../../docs/cloudfront.md#split-dns-delivery-example).
+Organization-specific deployment values and AWS profile instructions belong in
+the organization-owned wrapper skill's `references/exhibit-config.json` and
+`SKILL.md`, not Exhibit's generic defaults. No credentials belong in either file.
+
+The initial Terraform review found missing anti-framing response headers on the
+VPN delivery path. Feedback was handed to the infrastructure agent; subsequent
+fixes require their own verification. Do not infer resolution from this note or
+from a passing Terraform plan. The same applies to live origin access, route
+authentication, and browser behavior. The historical alternatives below remain
+context, not current deployment instructions.
+
+## Historical proposal, 2026-09-17
+
 Status: source inspection and proposal, 2026-09-17. No cloud resources or external
 access policies have been changed. This records the user's direction, not a finalized
 infrastructure decision.

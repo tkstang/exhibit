@@ -4,9 +4,9 @@ This example creates a **new** private bucket and public HTTPS CloudFront viewer
 endpoint. It does not deploy an Exhibit application server: artifacts are static
 files whose passwords decrypt locally in the browser.
 
-> Review and validate before applying. The initial source-delivery environment did
-> not have Terraform/provider downloads or AWS access. No apply or real AWS smoke
-> test was run. See the repository's `VERIFICATION.md`.
+> Review and validate before applying. Local formatting, provider initialization,
+> and validation passed; no apply or real AWS smoke test is claimed here. See the
+> repository's `VERIFICATION.md`.
 
 ## Resources
 
@@ -69,11 +69,14 @@ configuration accounts for this: do not append the prefix again. Explicit `.html
 URLs need no CloudFront Function or index-document rewrite.
 
 The [proposed bucket layout](../../../docs/bucket-layout.md) adds repository/project
-namespaces with two proposed access policies: gate only `internal/`, or gate
-everything except `public/`. This Terraform example implements neither policy
+namespaces with a primary gated-by-default policy that exempts only `public/`,
+and an alternative that gates only `internal/`. This Terraform example implements neither policy
 and does not configure VPN or Basic Auth restrictions. All paths under its configured
 prefix, including `internal/`, use the public viewer endpoint. Do not publish
 unencrypted internal content until a separately reviewed access gate is in place.
+For an existing CloudFront/internal-ALB stack, follow the
+[split-DNS adaptation and verification example](../../../docs/cloudfront.md#split-dns-delivery-example)
+instead of applying this new-bucket configuration.
 
 ## Custom domain
 

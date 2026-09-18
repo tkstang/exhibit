@@ -28,6 +28,106 @@ Do not share this origin with application login/session cookies. Avoid a CDN
 behavior that forwards user cookies, Authorization, or arbitrary query strings to
 S3. The viewer has no server-side session.
 
+## Split-DNS delivery example
+
+An organization can reuse a private bucket and internal network while giving
+Exhibit its own hostname. This design follows the
+[public-directory-only policy](bucket-layout.md#public-directory-only). It is a
+reference for adapting an existing stack, not additional deployable Terraform in
+this package and not evidence that any access gate is live.
+
+```text
+share.example.com
+  Public DNS -> CloudFront -> signed S3 origin reads
+    /public/*: no infrastructure authentication
+    all other paths: Basic Auth
+  VPN/private DNS -> internal ALB -> S3 interface endpoint
+    network-restricted access, no Basic Auth
+
+Both paths: /projects/demo/review.html
+        -> s3://replace-me-artifacts/exhibits/projects/demo/review.html
+```
+
+Use the [namespaced config](../examples/config/namespaced.json) with storage prefix
+`exhibits/` and base URL `https://share.example.com`. CloudFront adds origin path
+`/exhibits`; the ALB path rewrite adds the same prefix exactly once. The client
+config and resulting URLs do not change when the publisher joins the VPN.
+`publicBaseUrl` names the viewer URL base; it does not mean every path is public.
+
+Keep the bucket private. Scope the new distribution's signed reads and publisher
+permissions to the intended prefix. Preserve the existing stack's single owner
+for its bucket policy, and review endpoint policies and alternate hostnames for
+bypasses. A separate distribution must not accidentally expose existing archives.
+Do not infer VPN membership from a viewer-supplied IP header.
+
+Apply authentication before delivering cached or origin responses. Gate bare
+`/public` and all unmatched paths; exempt only `/public/` descendants. Test encoded
+paths, dot segments, duplicate slashes, and public-looking siblings such as
+`/publicity/`. Never forward the viewer's Basic Auth credentials to S3.
+
+The private ALB route bypasses CloudFront response headers. It must provide the
+[viewer security headers](security-model.md#browser-isolation-and-network-policy)
+too, particularly HTTP `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+VPN reachability does not prevent another website from framing the viewer in a
+VPN-connected browser. Preserve inline HTML delivery and reviewed no-store/cache
+behavior on both paths. ALB header insertion applies to all responses on the
+listener, so review existing archive compatibility before changing a shared
+listener. See [AWS header modification](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/header-modification.html).
+
+### Verify each delivery path
+
+Start with read-only `exhibit --config ./exhibit-config.json doctor --json`.
+It checks signed S3 listing, not browser reachability or route authentication.
+
+After explicit authorization, run `doctor --probe` on the VPN using the normal
+config to exercise the private delivery path. Off VPN, the same config probes a
+gated root path and cannot supply Basic Auth credentials. A failed `public-read`
+check in that situation is not by itself evidence of broken S3 writes. Inspect
+the individual checks and require confirmed cleanup or review `cleanup_key`.
+
+To probe public delivery off VPN, use a separate reviewed config with both roots
+scoped to the public subtree, retaining the other deployment settings:
+
+```json
+{
+  "schemaVersion": 1,
+  "storage": {
+    "provider": "s3",
+    "bucket": "replace-me-artifacts",
+    "region": "us-east-1",
+    "prefix": "exhibits/public/",
+    "forcePathStyle": false
+  },
+  "publicBaseUrl": "https://share.example.com/public"
+}
+```
+
+Then, only with probe authorization:
+
+```bash
+exhibit --config ./exhibit-public-probe.json doctor --probe --json
+```
+
+This writes and conditionally deletes an encrypted non-sensitive fixture beneath
+`exhibits/public/`. It does not verify Basic Auth or the remaining route policy.
+`doctor` has no `--dir` option; do not add credentials to the URL or config.
+
+For browser and access-policy qualification, publish authorized non-sensitive
+fixtures in public and gated directories. Verify this matrix using actual DNS
+resolution, not a VPN connection indicator alone:
+
+| Client                    | `/public/...`   | Other paths                        |
+| ------------------------- | --------------- | ---------------------------------- |
+| Off VPN, no Basic Auth    | Delivers viewer | Denies delivery                    |
+| Off VPN, valid Basic Auth | Delivers viewer | Delivers viewer                    |
+| VPN with private DNS      | Delivers viewer | Delivers viewer without Basic Auth |
+
+On both delivery paths, verify wrong/right artifact passwords, lock/reload,
+standalone HTML interaction, security headers, cross-origin framing rejection,
+and replacement/removal freshness. Check an explicitly authorized unencrypted
+fixture separately. Encryption remains the default for every route. Neither a
+matching probe digest nor a passing Terraform plan proves browser behavior.
+
 ## Custom domain
 
 The reference example accepts an existing validated ACM certificate ARN in

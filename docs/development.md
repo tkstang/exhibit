@@ -111,6 +111,14 @@ reports configuration failures. After `git init`, run `pnpm prepare` deliberatel
 
 ## Deliberate npm release
 
+Opening or merging a source PR does not publish the package or qualify a hosting
+deployment. Before source merge, require review and green PR CI, which runs the
+strict checks, HTTP browser suite, package verification, and reference Terraform
+validation. Keep `private: true` until a separate npm release is approved. Track
+live provider and route qualification in `VERIFICATION.md`; complete the
+[delivery-path checks](cloudfront.md#verify-each-delivery-path) before relying on
+the work deployment for sensitive content.
+
 Review the implementation/security checks and dependency licenses; commit a genuine
 lockfile; set `private: false` only when release is approved. Verify `pnpm pack`
 contains `dist`, `assets`, docs, skills, examples, and licenses, but no secrets,

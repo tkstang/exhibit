@@ -47,7 +47,13 @@ The default CSP permits inline scripts/styles and embedded data assets but rejec
 remote scripts, styles, images, fonts, network connections, forms, plugins, and eval.
 The exact policy lives in `src/security/policy.ts` and the Terraform response-header
 policy. A meta policy travels with the document; `frame-ancestors` must also be
-provided as an HTTP header. `X-Frame-Options: DENY` protects the outer viewer.
+provided as an HTTP header. Deliver `X-Frame-Options: DENY` to protect the outer
+viewer. These headers are hosting requirements, not HTTP headers supplied by an
+S3 artifact upload. Every delivery path must enforce them, including a private
+ALB reached through split DNS that bypasses the CDN. A VPN does not prevent
+cross-origin framing by a website visited in a VPN-connected browser. Check
+actual responses and browser framing behavior on both paths; see the
+[split-DNS verification procedure](cloudfront.md#verify-each-delivery-path).
 
 This is **not** a guarantee that hostile HTML is harmless. A malicious document can
 mislead its viewer, offer harmful downloads, or entice outbound navigation. Popups
@@ -76,9 +82,14 @@ properly, or deliberately design and review a broader hosting mode later.
 
 ## Public mode
 
-`--public` is an explicit confidentiality downgrade. The original document is
+`--no-encrypt` is an explicit confidentiality downgrade; `--public` is its legacy
+alias, not a routing flag. The original document is
 base64-encoded inside the same safe viewer shell to avoid script-tag termination
 bugs. **Base64 is not encryption. Anyone can decode it without a password.**
+
+Infrastructure can separately restrict who receives the viewer. A `/public/`
+directory does not disable encryption, and an `internal/` name does not enforce
+authentication. See the [route policy examples](bucket-layout.md).
 
 The scanner warns for protected publishing and blocks high-signal matches in public
 mode unless `--allow-secrets` is explicitly supplied. `--strict-secrets` blocks

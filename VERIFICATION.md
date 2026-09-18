@@ -1,5 +1,26 @@
 # Verification report
 
+## Current merge baseline
+
+**2026-09-18, macOS arm64, Node 24.18.0 / pnpm 11.8.0.** The current local
+baseline passes strict typechecking, lint/contracts, formatting, build, 110 Vitest
+tests in 20 files, and 12 real HTTP Chromium desktop/mobile tests. Package
+verification now checks a 100-file archive, including the organization wrapper
+example and its bundled configuration. Earlier file counts below describe earlier
+snapshots, not the current package.
+
+The `mvp` branch has been pushed. Its documentation leads with the selected
+gated-by-default deployment direction: `/public/` descendants bypass infrastructure
+authentication, while other routes require VPN or Basic Auth. This is a documented
+deployment design, not a claim that access policies have been deployed or qualified.
+The supplied new-bucket Terraform still implements public viewer delivery only.
+
+Source merge, npm release, and deployment acceptance are separate gates. Live
+S3/CDN/DNS/VPN/Basic Auth checks remain pending, including delivery-header parity,
+anti-framing checks, and an authorized non-sensitive publication/probe on the
+target infrastructure. Windows ACL/junction behavior and native-device browsers
+also remain unqualified. See the [per-path checklist](docs/cloudfront.md#verify-each-delivery-path).
+
 ## Directory and Encryption Flags
 
 **2026-09-18, macOS arm64, Node 24.18.0 / pnpm 11.8.0.** `pnpm check` passes
@@ -50,7 +71,8 @@ inclusion in package tarballs were also reproduced and fixed during this pass.
 Remaining: live S3/CDN/public DNS/VPN/Basic Auth qualification; Windows ACL/junction
 behavior; native-device browsers; power-loss durability and adversarial same-user
 filesystem races. No Terraform plan/apply, cloud probe, live artifact publication,
-npm publish, or Exhibit GitHub push ran. The only requested external code action
+npm publish, or Exhibit GitHub push ran during that September 17 qualification.
+The only requested external code action at that point
 was [Foundations PR #1](https://github.com/tkstang/foundations/pull/1).
 
 ## Historical Creation-Environment Report

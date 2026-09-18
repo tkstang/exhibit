@@ -36,6 +36,19 @@ REST endpoint, and deployment propagation. The example produces `.html` URLs; no
 extensionless rewrite is expected. A failed doctor probe reports an exact cleanup
 key if cleanup cannot be confirmed.
 
+## Doctor fails off VPN but the page opens on VPN
+
+With split DNS, those requests may use different delivery paths. `doctor` without
+`--probe` checks signed S3 listing only. The active probe fetches a generated URL
+at the configured root and cannot send Basic Auth credentials. Under the
+public-directory-only policy, an off-VPN probe at that root reaches the Basic
+Auth gate even when S3 writes work.
+
+Follow the [per-path verification procedure](cloudfront.md#verify-each-delivery-path).
+Use a reviewed public-subtree config for an authorized off-VPN probe; do not
+disable authentication, add credentials to the URL, or claim that one successful
+probe verified both routes. Check cleanup even when retrieval fails.
+
 ## The page downloads or the gate is blank
 
 Verify `Content-Type: text/html`, no `Content-Disposition: attachment`, and the
