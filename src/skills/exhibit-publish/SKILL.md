@@ -19,7 +19,7 @@ Run `exhibit --version --json`; if that binary is unavailable, try
 `schema_version: 1`, `ok: true`, and `command: "version"`. An executable name alone
 does not prove a working installation. Run the working binary's `--help --json`
 and confirm the needed commands and flags, including `--dir` and `--no-encrypt`.
-Use that binary for all subsequent commands; examples below use `exhibit`.
+Use that binary for all subsequent commands; substitute it in the examples below.
 
 If neither works, stop before reading/publishing the artifact. Direct the user to
 the installed `exhibit-setup` skill. If it is unavailable, use the bundled
@@ -83,8 +83,8 @@ a prepared local receipt may hold its password. Do not silently overwrite.
 
 ## Diagnose failures
 
-Use read-only `exhibit doctor --json` for configuration/storage issues. Active
-`doctor --probe` writes/fetches/deletes a non-sensitive fixture and requires an
+Use read-only `xbt doctor --json` for configuration/storage issues. Active
+`xbt doctor --probe` writes/fetches/deletes a non-sensitive fixture and requires an
 intentional decision to run it. `E_SECRET_DETECTED` requires source review, not
 an automatic bypass. `E_CONFLICT` requires checking the current artifact.
 `E_NOT_MANAGED` is a refusal to modify an unrelated object.

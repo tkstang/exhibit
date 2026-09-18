@@ -45,6 +45,8 @@ test('standalone and plugin bundles are identical and work after isolated reloca
     assert.match(skill, /ok: true/);
     assert.match(skill, /command: "version"/);
     assert.ok(isolated.has('LICENSE'));
+    for (const [path, bytes] of isolated)
+      if (path.endsWith('.md')) assert.doesNotMatch(bytes.toString(), /`doctor(?:\s[^`]*)?`/);
   }
 });
 

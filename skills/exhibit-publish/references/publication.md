@@ -46,6 +46,6 @@ A timeout can hide a successful upload. Prepared receipts may contain its passwo
 Inspect the current artifact before retrying. Failed overwrites must not discard
 the previous password. Each protected replacement normally has a new password.
 
-`doctor` is read-only, but `doctor --probe` writes and deletes a temporary fixture
+`xbt doctor` is read-only, but `xbt doctor --probe` writes and deletes a temporary fixture
 and needs separate intentional authorization. Removal needs authorization for the
 exact artifact and cannot revoke downloaded copies or noncurrent object versions.

@@ -5,8 +5,8 @@ description: 'Connect existing storage and verify viewer routing, headers, and a
 
 # Configure Exhibit delivery
 
-Use an already verified Exhibit CLI; substitute `xbt` for `exhibit` if that is
-the verified executable. Confirm available flags with `exhibit --help --json`.
+Use an already verified Exhibit CLI; `xbt` and `exhibit` are aliases. Substitute
+the verified executable in examples. Confirm available flags with `xbt --help --json`.
 Prefer the organization's existing bucket, CDN, identity, and network controls.
 Agree on the destination and audience before changing configuration. This guide
 describes required behavior; it does not assert that any deployment exists.
@@ -55,7 +55,7 @@ equivalent mapping. `--dir` appends a relative path to both configured roots:
 Do not repeat `exhibits/` in `--dir`, or duplicate the prefix in both the URL path
 and the origin rewrite. If no rewrite exists, include the storage prefix in the
 URL base instead. Use the same config and `--dir` for publication, listing,
-overwrite, and removal. `doctor` does not accept `--dir`.
+overwrite, and removal. `xbt doctor` does not accept `--dir`.
 
 ## Infrastructure and audience
 
@@ -120,14 +120,14 @@ of header changes on other applications sharing a listener.
 With the approved target config and credentials known, start read-only:
 
 ```bash
-exhibit --config ./exhibit-config.json doctor --json
+xbt doctor --config ./exhibit-config.json --json
 ```
 
 This checks config and signed prefix listing, not browser access or authentication.
 Only after explicit write/delete probe approval:
 
 ```bash
-exhibit --config ./exhibit-config.json doctor --probe --json
+xbt doctor --probe --config ./exhibit-config.json --json
 ```
 
 The probe writes an encrypted non-sensitive fixture, fetches exact bytes, checks
@@ -145,7 +145,7 @@ separate config retaining the template's other settings but changing **both**
 `https://share.example.com/public`, then run:
 
 ```bash
-exhibit --config ./exhibit-public-probe.json doctor --probe --json
+xbt doctor --probe --config ./exhibit-public-probe.json --json
 ```
 
 This still requires write/delete approval and does not verify Basic Auth. Do not

@@ -34,8 +34,10 @@ downloaded. Read the [security model](docs/user-guide/security-model.md).
 
 ## Start locally
 
-Requires Node 24 and pnpm 11. The scoped package name is `@tkstang/exhibit`; this
-archive does not claim that package has already been published to npm.
+Running Exhibit requires Node 24. Install an approved built archive with npm or
+pnpm using the [installation guide](docs/user-guide/installation.md).
+The scoped package name is `@tkstang/exhibit`; no registry release is assumed.
+For source development, use Node 24 and pnpm 11:
 
 ```bash
 cd exhibit

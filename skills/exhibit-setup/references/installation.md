@@ -1,12 +1,13 @@
 ---
 title: 'Install and verify Exhibit'
-description: 'Check an existing CLI or install from an explicitly approved source checkout.'
+description: 'Verify the CLI, install an approved package with npm or pnpm, or build from source.'
 ---
 
 # Install and verify Exhibit
 
-Use Node 24 and pnpm 11.8.0 for source installation. `exhibit` and `xbt` are
-aliases for the same CLI. A request to share a document does not authorize
+Use Node 24 to run Exhibit. Install a built package with npm or pnpm; building
+from source uses the repository's pinned pnpm 11.8.0 toolchain.
+`exhibit` and `xbt` are aliases for the same CLI. A request to share a document does not authorize
 installation, PATH changes, infrastructure changes, or a cloud write/delete probe.
 
 ## Check availability first
@@ -41,26 +42,56 @@ flags you need. Do not infer support from another checkout's documentation.
 ## Install only with authorization
 
 The source package is `@tkstang/exhibit` with `private: true`; these instructions
-do not claim an npm release. The repository
-[tkstang/exhibit](https://github.com/tkstang/exhibit) is private. Obtain an explicit
-user-approved local checkout and revision before building. Do not automatically
-clone the repository, fetch a revision, or substitute an unapproved download.
+do not claim a registry release. Use an approved built package or an approved
+checkout/revision of the private [tkstang/exhibit](https://github.com/tkstang/exhibit)
+repository. Do not automatically clone, fetch, or substitute an unapproved download.
+
+### Install a built package
+
+Given an approved `.tgz` package produced by `pnpm pack`, choose **one** installer.
+Replace the example path with the actual approved archive path.
+
+With npm, no pnpm installation or source checkout is required:
+
+```bash
+npm install --global /absolute/path/to/approved-exhibit.tgz
+```
+
+With pnpm:
+
+```bash
+pnpm add --global /absolute/path/to/approved-exhibit.tgz
+```
+
+Both install the `exhibit` and `xbt` commands. See the package managers'
+[npm install](https://docs.npmjs.com/cli/v11/commands/npm-install/) and
+[pnpm add](https://pnpm.io/11.x/cli/add) documentation. These commands may download
+runtime dependencies; the archive is not an offline dependency bundle.
+Do not install the same CLI through multiple managers into competing PATH entries.
+
+### Build from source when needed
 
 Verify Node and pnpm versions and the approved checkout/revision. From that
 approved repository root, run only after installation approval:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm build
-pnpm add -g .
+pnpm pack
 ```
 
-Use `pnpm add -g .` with pnpm 11, not `pnpm link --global`. Dependency installation
-can run repository lifecycle scripts, including local Git hook setup. If the
-toolchain is missing or incompatible, obtain approval to install or change it.
-If pnpm's global binary directory is unavailable, stop and review the required
-PATH/shell changes. Run `pnpm setup` or edit shell configuration only with
-deliberate approval.
+`pnpm pack` checks the skill bundles and builds the CLI through `prepack`, then
+prints the archive path. Install that archive with npm or pnpm as shown above.
+The source checkout uses `pnpm-lock.yaml`; do not substitute `npm install` or
+generate a second lockfile there. This build requirement does not make pnpm a
+runtime requirement for people installing a built archive.
+
+### Permissions and PATH
+
+Dependency installation can run lifecycle scripts; source installation also sets
+up local Git hooks. Obtain approval before installing or changing the toolchain.
+If the chosen manager's global binary directory is unavailable or unwritable,
+review its PATH/permission configuration. Do not automatically use `sudo`, run
+`pnpm setup`, or edit shell configuration.
 
 Return to the original external project directory and repeat both version checks
 and the chosen executable's help check. A command working only inside the source
@@ -72,11 +103,11 @@ After CLI verification and once the intended config, credentials, and storage
 target are known, the read-only connection check is:
 
 ```bash
-exhibit --config /absolute/path/to/exhibit-config.json doctor --json
+xbt doctor --config /absolute/path/to/exhibit-config.json --json
 ```
 
 Use the chosen executable. This performs signed storage listing; it is not a
-purely local availability check. `doctor --probe` additionally writes, fetches,
+purely local availability check. `xbt doctor --probe` additionally writes, fetches,
 tests conditional operations, and deletes a temporary object, so it requires
 separate intentional authorization.
 

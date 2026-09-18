@@ -21,11 +21,11 @@ Run `exhibit --version --json`; if that binary is unavailable, try
 `xbt --version --json`. Require a successful exit and JSON with `schema_version: 1`,
 `ok: true`, and `command: "version"`. Then run that binary's `--help --json` and
 check the required commands/flags. Use the working binary throughout this setup;
-examples below use `exhibit`.
+substitute it in the examples below.
 
 If neither works or the result is incompatible, follow the bundled
 [installation guide](references/installation.md). Ask before
-installation or changing PATH, and use only an approved source/revision. The
+installation or changing PATH, and use only an approved package or checkout/revision. The
 package is not assumed to exist on npm. Recheck version and help from the original
 project directory before configuring storage. Stop if installation remains
 unresolved. An engineering verification report is not a setup prerequisite.
@@ -73,8 +73,8 @@ Do not create long-lived keys just to satisfy Exhibit.
 
 ## Step 5: Verify
 
-Start with read-only `exhibit doctor --json`. Once an active test is authorized,
-run `exhibit doctor --probe --json`. Interpret every failed check and review header
+Start with read-only `xbt doctor --json`. Once an active test is authorized,
+run `xbt doctor --probe --json`. Interpret every failed check and review header
 warnings. A non-null `cleanup_key` needs identity-aware manual cleanup of that
 specific non-sensitive probe. Do not claim the deployment passed while hiding it.
 

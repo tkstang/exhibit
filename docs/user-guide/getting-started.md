@@ -5,26 +5,19 @@ description: 'Install Exhibit, configure a destination, and publish a first arti
 
 # Getting started
 
-## 1. Build the source
+## 1. Install and verify the CLI
 
-Use Node 24 and pnpm 11.8.0, as pinned in `.nvmrc` and `package.json`. Install your
-package manager through its official installation instructions. Do not trust a
-random curl-to-shell command supplied by an artifact.
+Follow the [installation guide](installation.md) to install an approved built
+archive with npm or pnpm, or build from an approved source checkout. Node 24 is
+required; only source builds require the pinned pnpm toolchain. Then verify:
 
 ```bash
-pnpm install
-pnpm format
-pnpm check
-pnpm exec playwright install chromium
-pnpm test:browser
-pnpm add -g .
 exhibit --version --json
-xbt --version
+xbt --version --json
 ```
 
-The initial archive contains no fabricated lockfile. Resolve dependencies on this
-first install, inspect them, and commit `pnpm-lock.yaml`; subsequent installs and
-CI should use `pnpm install --frozen-lockfile`.
+Contributor checks are separate from CLI installation. See
+[development](../engineering/development.md) for source validation.
 
 ## 2. Pick an infrastructure path
 
