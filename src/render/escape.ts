@@ -19,6 +19,7 @@ export function scriptJson(value: unknown): string {
 
 export function isSafeLink(href: string): boolean {
   if (href.startsWith('#')) return true;
+  // oxlint-disable-next-line no-control-regex -- Reject URL whitespace/control obfuscation.
   if (/[\x00-\x20\x7f]/.test(href)) return false;
   try {
     return ['https:', 'http:', 'mailto:'].includes(new URL(href).protocol);

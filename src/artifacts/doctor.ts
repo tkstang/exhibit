@@ -184,29 +184,28 @@ export async function doctor(
     );
   } catch (error) {
     checks.push({ name: 'probe', status: 'fail', message: normalizeError(error).message });
-  } finally {
-    if (attemptedPut) {
-      try {
-        const current = await store.head(slug);
-        if (current) {
-          if (current.kind !== 'probe' || current.bodySha256 !== expectedDigest)
-            throw new ExhibitError('E_CONFLICT', 'Probe identity changed; refusing cleanup.');
-          await store.remove(slug, current.etag);
-        }
-        checks.push({
-          name: 'cleanup',
-          status: 'pass',
-          message: 'Temporary origin probe is absent.',
-        });
-      } catch {
-        cleanupKey = objectKey(config, slug);
-        checks.push({
-          name: 'cleanup',
-          status: 'fail',
-          message:
-            'Probe cleanup could not be confirmed. Remove the reported non-sensitive cleanup_key manually.',
-        });
+  }
+  if (attemptedPut) {
+    try {
+      const current = await store.head(slug);
+      if (current) {
+        if (current.kind !== 'probe' || current.bodySha256 !== expectedDigest)
+          throw new ExhibitError('E_CONFLICT', 'Probe identity changed; refusing cleanup.');
+        await store.remove(slug, current.etag);
       }
+      checks.push({
+        name: 'cleanup',
+        status: 'pass',
+        message: 'Temporary origin probe is absent.',
+      });
+    } catch {
+      cleanupKey = objectKey(config, slug);
+      checks.push({
+        name: 'cleanup',
+        status: 'fail',
+        message:
+          'Probe cleanup could not be confirmed. Remove the reported non-sensitive cleanup_key manually.',
+      });
     }
   }
   return {

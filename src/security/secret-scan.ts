@@ -11,7 +11,7 @@ const RULES: readonly [string, RegExp][] = [
   ['aws-access-key', /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g],
   ['vercel-blob-token', /\bvercel_blob_rw_[A-Za-z0-9_]{20,}\b/g],
   ['private-key', /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/g],
-  ['bearer-token', /\bBearer\s+[A-Za-z0-9._~+\/-]{20,}={0,2}/gi],
+  ['bearer-token', /\bBearer\s+[A-Za-z0-9._~+/-]{20,}={0,2}/gi],
   [
     'assigned-secret',
     /\b(?:aws_secret_access_key|api_secret|client_secret)\s*[=:]\s*["']?[A-Za-z0-9/+_=-]{20,}/gi,
