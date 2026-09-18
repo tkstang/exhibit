@@ -69,8 +69,9 @@ configuration accounts for this: do not append the prefix again. Explicit `.html
 URLs need no CloudFront Function or index-document rewrite.
 
 The [proposed bucket layout](../../../docs/bucket-layout.md) adds repository/project
-namespaces and an optional `internal/` route convention. This Terraform example
-does not implement VPN or Basic Auth restrictions. All paths under its configured
+namespaces with two proposed access policies: gate only `internal/`, or gate
+everything except `public/`. This Terraform example implements neither policy
+and does not configure VPN or Basic Auth restrictions. All paths under its configured
 prefix, including `internal/`, use the public viewer endpoint. Do not publish
 unencrypted internal content until a separately reviewed access gate is in place.
 

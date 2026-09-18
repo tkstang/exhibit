@@ -1,7 +1,7 @@
 # Proposed bucket layout
 
-This is one way to organize Exhibit artifacts, not a required layout or a deployed
-access policy. The CLI supports these paths today. Your hosting infrastructure must
+These are proposed ways to organize Exhibit artifacts, not required layouts or deployed
+access policies. The CLI supports these paths today. Your hosting infrastructure must
 provide and verify any VPN or Basic Auth restrictions before you rely on them.
 
 ## One root for exhibits
@@ -73,7 +73,9 @@ the same relative directory convention works under that root.
 
 ## Keep routing and encryption separate
 
-The proposed delivery policy has two route classes:
+The first proposed delivery policy has two route classes. The
+[public-directory alternative](#alternative-public-directory-only) below reverses
+which routes require infrastructure authentication; choose one policy per deployment.
 
 - Paths outside `/internal/` require no VPN or Basic Auth. Recipients receive an
   encrypted page and use its Exhibit password to read it.
@@ -120,27 +122,81 @@ returned slug when managing the artifact. `list` shows immediate artifacts only;
 listing the root does not inventory every repository or project. Receipts for
 same-named artifacts in different directories remain separate.
 
-## Before deploying the route split
+## Alternative: public directory only
+
+Instead of restricting only `/internal/`, require VPN access or Basic Auth for
+every route except descendants of `/public/`. This makes external sharing an
+explicit destination choice; the root and any new directories remain gated by
+the default infrastructure policy.
+
+With the same `exhibits/` root and [example config](../examples/config/namespaced.json):
+
+```text
+s3://replace-me-artifacts/exhibits/
+  repositories/<repo-name>/<slug>.html         VPN or Basic Auth
+  projects/<project-name>/<slug>.html           VPN or Basic Auth
+  standalone/<slug>.html                       VPN or Basic Auth
+  public/
+    repositories/<repo-name>/<slug>.html       No VPN or Basic Auth
+    projects/<project-name>/<slug>.html         No VPN or Basic Auth
+    standalone/<slug>.html                     No VPN or Basic Auth
+```
+
+For example, `--dir public/repositories/exhibit --slug review` produces key
+`exhibits/public/repositories/exhibit/review.html` and URL
+`https://share.example.com/public/repositories/exhibit/review.html`.
+`--dir repositories/exhibit` produces the corresponding gated path without
+`public/`. Omitting `--dir` also targets a gated route under this proposal.
+
+```bash
+# Externally accessible route, still encrypted with an Exhibit password.
+xbt --config ./exhibit-config.json publish plan.md \
+  --dir public/repositories/exhibit --json
+
+# Gated route, also encrypted by default.
+xbt --config ./exhibit-config.json publish report.html \
+  --dir projects/redesign --json
+
+# Gated route without artifact encryption, after verifying the gate.
+xbt --config ./exhibit-config.json publish report.html \
+  --dir projects/redesign --no-encrypt --json
+```
+
+`public/` is only a routing convention. It does not disable encryption. Conversely,
+`--public` is the legacy alias for `--no-encrypt`; it does **not** select the
+`public/` directory or bypass VPN/Basic Auth. Using `--no-encrypt` under `public/`
+would make the document readable without either kind of credential.
+
+The infrastructure must gate every unmatched route and exempt only the intended
+`/public/` subtree. Do not use a loose prefix match that also exempts `/publicity/`
+or `/public-other/`. Keep bare `/public` gated unless you deliberately configure a
+redirect to `/public/`. Verify normalized paths and rewrites cannot use the public
+exception to reach objects outside `exhibits/public/`. This alternative replaces
+the earlier public-by-default policy; it does not add an exception to that policy.
+
+## Before deploying either route split
 
 The supplied [AWS Terraform example](../examples/terraform/aws/README.md) creates a
-private origin behind a public viewer endpoint. It does **not** implement this
+private origin behind a public viewer endpoint. It does **not** implement either
 VPN/Basic Auth split. An `internal/` path on that unmodified deployment is publicly
 fetchable, just like every other path beneath its configured prefix.
 
 For a mixed-access deployment, review the owning infrastructure configuration and:
 
-1. Enforce the internal gate on `/internal` and all its descendants, including
-   normalized and encoded path variants. Do not let another rewrite expose the
-   same internal object through an unprotected URL.
+1. Enforce the chosen policy: gate `/internal` and its descendants for the first
+   design, or gate every route except the `/public/` subtree for the alternative.
+   Test normalized and encoded path variants. Do not let another rewrite expose
+   the same gated object through an unprotected URL.
 2. Keep the origin private and prevent bypasses through direct storage access,
    alternate CDN hostnames, or unrelated viewer routes. Keep archives outside the
    viewer's allowed object prefixes.
 3. Preserve the gate for cached responses as well as origin requests. Use Exhibit's
    required delivery/security headers and reviewed cache behavior on both routes.
 4. After an approved deployment, test non-sensitive fixtures from outside VPN and
-   from VPN. Confirm internal requests without VPN access or valid Basic Auth are
+   from VPN. Confirm gated requests without VPN access or valid Basic Auth are
    denied, authorized requests work, and encrypted pages still require their
-   artifact passwords.
+   artifact passwords. For the public-directory alternative, also test the root,
+   a newly named directory, and public-looking sibling paths.
 
 `doctor` checks the configured root; it does not accept `--dir` or prove VPN/Basic
 Auth enforcement. `doctor --probe` writes and deletes a fixture and needs explicit
