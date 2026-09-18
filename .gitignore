@@ -1,4 +1,21 @@
-
+node_modules/
+dist/
+.preview/
+.skills/
+playwright-report/
+test-results/
+coverage/
+.env
+.env.*
+!.env.example
+.mcp.json
+.exhibit/
+*.tgz
+.DS_Store
+**/.terraform/
+**/terraform.tfstate*
+**/*.tfplan
+**/terraform.tfvars
 
 # OAT core
 .oat/config.local.json

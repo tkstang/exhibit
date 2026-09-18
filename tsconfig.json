@@ -1,0 +1,59 @@
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": [
+      "ES2024",
+      "DOM"
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "#core/*": [
+        "./src/core/*.ts"
+      ],
+      "#commands/*": [
+        "./src/commands/*.ts"
+      ],
+      "#artifacts/*": [
+        "./src/artifacts/*.ts"
+      ],
+      "#render/*": [
+        "./src/render/*.ts"
+      ],
+      "#security/*": [
+        "./src/security/*.ts"
+      ],
+      "#storage/*": [
+        "./src/storage/*.ts"
+      ],
+      "#state/*": [
+        "./src/state/*.ts"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "tests",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}

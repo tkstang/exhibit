@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "storage": {
+    "provider": "s3",
+    "bucket": "artifacts",
+    "region": "auto",
+    "prefix": "exhibit/",
+    "endpoint": "https://replace-with-your-s3-api-endpoint.example",
+    "forcePathStyle": false
+  },
+  "publicBaseUrl": "https://share.example.com"
+}

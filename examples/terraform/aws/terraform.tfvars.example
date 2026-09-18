@@ -1,0 +1,8 @@
+bucket_name = "replace-with-a-globally-unique-exhibit-bucket"
+region      = "us-east-1"
+prefix      = "exhibit/"
+
+# Optional; use an existing validated certificate in us-east-1.
+# domain_name         = "share.example.com"
+# acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/replace-me"
+# route53_zone_id     = "Z0000000000000"

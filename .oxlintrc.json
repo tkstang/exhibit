@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "import"
+  ],
+  "env": {
+    "node": true,
+    "es2024": true,
+    "browser": true
+  },
+  "rules": {
+    "no-console": "error",
+    "eqeqeq": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "typescript/no-explicit-any": "error"
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    ".preview/**",
+    ".skills/**",
+    "playwright-report/**",
+    "test-results/**"
+  ]
+}

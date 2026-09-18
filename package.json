@@ -1,0 +1,80 @@
+{
+  "name": "@tkstang/exhibit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Publish Markdown and standalone HTML as encrypted, browser-viewable artifacts on S3.",
+  "license": "MIT",
+  "author": "Thomas Stang",
+  "type": "module",
+  "bin": {
+    "exhibit": "./dist/cli.js",
+    "xbt": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "imports": {
+    "#core/*": "./dist/core/*.js",
+    "#commands/*": "./dist/commands/*.js",
+    "#artifacts/*": "./dist/artifacts/*.js",
+    "#render/*": "./dist/render/*.js",
+    "#security/*": "./dist/security/*.js",
+    "#storage/*": "./dist/storage/*.js",
+    "#state/*": "./dist/state/*.js"
+  },
+  "files": [
+    "dist",
+    "assets",
+    "skills",
+    "docs",
+    "examples",
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "tools/install-hooks.mjs"
+  ],
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11 <12"
+  },
+  "packageManager": "pnpm@11.8.0",
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsc -p tsconfig.build.json && node tools/check-build.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint && node tools/check-contracts.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "pnpm build && playwright test",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm format:check",
+    "prepare": "node tools/install-hooks.mjs",
+    "prepack": "pnpm build",
+    "preview": "pnpm build && node tools/preview.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1135.0",
+    "zod": "^4.4.3",
+    "marked": "^18.0.5",
+    "sanitize-html": "^2.17.0",
+    "staticrypt": "3.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "@types/sanitize-html": "^2.16.0",
+    "@playwright/test": "^1.55.0",
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "oxfmt": "0.55.0",
+    "oxlint": "^1.70.0",
+    "tsx": "^4.22.4",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.9"
+  }
+}

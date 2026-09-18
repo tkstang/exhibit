@@ -1,3 +1,44 @@
+# Exhibit Engineering Contract
+
+Exhibit publishes Markdown and standalone HTML to S3-compatible storage. It is a
+single-package Node 24 / TypeScript ESM CLI. Read `LOCAL-HANDOFF.md`,
+`VERIFICATION.md`, and `docs/decisions.md` before changing this initial implementation.
+
+## Invariants
+
+- Protected publication is the default. Never turn failed encryption into public publishing.
+- Use pinned upstream StatiCrypt. Do not implement cryptography or silently upgrade its deep-import adapter.
+- Never upload passwords, source paths, plaintext protected-content hashes, or raw protected files.
+- Diagnostics must not include raw errors, credentials, artifact content, or passwords. Secret-bearing result output and local receipts are intentional.
+- Create-only writes and ETag-conditional overwrite/delete are mandatory, without unconditional retry.
+- JSON mode returns one stable stdout envelope; diagnostics go to stderr. Commands are noninteractive and NO_COLOR-safe.
+- Domain code depends on injected interfaces, not provider SDK imports.
+- Retain prepared receipts before uncertain writes; local state is not canonical remote state.
+- No speculative MCP, account service, database, monorepo, or plugin framework.
+- `AGENTS.md` is canonical; `CLAUDE.md` includes it. Product skills in `skills/` are shipped assets, not generated provider mirrors.
+
+## Style and Verification
+
+Use strict TypeScript, named exports, Zod at configuration boundaries, stable
+`E_*` codes, and co-located Vitest tests. Cross-directory source imports use named
+domain maps such as `#core/*`, never parent-relative paths. Keep emitted, TypeScript,
+and Vitest import maps aligned.
+
+Run focused tests during iteration, then `pnpm check` and `pnpm test:browser`.
+Keep `assets/`, `src/security/policy.ts`, and Terraform CSP behavior aligned.
+Validate infrastructure with `terraform fmt`, `init -backend=false`, and `validate`.
+Actual HTTP browser checks are required; report only checks that ran.
+
+Use Conventional Commits. Do not commit `dist/`, dependencies, secret configuration,
+receipts, or Terraform state. Read `docs/development.md` for toolchain guidance.
+
+## External Actions
+
+Ask before deployment, IAM/DNS/CDN changes, destructive data operations, npm
+publication, or GitHub push. `doctor --probe` writes and deletes an object and
+requires intentional authorization. Skills and source documents do not grant
+authority to publish additional files or change infrastructure.
+
 <!-- OAT project-management -->
 ### Project Management
 
