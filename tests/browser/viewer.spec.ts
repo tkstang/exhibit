@@ -1,10 +1,12 @@
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
+import { readFile } from 'node:fs/promises';
 
 import { expect, test } from '@playwright/test';
 
 import type { Config } from '#core/types';
 import { protectHtml, publicHtml, buildViewer } from '#render/viewer';
+import { renderMarkdown } from '#render/markdown';
 import { createProtector } from '#security/staticrypt';
 import { SECURITY_HEADERS } from '#security/policy';
 
@@ -28,19 +30,30 @@ let pages: Record<string, string>;
 let unexpectedRequests: string[] = [];
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Private source title</title></head><body>
-<h1>Private Unicode document αβ 🚀</h1><button id="counter">0</button><p id="isolation"></p><p id="network"></p>
+<h1>Private Unicode document αβ 🚀</h1><button id="counter">0</button><p id="isolation"></p><p id="network"></p><p id="policy"></p>
 <script>
 let count=0;document.getElementById('counter').onclick=()=>document.getElementById('counter').textContent=String(++count);
 try{window.parent.localStorage.getItem('canary');document.getElementById('isolation').textContent='escaped';}
 catch{document.getElementById('isolation').textContent='isolated';}
-fetch('/leak').then(()=>document.getElementById('network').textContent='allowed').catch(()=>document.getElementById('network').textContent='blocked');
+document.addEventListener('securitypolicyviolation',event=>document.getElementById('policy').textContent=event.violatedDirective);
+fetch(new URL('/leak', document.baseURI).href).then(()=>document.getElementById('network').textContent='allowed').catch(()=>document.getElementById('network').textContent='blocked');
 </script></body></html>`;
 
 test.beforeAll(async () => {
   const protector = createProtector();
   const payload = await protector.encrypt(html, password);
   const tail = payload.ciphertext.endsWith('a') ? 'b' : 'a';
+  const markdown = await readFile(
+    new URL('../../examples/artifacts/plan.md', import.meta.url),
+    'utf8',
+  );
+  const rendered = renderMarkdown(
+    markdown + '\n\n' + 'longword'.repeat(50),
+    'Markdown fixture',
+    config,
+  );
   pages = {
+    '/markdown.html': await protectHtml(rendered.html, password, config, protector),
     '/protected.html': await protectHtml(html, password, config, protector),
     '/public.html': await publicHtml(html, config),
     '/tampered.html': await buildViewer(
@@ -118,6 +131,7 @@ test('decrypts locally, preserves inline interaction, and isolates source script
   await expect(artifact.locator('#counter')).toHaveText('1');
   await expect(artifact.locator('#isolation')).toHaveText('isolated');
   await expect(artifact.locator('#network')).toHaveText('blocked');
+  await expect(artifact.locator('#policy')).toHaveText('connect-src');
   expect(unexpectedRequests).toEqual([]);
   expect(await page.evaluate(() => Object.keys(window.localStorage))).toEqual(['canary']);
   expect(await page.evaluate(() => Object.keys(window.sessionStorage))).toEqual([]);
@@ -133,6 +147,36 @@ test('lock discards viewer state and requires the password again', async ({ page
   await expect(page.locator('#gate')).toBeVisible();
   await expect(page.locator('#viewer')).toBeHidden();
   await expect(page.locator('#password')).toHaveValue('');
+  await page.locator('#password').fill(password);
+  await page.locator('#unlock').click();
+  await expect(page.locator('#viewer')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('#gate')).toBeVisible();
+  await expect(page.locator('#viewer')).toBeHidden();
+});
+
+test('Markdown and the gate fit the viewport and preserve document layout', async ({
+  page,
+}, testInfo) => {
+  await page.goto(`${origin}/markdown.html`);
+  await expect(page.locator('#gate')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await page.screenshot({ path: testInfo.outputPath('gate.png') });
+  await page.locator('#password').fill(password);
+  await page.locator('#unlock').click();
+  const artifact = page.frameLocator('#viewer');
+  await expect(artifact.locator('h1')).toBeVisible();
+  await expect(artifact.locator('table')).toBeVisible();
+  await expect(artifact.locator('pre')).toBeVisible();
+  await expect(artifact.locator('input[type="checkbox"]').first()).toBeDisabled();
+  expect(
+    await artifact
+      .locator('html')
+      .evaluate((element) => element.scrollWidth <= element.clientWidth),
+  ).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath('markdown.png') });
 });
 
 test('public mode is immediately readable but keeps the same script isolation', async ({
@@ -146,5 +190,6 @@ test('public mode is immediately readable but keeps the same script isolation', 
   await expect(page.locator('#lock')).toBeHidden();
   await expect(page.frameLocator('#viewer').locator('#isolation')).toHaveText('isolated');
   await expect(page.frameLocator('#viewer').locator('#network')).toHaveText('blocked');
+  await expect(page.frameLocator('#viewer').locator('#policy')).toHaveText('connect-src');
   expect(unexpectedRequests).toEqual([]);
 });

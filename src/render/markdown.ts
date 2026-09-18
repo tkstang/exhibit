@@ -128,7 +128,7 @@ export function renderMarkdown(source: string, title: string, config: Config): R
 :root{color-scheme:light dark;--bg:#fbfcfd;--paper:#fff;--fg:#18212f;--muted:#5c6a79;--line:#e1e7ee;--code:#f1f5f8;--accent:${accent}}
 @media(prefers-color-scheme:dark){:root{--bg:#111720;--paper:#18212d;--fg:#e4ebf4;--muted:#a0aebd;--line:#303d4e;--code:#202c3a;--accent:#5eead4}}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.75 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.document{max-width:920px;margin:56px auto;padding:44px 52px;background:var(--paper);border:1px solid var(--line);border-radius:16px}
+.document{max-width:920px;margin:56px auto;padding:44px 52px;background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow-wrap:break-word}
 .eyebrow{font-size:12px;font-weight:650;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:28px}
 h1,h2,h3,h4,h5,h6{line-height:1.25;letter-spacing:-.025em;scroll-margin-top:24px}h1{font-size:2.3em;margin:0 0 28px}h2{font-size:1.55em;margin-top:42px;padding-bottom:10px;border-bottom:1px solid var(--line)}h3{font-size:1.18em;margin-top:30px}
 p{margin:0 0 18px}a{color:var(--accent);text-underline-offset:3px}pre,code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em}code{background:var(--code);padding:.12em .35em;border-radius:4px}pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:20px;overflow:auto;line-height:1.65}pre code{padding:0;background:none}
