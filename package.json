@@ -17,6 +17,8 @@
     "examples/artifacts/*.md",
     "examples/artifacts/*.html",
     "examples/config/*.json",
+    "examples/skills/share-exhibit/SKILL.md",
+    "examples/skills/share-exhibit/references/exhibit-config.json",
     "examples/terraform/aws/*.tf",
     "examples/terraform/aws/.terraform.lock.hcl",
     "examples/terraform/aws/README.md",

@@ -24,6 +24,14 @@ absolute local paths. This keeps copied skill procedures small without breaking
 relative links or maintaining a second copy of the deployment instructions.
 A source-only checkout can use its own README/docs before the CLI is built.
 
+## Organization wrappers
+
+For an organization-owned destination, use the
+[wrapper guide and example](organization-skill.md). It bundles `SKILL.md` with
+`references/exhibit-config.json` for the bucket, URL, prefix, and brand. The wrapper
+adds audience/directory rules and follows the installed publishing procedure.
+It does not provision infrastructure or replace IAM/CDN access controls.
+
 ## CLI protocol
 
 Every `--json` invocation emits exactly one envelope, including help/version/errors.

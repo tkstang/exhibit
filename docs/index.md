@@ -11,6 +11,7 @@
 - [Fastly](fastly.md)
 - [S3-compatible storage](s3-compatible.md)
 - [Agent usage and skills](agent-usage.md)
+- [Organization wrapper skill](organization-skill.md)
 - [CLI contract](cli.md)
 - [Architecture](architecture.md)
 - [Decisions](decisions.md)

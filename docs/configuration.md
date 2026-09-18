@@ -43,6 +43,49 @@ HTTPS, except explicit loopback HTTP for local development, and rejects URL user
 query strings, and fragments. The default input limit is 2 MiB, configurable up to
 10 MiB. Encryption and encoding increase the final HTML size.
 
+## Branding
+
+Set `brand.name` and `brand.accent` in the config passed through `--config`:
+
+```json
+"brand": {
+  "name": "Example Organization",
+  "accent": "#1459a6"
+}
+```
+
+This is a fragment of the complete configuration above. The name must contain
+1-80 characters after trimming; the accent must be a six-digit hexadecimal color
+such as `#1459a6`. Defaults are `Exhibit` and `#0f766e`. `init --brand-name` sets
+the name when creating a config; set the accent in JSON. There are no per-publish
+branding flags. An [organization wrapper skill](organization-skill.md) can bundle
+these fields with its deployment config.
+
+| Where                       | Brand behavior                                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------- |
+| Password screen             | Configured name and accent on the outer viewer, for either source type                            |
+| Viewer toolbar              | Configured name for both Markdown and HTML; protected mode also has an accent-colored Lock button |
+| Generated Markdown document | Configured name above the content; accent on links and blockquotes in light mode                  |
+| Authored standalone HTML    | Its original markup and styles remain unchanged inside the sandboxed viewer                       |
+
+Both input types produce hosted HTML pages, so branding is not limited to HTML
+source files. `--no-encrypt` skips the password screen, but the viewer still shows
+the configured brand name. In Markdown dark mode, the document currently uses a
+fixed teal accent (`#5eead4`); the outer viewer uses the configured accent in both
+color modes. Choose an accent that remains legible in both themes.
+
+Current branding is limited to a name and accent, not a full theme system. There
+are no config options for a logo, fonts, custom CSS, gate copy, or removing the
+Markdown footer's "Published with Exhibit" attribution. For a custom-designed
+document, author self-contained HTML with its own styles and embedded assets;
+the outer viewer and sandbox/CSP restrictions still apply.
+
+The brand name is visible before entering a password. Do not put confidential
+project names in it. The outer page title remains generic, `Protected exhibit`
+or `Public exhibit`; it does not reveal the source title before unlocking.
+Branding is embedded at publication time. Editing the config does not update
+existing artifacts; an update requires explicit republication/overwrite.
+
 ## URL and prefix mapping
 
 The public base URL maps to the configured object prefix. Exhibit does not append

@@ -25,8 +25,11 @@ try {
     'VERIFICATION.md',
     'LOCAL-HANDOFF.md',
     'docs/security-model.md',
+    'docs/organization-skill.md',
     'skills/exhibit-publish/SKILL.md',
     'skills/exhibit-setup/SKILL.md',
+    'examples/skills/share-exhibit/SKILL.md',
+    'examples/skills/share-exhibit/references/exhibit-config.json',
     'examples/terraform/aws/main.tf',
     'tools/install-hooks.mjs',
   ])
@@ -60,6 +63,12 @@ try {
     const pkg = JSON.parse(await readFile('./package.json', 'utf8'));
     assert.equal(pkg.bin.exhibit, pkg.bin.xbt);
     const config = parseConfig({storage: {bucket: 'fixture-bucket', region: 'us-east-1'}, publicBaseUrl: 'https://example.test'});
+    const organizationConfig = parseConfig(JSON.parse(await readFile('./examples/skills/share-exhibit/references/exhibit-config.json', 'utf8')));
+    assert.equal(organizationConfig.storage.prefix, 'exhibits/');
+    assert.equal(organizationConfig.brand.name, 'Example Organization');
+    const skill = await readFile('./examples/skills/share-exhibit/SKILL.md', 'utf8');
+    assert.ok(skill.startsWith('---\\nname: share-exhibit\\n'));
+    assert.ok(skill.includes('references/exhibit-config.json'));
     const html = await protectHtml('<p>packed private fixture</p>', 'packed-fixture-password', config, createProtector());
     assert.ok(html.includes('exhibit-payload'));
     assert.ok(!html.includes('packed private fixture'));
