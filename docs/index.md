@@ -4,6 +4,7 @@
 
 - [Getting started](getting-started.md)
 - [Configuration](configuration.md)
+- [Proposed bucket layout and internal routes](bucket-layout.md)
 - [Security model](security-model.md)
 - [S3 and existing infrastructure](s3.md)
 - [CloudFront](cloudfront.md)

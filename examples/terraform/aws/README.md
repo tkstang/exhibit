@@ -68,6 +68,12 @@ The default prefix is `exhibit/`. CloudFront origin_path is `/exhibit`, so
 configuration accounts for this: do not append the prefix again. Explicit `.html`
 URLs need no CloudFront Function or index-document rewrite.
 
+The [proposed bucket layout](../../../docs/bucket-layout.md) adds repository/project
+namespaces and an optional `internal/` route convention. This Terraform example
+does not implement VPN or Basic Auth restrictions. All paths under its configured
+prefix, including `internal/`, use the public viewer endpoint. Do not publish
+unencrypted internal content until a separately reviewed access gate is in place.
+
 ## Custom domain
 
 Set `domain_name` and an existing validated `acm_certificate_arn` together. CloudFront

@@ -84,6 +84,10 @@ origin rewrites, use separate matching configurations; `--dir` is not a routing
 table and does not switch deployments. Receipt identity includes the effective
 directory, so use the same `--dir` for subsequent management commands.
 
+See the [proposed bucket layout](bucket-layout.md) for repository/project namespaces,
+a matching [example config](../examples/config/namespaced.json), and the separate
+infrastructure requirements for `/internal/` routes.
+
 ## Credentials
 
 Exhibit supplies no `credentials` option to the AWS SDK. Use the normal provider

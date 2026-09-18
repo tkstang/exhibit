@@ -129,6 +129,11 @@ disables it; `--public` remains a compatibility alias. Naming a directory `inter
 does not restrict access: VPN/Basic Auth must already be enforced by your hosting
 infrastructure. See [directory scope](docs/cli.md#directory-and-encryption).
 
+For a suggested `exhibits/` hierarchy and matching config, see the
+[proposed bucket layout](docs/bucket-layout.md). It includes repository/project
+namespaces and public versus internal route examples, without assuming those
+access rules are already deployed.
+
 Overwrites are explicit and conditional on the observed ETag. Deletion is limited
 to a recognized Exhibit artifact at an exact slug. There is no bucket-wide delete.
 

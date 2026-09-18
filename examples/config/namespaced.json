@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "storage": {
+    "provider": "s3",
+    "bucket": "replace-me-artifacts",
+    "region": "us-east-1",
+    "prefix": "exhibits/",
+    "forcePathStyle": false
+  },
+  "publicBaseUrl": "https://share.example.com"
+}
