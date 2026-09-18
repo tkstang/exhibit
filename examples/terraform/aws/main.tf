@@ -1,6 +1,6 @@
 locals {
   prefix = var.prefix == "" ? "" : "${trimsuffix(var.prefix, "/")}/"
-  csp    = join("; ", [
+  csp = join("; ", [
     "default-src 'none'", "script-src 'unsafe-inline'", "style-src 'unsafe-inline'",
     "img-src data:", "font-src data:", "media-src data: blob:",
     "frame-src 'self' blob:", "connect-src 'none'", "object-src 'none'",
@@ -137,7 +137,7 @@ resource "aws_cloudfront_distribution" "artifacts" {
 
   viewer_certificate {
     cloudfront_default_certificate = var.domain_name == null
-    acm_certificate_arn             = var.acm_certificate_arn
+    acm_certificate_arn            = var.acm_certificate_arn
     ssl_support_method             = var.domain_name == null ? null : "sni-only"
     minimum_protocol_version       = var.domain_name == null ? "TLSv1" : "TLSv1.2_2021"
   }
