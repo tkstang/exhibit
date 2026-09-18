@@ -11,6 +11,7 @@ and password with the intended recipients.
 ## Contents
 
 - [Getting started](getting-started.md)
+- [Install and verify Exhibit](installation.md)
 - [Configuration](configuration.md)
 - [CLI reference](cli.md)
 - [Security model](security-model.md)

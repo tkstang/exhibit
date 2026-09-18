@@ -9,6 +9,8 @@
     ".oat/**",
     "AGENTS.md",
     "dist/**",
+    "skills/**",
+    "plugins/exhibit/**",
     "node_modules/**",
     ".preview/**",
     ".skills/**",

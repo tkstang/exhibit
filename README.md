@@ -153,6 +153,7 @@ supported but can expose the secret in shell history and process arguments.
 - AWS SDK v3 storage, conditional updates, paginated listing, and local-only receipts.
 - Agent-first JSON CLI with stable error codes and no interactive prompts.
 - [Publishing](skills/exhibit-publish/SKILL.md) and [setup](skills/exhibit-setup/SKILL.md) agent skills.
+- Self-contained standalone skill bundles and an [agent plugin](docs/user-guide/agents/agent-usage.md#plugin-distribution), generated from `src/skills/` with bundled references and CLI preflight guidance.
 - An [organization wrapper example](docs/user-guide/agents/organization-skill.md) with bundled deployment and branding config.
 - [AWS Terraform](examples/terraform/aws/README.md), Fastly guidance, and S3-compatible notes.
 - Unit/contract tests, browser tests, a local preview, and [development guidance](docs/engineering/development.md).

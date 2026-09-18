@@ -27,10 +27,15 @@ The skill resolves the config relative to its installed directory and passes an
 absolute `--config` path, so it works from any project checkout. Moving the JSON
 to the skill root also works if its instructions change to match.
 
-The wrapper locates the installed canonical publishing procedure through
+The wrapper first checks for a working `exhibit` or `xbt` CLI. If neither is
+available, it stops and directs the user to `exhibit-setup` or the organization's
+approved installation procedure; it does not install automatically.
+
+Once the CLI is available, the wrapper locates the installed publishing procedure through
 `exhibit --version --json` and `data.resources.skills`. It reads that procedure as
 instructions rather than depending on a host-specific skill invocation command.
-This avoids maintaining a second copy of Exhibit's general publishing workflow.
+That procedure has its own bundled references and does not require the Exhibit
+checkout. This avoids maintaining a second copy of Exhibit's general publishing workflow.
 
 ## Adapt and distribute
 

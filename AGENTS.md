@@ -15,7 +15,7 @@ and `docs/engineering/decisions.md` before changing the implementation.
 - Domain code depends on injected interfaces, not provider SDK imports.
 - Retain prepared receipts before uncertain writes; local state is not canonical remote state.
 - No speculative MCP, account service, database, monorepo, or plugin framework.
-- `AGENTS.md` is canonical; `CLAUDE.md` includes it. Product skills in `skills/` are shipped assets, not generated provider mirrors.
+- `AGENTS.md` is canonical; `CLAUDE.md` includes it. Author product skills in `src/skills/` and plugin manifests in `src/plugin/`. `skills/` and `plugins/exhibit/` are generated distribution assets, not development-provider mirrors. Run `pnpm skills:build` after source/reference edits; never hand-edit generated copies.
 
 ## Style and Verification
 

@@ -29,10 +29,14 @@ maintainer must adapt these directory rules before distribution.
 
 ## Step 1: Load the installed publishing procedure
 
-Run `exhibit --version --json`. Read `exhibit-publish/SKILL.md` beneath the returned
-`data.resources.skills` path and `user-guide/cli.md` beneath `data.resources.docs`. Follow that
-publishing procedure with this wrapper's explicit config and destination policy.
-If Exhibit or the required `--dir` option is unavailable, stop and request setup.
+Run `exhibit --version --json`, or `xbt --version --json` if the first command is
+unavailable. Require a successful version envelope and inspect that executable's
+`--help --json` for the needed flags. Read `exhibit-publish/SKILL.md` beneath the
+returned `data.resources.skills` path and follow its bundled references using
+this wrapper's explicit config and destination policy.
+If Exhibit or the required `--dir` option is unavailable, stop and direct the user
+to the installed `exhibit-setup` skill and its installation guide. If setup is not
+installed, request the organization's approved CLI installation procedure.
 Do not install software, deploy infrastructure, or run `doctor --probe` implicitly.
 
 ## Step 2: Confirm the source and audience

@@ -13,6 +13,12 @@ formatting, build, 110 Vitest tests in 20 files, and 12 real HTTP Chromium tests
 Package verification checks the packed resources, both binary entrypoints, and
 an encrypted viewer rendered from the extracted package.
 
+Eight additional Node tests check skill bundle parity, isolated relocation,
+reference closure, stale-output detection, symlink refusal, and setup contract
+details. Package verification also checks every standalone/plugin bundle byte
+against its source-derived output and relocates each packed skill independently.
+These checks do not establish installation or discovery in a live agent host.
+
 The browser suite uses desktop and mobile viewport sizes. It covers correct/wrong
 passwords, tampering, source isolation, blocked network access, inline HTML
 interaction, lock/reload, plaintext mode, and layout. Mobile Chromium viewport

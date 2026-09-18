@@ -27,7 +27,7 @@ for (const path of await files('src')) {
   );
 }
 for (const name of ['exhibit-publish', 'exhibit-setup']) {
-  const text = await readFile(`skills/${name}/SKILL.md`, 'utf8');
+  const text = await readFile(`src/skills/${name}/SKILL.md`, 'utf8');
   assert.ok(text.startsWith(`---\nname: ${name}\n`));
   assert.match(text, /\ndescription: .+/);
   assert.ok(text.includes('exhibit'));

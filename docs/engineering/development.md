@@ -106,13 +106,36 @@ The pre-commit hook runs lint, typecheck, and formatting checks without modifyin
 files. The commit-msg hook enforces Conventional Commits. `GIT_HOOKS=0` is an explicit
 escape hatch; the full validation remains required before handoff.
 
-`AGENTS.md` and its `CLAUDE.md` include are present. Product skills under `skills/`
+`AGENTS.md` and its `CLAUDE.md` include are present. Product skills under `src/skills/`
 are independent of any OAT development workflow. Run your normal `oat init` locally
 if you want OAT development skills; the archive does not pre-create lifecycle trees.
 
 `prepare` installs hooks only when the package root has its own `.git` directory or
 file, supporting linked worktrees without changing an ancestor repository. It
 reports configuration failures. After `git init`, run `pnpm prepare` deliberately.
+
+## Skill bundles
+
+Edit `src/skills/<name>/SKILL.md` and its supporting files, not the generated
+`skills/` or `plugins/exhibit/` copies. Edit plugin manifests under `src/plugin/`.
+The shared installation guide lives in `docs/user-guide/installation.md`; the
+builder copies it into each skill and rewrites its source link to the bundled
+reference. Other skill references must stay within that skill's directory.
+Use Markdown links and images rather than raw HTML. Bundles allow web/email links
+but reject filesystem URLs and other URL schemes.
+
+```bash
+pnpm skills:build
+pnpm skills:check
+pnpm test:skills
+```
+
+Commit source and generated outputs together. The builder rejects symlinks and
+missing/escaping references, validates inputs before updating outputs, and removes
+obsolete files only inside its generated destinations. `skills:check` is read-only
+and fails on drift; both lint/CI and npm prepack require it. Bundle tests relocate
+each skill to an unrelated temporary directory and check its local references.
+They do not claim an actual provider-host installation or live publication.
 
 ## Documentation authoring
 

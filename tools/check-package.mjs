@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readdir, realpath, rm, stat, symlink } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, readdir, realpath, rm, stat, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { expectedBundles, inventory, skillNames, validateBundle } from './package-skills.mjs';
 
 const directory = await mkdtemp(join(tmpdir(), 'exhibit-package-'));
 try {
@@ -55,6 +56,17 @@ try {
   const extracted = spawnSync('tar', ['-xzf', archive, '-C', directory], { encoding: 'utf8' });
   assert.equal(extracted.status, 0, extracted.stderr);
   const packageRoot = join(directory, 'package');
+  for (const [path, bytes] of await expectedBundles()) {
+    assert.ok(files.includes(`package/${path}`), `Missing packaged skill resource: ${path}`);
+    assert.deepEqual(await readFile(join(packageRoot, path)), bytes, `Bundle drift: ${path}`);
+  }
+  for (const name of skillNames) {
+    for (const distribution of ['skills', 'plugins/exhibit/skills']) {
+      const isolated = await mkdtemp(join(directory, 'isolated-skill-'));
+      await cp(join(packageRoot, distribution, name), isolated, { recursive: true });
+      validateBundle(await inventory(isolated));
+    }
+  }
   await symlink(
     fileURLToPath(new URL('../node_modules', import.meta.url)),
     join(packageRoot, 'node_modules'),
