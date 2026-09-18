@@ -1,0 +1,22 @@
+{
+  "singleQuote": true,
+  "semi": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "printWidth": 100,
+  "ignorePatterns": [
+    ".oat/**",
+    "AGENTS.md",
+    "dist/**",
+    "skills/**",
+    "plugins/exhibit/**",
+    "node_modules/**",
+    ".preview/**",
+    ".skills/**",
+    "pnpm-lock.yaml",
+    "examples/terraform/**",
+    "test-results/**",
+    "playwright-report/**"
+  ]
+}

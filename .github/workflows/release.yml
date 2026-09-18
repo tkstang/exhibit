@@ -1,0 +1,74 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+  # Select the existing tag as the workflow ref when recovering a failed release.
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: exhibit-release
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      AWS_EC2_METADATA_DISABLED: 'true'
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - name: Require tag event/ref
+        run: test "$GITHUB_REF_TYPE" = tag
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm release:validate --tag "$RELEASE_TAG" --out "$RUNNER_TEMP/exhibit-release"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: exhibit-release
+          path: ${{ runner.temp }}/exhibit-release/
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    needs: validate
+    if: ${{ vars.NPM_RELEASE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+      NPM_CONFIG_PROVENANCE: ${{ github.event.repository.visibility == 'public' }}
+      NPM_RELEASE_ENABLED: ${{ vars.NPM_RELEASE_ENABLED }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: exhibit-release
+          path: ${{ runner.temp }}/exhibit-release/
+      - name: Publish exact validated archive with npm OIDC
+        run: node tools/release/publish.ts "$RUNNER_TEMP/exhibit-release"
+      - name: Create or recover GitHub Release from changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          output="$RUNNER_TEMP/exhibit-release"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" --notes-file "$output/release-notes.md"
+            gh release upload "$RELEASE_TAG" "$output"/*.tgz "$output/SHA256SUMS" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$output"/*.tgz "$output/SHA256SUMS" \
+              --verify-tag --title "Release $RELEASE_TAG" --notes-file "$output/release-notes.md"
+          fi

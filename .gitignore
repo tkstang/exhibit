@@ -1,0 +1,31 @@
+node_modules/
+dist/
+.preview/
+.skills/
+playwright-report/
+test-results/
+coverage/
+.env
+.env.*
+!.env.example
+.mcp.json
+.claude/settings.local.json
+.cursor/mcp.json
+.exhibit/
+*.tgz
+.release/
+.DS_Store
+**/.terraform/
+**/terraform.tfstate*
+**/*.tfplan
+**/terraform.tfvars
+
+# OAT core
+.oat/config.local.json
+.oat/state.md
+.oat/projects/local/**
+.oat/projects/archived/**
+.oat/projects/synced/*/
+!.oat/projects/local/.gitkeep
+!.oat/projects/archived/.gitkeep
+# END OAT core

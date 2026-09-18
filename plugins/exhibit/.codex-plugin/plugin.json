@@ -1,0 +1,20 @@
+{
+  "name": "exhibit",
+  "version": "0.2.0",
+  "description": "Set up Exhibit and publish encrypted Markdown or standalone HTML artifacts.",
+  "author": { "name": "Thomas Stang" },
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Exhibit",
+    "shortDescription": "Set up and publish with Exhibit.",
+    "longDescription": "Configure approved artifact hosting and publish selected documents with encryption enabled by default.",
+    "developerName": "Thomas Stang",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Set up Exhibit for my approved hosting destination.",
+      "Publish this document with Exhibit."
+    ]
+  }
+}

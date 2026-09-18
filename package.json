@@ -1,0 +1,111 @@
+{
+  "name": "@tkstang/exhibit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Publish Markdown and standalone HTML as encrypted, browser-viewable artifacts on S3.",
+  "homepage": "https://github.com/tkstang/exhibit#readme",
+  "bugs": {
+    "url": "https://github.com/tkstang/exhibit/issues"
+  },
+  "license": "MIT",
+  "author": "Thomas Stang",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkstang/exhibit.git"
+  },
+  "bin": {
+    "exhibit": "./dist/cli.js",
+    "xbt": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "assets",
+    "skills",
+    "plugins/exhibit",
+    "docs",
+    "examples/artifacts/*.md",
+    "examples/artifacts/*.html",
+    "examples/config/*.json",
+    "examples/skills/share-exhibit/SKILL.md",
+    "examples/skills/share-exhibit/references/exhibit-config.json",
+    "examples/terraform/aws/*.tf",
+    "examples/terraform/aws/.terraform.lock.hcl",
+    "examples/terraform/aws/README.md",
+    "examples/terraform/aws/terraform.tfvars.example",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "tools/git-hooks/install.mjs"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "imports": {
+    "#core/*": "./dist/core/*.js",
+    "#commands/*": "./dist/commands/*.js",
+    "#artifacts/*": "./dist/artifacts/*.js",
+    "#render/*": "./dist/render/*.js",
+    "#security/*": "./dist/security/*.js",
+    "#storage/*": "./dist/storage/*.js",
+    "#state/*": "./dist/state/*.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsc -p tsconfig.build.json && node tools/verification/build.ts",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.tools.json",
+    "lint": "oxlint && node tools/verification/contracts.ts && pnpm skills:check && pnpm docs:check",
+    "skills:build": "node tools/packaging/skills.ts",
+    "skills:check": "node tools/packaging/skills.ts --check",
+    "test:skills": "node --test tools/packaging/skills.test.ts",
+    "test:release": "node --test tools/release/release.test.ts",
+    "release:validate": "pnpm check && pnpm test:browser && node tools/release/prepare.ts",
+    "docs:check": "node tools/verification/docs.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "pnpm build && playwright test",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:skills && pnpm test:release && pnpm build && pnpm format:check",
+    "prepare": "node tools/git-hooks/install.mjs",
+    "worktree:init": "bash scripts/worktree/init.sh",
+    "worktree:validate": "bash scripts/worktree/validate.sh",
+    "test:package": "node tools/packaging/package.ts",
+    "prepack": "pnpm skills:check && pnpm build",
+    "preview": "pnpm build && node tools/preview/server.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1135.0",
+    "marked": "^18.0.5",
+    "sanitize-html": "^2.17.0",
+    "staticrypt": "3.5.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.13.2",
+    "@types/sanitize-html": "^2.16.0",
+    "oxfmt": "0.55.0",
+    "oxlint": "^1.70.0",
+    "tsx": "^4.22.4",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11 <12"
+  },
+  "packageManager": "pnpm@11.8.0"
+}
