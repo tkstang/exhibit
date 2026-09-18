@@ -14,8 +14,8 @@ Basic Auth off VPN; private DNS routes VPN/VPC clients through the internal ALB
 without Basic Auth. Both delivery paths add the common `exhibits/` origin prefix
 exactly once. Encryption stays on by default in every directory.
 
-Generic documentation lives in [bucket layout](../../../../docs/bucket-layout.md)
-and [CloudFront split DNS](../../../../docs/cloudfront.md#split-dns-delivery-example).
+Generic documentation lives in [bucket layout](../../../../docs/user-guide/deployment/bucket-layout.md)
+and [CloudFront split DNS](../../../../docs/user-guide/deployment/cloudfront.md#split-dns-delivery-example).
 Organization-specific deployment values and AWS profile instructions belong in
 the organization-owned wrapper skill's `references/exhibit-config.json` and
 `SKILL.md`, not Exhibit's generic defaults. No credentials belong in either file.

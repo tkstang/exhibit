@@ -1,3 +1,8 @@
+---
+title: 'Existing Fastly and S3'
+description: 'Reuse a reviewed private-S3 origin and verify path mapping and delivery.'
+---
+
 # Existing Fastly + S3
 
 Exhibit does not require CloudFront. The client uploads to S3 and returns the base

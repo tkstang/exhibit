@@ -30,7 +30,7 @@ maintainer must adapt these directory rules before distribution.
 ## Step 1: Load the installed publishing procedure
 
 Run `exhibit --version --json`. Read `exhibit-publish/SKILL.md` beneath the returned
-`data.resources.skills` path and `cli.md` beneath `data.resources.docs`. Follow that
+`data.resources.skills` path and `user-guide/cli.md` beneath `data.resources.docs`. Follow that
 publishing procedure with this wrapper's explicit config and destination policy.
 If Exhibit or the required `--dir` option is unavailable, stop and request setup.
 Do not install software, deploy infrastructure, or run `doctor --probe` implicitly.

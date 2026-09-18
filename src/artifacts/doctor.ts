@@ -135,7 +135,7 @@ export async function doctor(
           message:
             actual === expected
               ? 'Matches the reference policy.'
-              : 'Missing or differs from the reference policy. Review docs/security-model.md.',
+              : 'Missing or differs from the reference policy. Review docs/user-guide/security-model.md.',
         });
       }
       checks.push({

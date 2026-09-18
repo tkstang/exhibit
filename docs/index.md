@@ -1,22 +1,15 @@
+---
+title: Exhibit documentation
+description: Publish and share single-file artifacts, configure hosting, and contribute to Exhibit.
+---
+
 # Exhibit documentation
+
+Exhibit publishes Markdown and standalone HTML to your own storage. Start with
+the [getting-started guide](user-guide/getting-started.md), then read the
+[security model](user-guide/security-model.md) before sharing sensitive content.
 
 ## Contents
 
-- [Getting started](getting-started.md)
-- [Configuration](configuration.md)
-- [Proposed bucket layout and public/internal routes](bucket-layout.md)
-- [Security model](security-model.md)
-- [S3 and existing infrastructure](s3.md)
-- [CloudFront](cloudfront.md)
-- [Split-DNS delivery and verification](cloudfront.md#split-dns-delivery-example)
-- [Fastly](fastly.md)
-- [S3-compatible storage](s3-compatible.md)
-- [Agent usage and skills](agent-usage.md)
-- [Organization wrapper skill](organization-skill.md)
-- [CLI contract](cli.md)
-- [Architecture](architecture.md)
-- [Decisions](decisions.md)
-- [Troubleshooting](troubleshooting.md)
-- [Development and release](development.md)
-- [Source references](sources.md)
-- [Validation report](../VERIFICATION.md)
+- [User guide](user-guide/index.md): installation, commands, agents, and hosting.
+- [Engineering](engineering/index.md): implementation, development, and verification.

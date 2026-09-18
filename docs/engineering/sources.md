@@ -1,3 +1,8 @@
+---
+title: 'Source references'
+description: 'Upstream projects and documentation that informed the implementation.'
+---
+
 # Source references and validation boundaries
 
 Implementation inputs were checked on 2026-09-17.
@@ -17,21 +22,12 @@ Implementation inputs were checked on 2026-09-17.
 - TypeScript release information: https://devblogs.microsoft.com/typescript/
 - pnpm installation: https://pnpm.io/installation
 
-## Actual crypto source used in offline checks
+## Attribution and verification
 
-The temporary verification harness used these exact upstream Git blobs, with
-Git object SHA-1 calculated from `blob <length>\0<bytes>` and matched before use:
+Hushdrop inspired the workflow; Exhibit does not redistribute its source files.
+Protected artifacts embed the pinned StatiCrypt browser implementation and its
+license. See [third-party notices](../../THIRD-PARTY-NOTICES.md) for attribution.
 
-| Path                  | Bytes | Git blob SHA                               |
-| --------------------- | ----: | ------------------------------------------ |
-| `lib/cryptoEngine.js` |  7776 | `db81afd43f95c49e522ad33075728eb16da8d9e7` |
-| `lib/codec.js`        |  3960 | `1772181fce9748e2808fde7c146b6a4f7937fe0b` |
-
-Those temporary source copies are not shipped as an alternative dependency. The
-application requires the pinned `staticrypt` package from its normal installation.
-
-Repository source metadata is not a resolved npm package installation. Package
-registry resolution, dependency audit, Node24/TS7/Oxc/Vitest validation, and provider
-Terraform validation remain local release tasks when unavailable in the creation
-environment. See [VERIFICATION.md](../VERIFICATION.md) for executed results rather
-than inferring them from this references list.
+Source references are not acceptance evidence. See [verification](verification.md)
+for tested environments, reproducible checks, and remaining deployment work.
+Historical source-generation checks remain in Git history.

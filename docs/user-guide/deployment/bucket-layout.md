@@ -1,3 +1,8 @@
+---
+title: 'Bucket layout and route policies'
+description: 'Organize artifacts and keep infrastructure access rules separate from encryption.'
+---
+
 # Proposed bucket layout
 
 These are proposed ways to organize Exhibit artifacts, not required layouts or deployed
@@ -44,7 +49,7 @@ is not a reason to combine those ownership boundaries.
 
 ## Match the storage root and URL
 
-The [namespaced config example](../examples/config/namespaced.json) uses:
+The [namespaced config example](../../../examples/config/namespaced.json) uses:
 
 ```json
 {
@@ -131,7 +136,7 @@ Require VPN access or Basic Auth for every route except descendants of `/public/
 This makes external sharing an explicit destination choice; the root and any new
 directories remain gated by the default infrastructure policy.
 
-With the same `exhibits/` root and [example config](../examples/config/namespaced.json):
+With the same `exhibits/` root and [example config](../../../examples/config/namespaced.json):
 
 ```text
 s3://replace-me-artifacts/exhibits/
@@ -193,7 +198,7 @@ An `internal/` name alone never restricts access.
 
 ## Before deploying either route split
 
-The supplied [AWS Terraform example](../examples/terraform/aws/README.md) creates a
+The supplied [AWS Terraform example](../../../examples/terraform/aws/README.md) creates a
 private origin behind a public viewer endpoint. It does **not** implement either
 VPN/Basic Auth split. An `internal/` path on that unmodified deployment is publicly
 fetchable, just like every other path beneath its configured prefix.
@@ -210,7 +215,7 @@ For a mixed-access deployment, review the owning infrastructure configuration an
 3. Preserve the gate for cached responses as well as origin requests. Use Exhibit's
    required delivery/security headers and reviewed cache behavior on both routes,
    including any private-DNS path that bypasses the public CDN. See
-   [delivery header requirements](security-model.md#browser-isolation-and-network-policy).
+   [delivery header requirements](../security-model.md#browser-isolation-and-network-policy).
 4. After an approved deployment, test non-sensitive fixtures from outside VPN and
    from VPN. Confirm gated requests without VPN access or valid Basic Auth are
    denied, authorized requests work, and encrypted pages still require their

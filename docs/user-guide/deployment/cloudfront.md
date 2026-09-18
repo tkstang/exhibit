@@ -1,8 +1,13 @@
+---
+title: 'CloudFront and split DNS'
+description: 'Configure signed origin reads and verify public and VPN delivery paths.'
+---
+
 # CloudFront
 
 ## New deployment
 
-Use [examples/terraform/aws](../examples/terraform/aws/README.md). It deploys a
+Use [examples/terraform/aws](../../../examples/terraform/aws/README.md). It deploys a
 private regional S3 origin, CloudFront OAC signed reads, all-zero cache TTLs,
 response security headers, HTTPS redirects, and GET/HEAD-only viewer behavior.
 
@@ -48,7 +53,7 @@ Both paths: /projects/demo/review.html
         -> s3://replace-me-artifacts/exhibits/projects/demo/review.html
 ```
 
-Use the [namespaced config](../examples/config/namespaced.json) with storage prefix
+Use the [namespaced config](../../../examples/config/namespaced.json) with storage prefix
 `exhibits/` and base URL `https://share.example.com`. CloudFront adds origin path
 `/exhibits`; the ALB path rewrite adds the same prefix exactly once. The client
 config and resulting URLs do not change when the publisher joins the VPN.
@@ -66,7 +71,7 @@ paths, dot segments, duplicate slashes, and public-looking siblings such as
 `/publicity/`. Never forward the viewer's Basic Auth credentials to S3.
 
 The private ALB route bypasses CloudFront response headers. It must provide the
-[viewer security headers](security-model.md#browser-isolation-and-network-policy)
+[viewer security headers](../security-model.md#browser-isolation-and-network-policy)
 too, particularly HTTP `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
 VPN reachability does not prevent another website from framing the viewer in a
 VPN-connected browser. Preserve inline HTML delivery and reviewed no-store/cache

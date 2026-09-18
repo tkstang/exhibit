@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readdir, rm, stat, symlink } from 'node:fs/promises';
+import { mkdtemp, readdir, realpath, rm, stat, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,9 +22,14 @@ try {
     'assets/staticrypt-license.txt',
     'LICENSE',
     'THIRD-PARTY-NOTICES.md',
-    'VERIFICATION.md',
-    'docs/security-model.md',
-    'docs/organization-skill.md',
+    'docs/index.md',
+    'docs/engineering/verification.md',
+    'docs/user-guide/index.md',
+    'docs/user-guide/agents/index.md',
+    'docs/user-guide/deployment/index.md',
+    'docs/engineering/index.md',
+    'docs/user-guide/security-model.md',
+    'docs/user-guide/agents/organization-skill.md',
     'skills/exhibit-publish/SKILL.md',
     'skills/exhibit-setup/SKILL.md',
     'examples/skills/share-exhibit/SKILL.md',
@@ -33,6 +38,13 @@ try {
     'tools/install-hooks.mjs',
   ])
     assert.ok(files.includes(`package/${required}`), `Missing packaged resource: ${required}`);
+  for (const page of await readdir(new URL('../docs/', import.meta.url), { recursive: true })) {
+    if (page.endsWith('.md'))
+      assert.ok(
+        files.includes(`package/docs/${page.replaceAll('\\', '/')}`),
+        `Missing packaged doc: ${page}`,
+      );
+  }
   for (const file of files) {
     assert.doesNotMatch(
       file,
@@ -48,6 +60,18 @@ try {
     join(packageRoot, 'node_modules'),
     'junction',
   );
+  const version = spawnSync(process.execPath, ['dist/cli.js', '--version', '--json'], {
+    cwd: packageRoot,
+    encoding: 'utf8',
+  });
+  assert.equal(version.status, 0, version.stderr);
+  const resources = JSON.parse(version.stdout).data.resources;
+  assert.equal(
+    await realpath(join(resources.docs, 'index.md')),
+    await realpath(join(packageRoot, 'docs/index.md')),
+  );
+  for (const page of ['user-guide/cli.md', 'engineering/verification.md'])
+    assert.ok((await stat(join(resources.docs, page))).isFile());
   const smoke = spawnSync(
     process.execPath,
     [

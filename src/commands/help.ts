@@ -66,5 +66,5 @@ Examples:
   xbt list --dir internal/reviews --json
 
 No account, database, service deployment, or MCP server is required.
-Read docs/security-model.md before sharing sensitive material.
+Read docs/user-guide/security-model.md before sharing sensitive material.
 `;

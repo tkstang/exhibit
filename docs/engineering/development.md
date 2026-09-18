@@ -1,3 +1,8 @@
+---
+title: 'Development and release'
+description: 'Run local checks, use worktrees and hooks, and prepare an intentional release.'
+---
+
 # Development and release
 
 ## Toolchain
@@ -109,14 +114,28 @@ if you want OAT development skills; the archive does not pre-create lifecycle tr
 file, supporting linked worktrees without changing an ancestor repository. It
 reports configuration failures. After `git init`, run `pnpm prepare` deliberately.
 
+## Documentation authoring
+
+Keep consumer instructions under `docs/user-guide/` and implementation/contribution
+guidance under `docs/engineering/`. Use plain `.md` unless a future site needs an
+interactive component. Each page has `title` and `description` frontmatter; each
+directory has an `index.md` with a `## Contents` list linking its immediate pages
+and child indexes. Use relative links with `.md` extensions.
+
+When moving a page, update links, CLI diagnostic paths, packaged skills, and
+package checks in the same change. `pnpm docs:check` validates local links, page
+metadata, navigation coverage, and docs paths in source/skills. Keep historical
+session reports in Git history or repository records, not the product docs.
+This structure can support a future Fumadocs site; no site runtime is installed.
+
 ## Deliberate npm release
 
 Opening or merging a source PR does not publish the package or qualify a hosting
 deployment. Before source merge, require review and green PR CI, which runs the
 strict checks, HTTP browser suite, package verification, and reference Terraform
 validation. Keep `private: true` until a separate npm release is approved. Track
-live provider and route qualification in `VERIFICATION.md`; complete the
-[delivery-path checks](cloudfront.md#verify-each-delivery-path) before relying on
+live provider and route qualification in `docs/engineering/verification.md`; complete the
+[delivery-path checks](../user-guide/deployment/cloudfront.md#verify-each-delivery-path) before relying on
 the work deployment for sensitive content.
 
 Review the implementation/security checks and dependency licenses; commit a genuine

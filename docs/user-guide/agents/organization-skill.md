@@ -1,3 +1,8 @@
+---
+title: 'Organization wrapper skill'
+description: 'Bundle organization destinations, sharing rules, and branding around the CLI.'
+---
+
 # Organization wrapper skill
 
 An organization can distribute a small skill that selects its Exhibit deployment
@@ -7,7 +12,7 @@ does not need another CLI or service.
 
 ## Example bundle
 
-The [share-exhibit example](../examples/skills/share-exhibit/SKILL.md) contains:
+The [share-exhibit example](../../../examples/skills/share-exhibit/SKILL.md) contains:
 
 ```text
 share-exhibit/
@@ -32,13 +37,13 @@ This avoids maintaining a second copy of Exhibit's general publishing workflow.
 Before distributing the bundle in your organization's skills repo:
 
 1. Replace the bucket, region, prefix, and URL placeholders in
-   [the config](../examples/skills/share-exhibit/references/exhibit-config.json)
+   [the config](../../../examples/skills/share-exhibit/references/exhibit-config.json)
    with the reviewed deployment values. Set its `brand` fields as described below.
 2. Confirm the route policy in `SKILL.md`. The example uses the
-   [public-directory-only proposal](bucket-layout.md#public-directory-only):
+   [public-directory-only proposal](../deployment/bucket-layout.md#public-directory-only):
    everything requires VPN or Basic Auth except `/public/` descendants.
    This is an example assumption, not a deployed gate.
-   The [split-DNS example](cloudfront.md#split-dns-delivery-example) shows how one
+   The [split-DNS example](../deployment/cloudfront.md#split-dns-delivery-example) shows how one
    hostname can serve the same keys through public and VPN delivery paths.
 3. Document the approved AWS profile/SSO setup in the organization-owned skill.
    Profile names can be non-secret instructions; credentials, passwords, and
@@ -91,5 +96,5 @@ Branding belongs in the same bundled JSON, not in Terraform or a separate skill 
 Both Markdown and standalone HTML become hosted HTML pages. The configured brand
 appears in the shared viewer, and Markdown also gets a branded generated document.
 Exhibit preserves a standalone HTML document's own design inside that viewer.
-See [branding behavior and limitations](configuration.md#branding) for the exact
+See [branding behavior and limitations](../configuration.md#branding) for the exact
 scope, including dark mode and information visible before decryption.

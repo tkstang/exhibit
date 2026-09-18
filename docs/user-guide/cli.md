@@ -1,3 +1,8 @@
+---
+title: 'CLI reference'
+description: 'Commands, flags, directory scope, JSON output, and exit codes.'
+---
+
 # CLI contract
 
 `exhibit --help` is the authoritative option inventory. `xbt` is an installed

@@ -1,3 +1,8 @@
+---
+title: 'Security model'
+description: 'Encryption, browser isolation, local secrets, and hosting trust boundaries.'
+---
+
 # Security model
 
 ## What is protected
@@ -23,7 +28,7 @@ browser using the password you give them.
 Exhibit does not implement its own cipher, KDF, or MAC. The adapter invokes
 StatiCrypt's pinned upstream codec and embeds its actual browser implementation.
 Its source uses AES-CBC with HMAC-SHA256 and the upstream password-derivation
-procedure. See [source references](sources.md). A salt is public, not a password.
+procedure. See [source references](../engineering/sources.md). A salt is public, not a password.
 
 Encryption happens in memory, avoiding plaintext temporary files and passwords in
 subprocess arguments. Generated passwords use 24 random bytes encoded as base64url
@@ -53,7 +58,7 @@ S3 artifact upload. Every delivery path must enforce them, including a private
 ALB reached through split DNS that bypasses the CDN. A VPN does not prevent
 cross-origin framing by a website visited in a VPN-connected browser. Check
 actual responses and browser framing behavior on both paths; see the
-[split-DNS verification procedure](cloudfront.md#verify-each-delivery-path).
+[split-DNS verification procedure](deployment/cloudfront.md#verify-each-delivery-path).
 
 This is **not** a guarantee that hostile HTML is harmless. A malicious document can
 mislead its viewer, offer harmful downloads, or entice outbound navigation. Popups
@@ -89,7 +94,7 @@ bugs. **Base64 is not encryption. Anyone can decode it without a password.**
 
 Infrastructure can separately restrict who receives the viewer. A `/public/`
 directory does not disable encryption, and an `internal/` name does not enforce
-authentication. See the [route policy examples](bucket-layout.md).
+authentication. See the [route policy examples](deployment/bucket-layout.md).
 
 The scanner warns for protected publishing and blocks high-signal matches in public
 mode unless `--allow-secrets` is explicitly supplied. `--strict-secrets` blocks
@@ -158,5 +163,5 @@ URLs are discovery controls, not authorization.
 
 Run the installed dependency checks and the browser suite, validate/plan Terraform,
 and exercise `doctor --probe` and a manual private-window unlock against the real
-CDN. Review [VERIFICATION.md](../VERIFICATION.md). No real AWS deployment or
+CDN. Review [verification](../engineering/verification.md). No real AWS deployment or
 independent audit is implied by the source archive.

@@ -1,3 +1,8 @@
+---
+title: 'Getting started'
+description: 'Install Exhibit, configure a destination, and publish a first artifact.'
+---
+
 # Getting started
 
 ## 1. Build the source
@@ -23,9 +28,9 @@ CI should use `pnpm install --frozen-lockfile`.
 
 ## 2. Pick an infrastructure path
 
-For a new AWS installation, use the [Terraform example](../examples/terraform/aws/README.md).
-For an existing S3 bucket and CDN, use [S3](s3.md) plus [CloudFront](cloudfront.md)
-or [Fastly](fastly.md). Avoid creating a second distribution when a safe dedicated
+For a new AWS installation, use the [Terraform example](../../examples/terraform/aws/README.md).
+For an existing S3 bucket and CDN, use [S3](deployment/s3.md) plus [CloudFront](deployment/cloudfront.md)
+or [Fastly](deployment/fastly.md). Avoid creating a second distribution when a safe dedicated
 artifact hostname can be added to existing infrastructure.
 
 A publisher needs AWS credentials; a viewer does not. Viewers visit the CDN, not

@@ -1,3 +1,8 @@
+---
+title: 'S3-compatible storage'
+description: 'Configure alternate endpoints and qualify conditional storage operations.'
+---
+
 # S3-compatible storage
 
 The transport supports a custom API `endpoint`, `region`, and `forcePathStyle`.

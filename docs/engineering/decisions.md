@@ -1,3 +1,8 @@
+---
+title: 'Implementation decisions'
+description: 'Rationale for the package structure, crypto adapter, rendering, and lifecycle.'
+---
+
 # Implementation decisions
 
 ## Keep it small
@@ -28,7 +33,7 @@ predictable GFM rendering and hooks; sanitize-html applies an explicit tag/attri
 policy. Raw HTML inside Markdown is escaped, images are omitted in single-file mode,
 and safe absolute links open outside the sandbox. This costs two focused runtime
 dependencies instead of building a sanitizer or introducing a larger pipeline.
-A real installed-dependency rendering check remains required; see VERIFICATION.md.
+Installed-dependency rendering checks are part of the [verification gate](verification.md).
 
 ## No hidden overwrites or revocation claims
 
@@ -61,9 +66,8 @@ command presented as read-only.
 
 ## Dependency currency
 
-Foundations' runtime/toolchain conventions were read as directional inputs. Node24,
-TS7, pnpm11, Zod4, Vitest4, and Oxc are the intended profile. Source metadata was
-checked, including AWS SDK v3 and StatiCrypt, but the offline container could not
-resolve npm dependency versions, build a genuine lockfile, or run the installed
-toolchain. That limitation is recorded, not papered over with fabricated pins or
-an unverified lockfile. See [sources](sources.md) and [verification](../VERIFICATION.md).
+Foundations' runtime/toolchain conventions informed the Node 24, TypeScript 7,
+pnpm 11, Zod 4, Vitest 4, and Oxc setup. The genuine committed lockfile and frozen
+CI install make dependency resolution reproducible. AWS SDK and StatiCrypt pins
+require intentional review before changing. See [sources](sources.md) and
+[verification](verification.md) for references and tested boundaries.

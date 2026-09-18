@@ -37,7 +37,7 @@ export class ExhibitError extends Error {
   ) {
     super(message);
     this.code = code;
-    this.hint = options.hint ?? 'Run exhibit --help or consult docs/troubleshooting.md.';
+    this.hint = options.hint ?? 'Run exhibit --help or consult docs/user-guide/troubleshooting.md.';
     this.exitCode = options.exitCode ?? 1;
     this.details = options.details;
   }
@@ -56,6 +56,6 @@ export function normalizeError(error: unknown): ExhibitError {
   if (isExhibitError(error)) return error;
   return new ExhibitError('E_UNEXPECTED', 'An unexpected operation failed.', {
     exitCode: 2,
-    hint: 'Reproduce with a non-sensitive fixture. See docs/troubleshooting.md; do not post secrets.',
+    hint: 'Reproduce with a non-sensitive fixture. See docs/user-guide/troubleshooting.md; do not post secrets.',
   });
 }

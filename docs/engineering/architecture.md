@@ -1,3 +1,8 @@
+---
+title: 'Architecture'
+description: 'Understand the CLI, rendering, storage, and local-state boundaries.'
+---
+
 # Architecture
 
 ```text

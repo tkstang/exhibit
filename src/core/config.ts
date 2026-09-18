@@ -84,7 +84,7 @@ export function parseConfig(value: unknown): Config {
   const result = ConfigSchema.safeParse(value);
   if (!result.success) {
     throw new ExhibitError('E_CONFIG', 'Invalid Exhibit configuration.', {
-      hint: 'See docs/configuration.md. Credentials do not belong in Exhibit config.',
+      hint: 'See docs/user-guide/configuration.md. Credentials do not belong in Exhibit config.',
       // Report field paths only, never invalid values or unknown property names.
       details: {
         invalidFields: result.error.issues.map((issue) => issue.path.join('.') || '(root)'),

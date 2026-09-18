@@ -55,7 +55,7 @@ export function translateS3Error(error: unknown): ExhibitError {
       'E_BUCKET_ACCESS',
       'The bucket or object operation was denied or the bucket is unavailable.',
       {
-        hint: 'Check the bucket, region, prefix, and publisher IAM policy. See docs/s3.md.',
+        hint: 'Check the bucket, region, prefix, and publisher IAM policy. See docs/user-guide/deployment/s3.md.',
       },
     );
   }
@@ -64,7 +64,7 @@ export function translateS3Error(error: unknown): ExhibitError {
       'E_STORAGE',
       'This S3-compatible server does not support a required conditional operation.',
       {
-        hint: 'Exhibit will not retry an unconditional write/delete. See docs/s3-compatible.md.',
+        hint: 'Exhibit will not retry an unconditional write/delete. See docs/user-guide/deployment/s3-compatible.md.',
       },
     );
   }

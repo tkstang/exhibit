@@ -26,7 +26,6 @@
     "README.md",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
-    "VERIFICATION.md",
     "tools/install-hooks.mjs"
   ],
   "type": "module",
@@ -51,7 +50,8 @@
     "dev": "tsx src/cli.ts",
     "build": "tsc -p tsconfig.build.json && node tools/check-build.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint && node tools/check-contracts.mjs",
+    "lint": "oxlint && node tools/check-contracts.mjs && pnpm docs:check",
+    "docs:check": "node tools/check-docs.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:browser": "pnpm build && playwright test",

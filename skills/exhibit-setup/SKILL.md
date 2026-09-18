@@ -16,8 +16,8 @@ configuration. Never provision resources or weaken bucket protections silently.
 
 Try `exhibit --version --json` or `xbt --version --json`. Use
 `data.resources.docs` and `data.resources.terraform` for the canonical files.
-When starting from source, read its README, `VERIFICATION.md`, and
-`docs/development.md`, install the pinned toolchain, run local checks, and build
+When starting from source, read its README, `docs/engineering/verification.md`, and
+`docs/engineering/development.md`, install the pinned toolchain, run local checks, and build
 before linking the binaries. Do not assume an npm release exists.
 
 ## Determine the existing environment
@@ -27,15 +27,15 @@ region, dedicated hostname/base URL, and how the CDN maps its origin prefix.
 Read existing non-secret config and authorized infrastructure files first when they
 can answer those questions. Never request credentials in chat or put them in JSON.
 
-Choose the appropriate documentation path:
+Choose the appropriate path beneath `data.resources.docs`:
 
-- Existing AWS S3 + CloudFront: `s3.md`, `cloudfront.md`, `configuration.md`.
-- Existing S3 + Fastly: `s3.md`, `fastly.md`; preserve the existing reviewed signing model.
+- Existing AWS S3 + CloudFront: `user-guide/deployment/s3.md`, `user-guide/deployment/cloudfront.md`, `user-guide/configuration.md`.
+- Existing S3 + Fastly: `user-guide/deployment/s3.md`, `user-guide/deployment/fastly.md`; preserve the existing reviewed signing model.
 - New AWS stack: reference Terraform README, then a reviewed plan.
-- S3-compatible provider: `s3-compatible.md`; endpoint configuration alone is not private-CDN provisioning.
+- S3-compatible provider: `user-guide/deployment/s3-compatible.md`; endpoint configuration alone is not private-CDN provisioning.
 
-For mixed public/internal access, read `bucket-layout.md` and the split-DNS
-example in `cloudfront.md`. Confirm the route policy separately from encryption.
+For mixed public/internal access, read `user-guide/deployment/bucket-layout.md` and
+the split-DNS example in `user-guide/deployment/cloudfront.md`. Confirm the route policy separately from encryption.
 The primary example gates everything except `/public/` descendants. The shipped
 new-bucket Terraform does not implement VPN or Basic Auth. Verify the viewer's
 HTTP security headers on every delivery path, including an ALB that bypasses
@@ -71,7 +71,7 @@ warnings. A non-null `cleanup_key` needs identity-aware manual cleanup of that
 specific non-sensitive probe. Do not claim the deployment passed while hiding it.
 
 The probe checks the configured root, does not accept `--dir`, and cannot supply
-Basic Auth credentials. For split DNS, follow `cloudfront.md` to test the normal
+Basic Auth credentials. For split DNS, follow `user-guide/deployment/cloudfront.md` to test the normal
 config on VPN and a reviewed public-subtree config off VPN. Both probes need
 authorization. Separately test unauthorized/authorized gated requests and the
 public exception. Do not weaken a gate to make a probe pass.

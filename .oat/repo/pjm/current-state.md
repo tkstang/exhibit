@@ -7,10 +7,10 @@ sections another branch may also touch.
 
 ## Canonical References
 
-- [Verification](../../../VERIFICATION.md): current installed-toolchain results and remaining boundaries.
+- [Verification](../../../docs/engineering/verification.md): current installed-toolchain results and remaining boundaries.
 - [Deployment context](../reference/research/initial-deployment.md): selected public-directory-only direction and historical alternatives.
-- [Split-DNS example](../../../docs/cloudfront.md#split-dns-delivery-example): public/VPN mappings, security headers, and acceptance checks.
-- [Product decisions](../../../docs/decisions.md): initial implementation constraints.
+- [Split-DNS example](../../../docs/user-guide/deployment/cloudfront.md#split-dns-delivery-example): public/VPN mappings, security headers, and acceptance checks.
+- [Product decisions](../../../docs/engineering/decisions.md): initial implementation constraints.
 
 <!-- List durable repo references, source-of-truth docs, dashboards, or processes here.
 Decisions live in reference/decisions/ (one file per record); link them rather than
@@ -24,7 +24,8 @@ copying their content here. -->
 - Git hooks, worktree bootstrap/validation, and OAT archive settings aligned with existing personal repositories.
 - Reference Terraform initialized and validated locally; both CLI binary names installed on the Mini.
 - Directory-scoped publication/list/removal, explicit `--no-encrypt`, and organization wrapper/branding examples.
-- The `mvp` branch is pushed. Current local checks pass with 110 unit tests, 12 HTTP browser tests, and a 100-file package check.
+- The `mvp` branch is pushed. Local checks cover 110 unit tests, 12 HTTP browser tests, and the packed resources.
+- Documentation is organized under `docs/user-guide/` and `docs/engineering/`; the initial handoff and historical verification reports remain in Git history.
 
 <!-- Summarize shipped capabilities and important repo conventions here. -->
 

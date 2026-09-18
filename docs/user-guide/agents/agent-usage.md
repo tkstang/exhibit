@@ -1,3 +1,8 @@
+---
+title: 'Agent usage and skills'
+description: 'Use the installed publishing and setup procedures from an agent host.'
+---
+
 # Agent usage and skills
 
 ## Product skills

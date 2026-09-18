@@ -1,3 +1,8 @@
+---
+title: 'Troubleshooting'
+description: 'Diagnose configuration, publication, viewer, and cleanup failures.'
+---
+
 # Troubleshooting
 
 ## The command is not found
@@ -44,7 +49,7 @@ at the configured root and cannot send Basic Auth credentials. Under the
 public-directory-only policy, an off-VPN probe at that root reaches the Basic
 Auth gate even when S3 writes work.
 
-Follow the [per-path verification procedure](cloudfront.md#verify-each-delivery-path).
+Follow the [per-path verification procedure](deployment/cloudfront.md#verify-each-delivery-path).
 Use a reviewed public-subtree config for an authorized off-VPN probe; do not
 disable authentication, add credentials to the URL, or claim that one successful
 probe verified both routes. Check cleanup even when retrieval fails.

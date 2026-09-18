@@ -1,8 +1,8 @@
 # Exhibit Engineering Contract
 
 Exhibit publishes Markdown and standalone HTML to S3-compatible storage. It is a
-single-package Node 24 / TypeScript ESM CLI. Read `README.md`, `VERIFICATION.md`,
-and `docs/decisions.md` before changing the implementation.
+single-package Node 24 / TypeScript ESM CLI. Read `README.md`, `docs/engineering/verification.md`,
+and `docs/engineering/decisions.md` before changing the implementation.
 
 ## Invariants
 
@@ -30,7 +30,7 @@ Validate infrastructure with `terraform fmt`, `init -backend=false`, and `valida
 Actual HTTP browser checks are required; report only checks that ran.
 
 Use Conventional Commits. Do not commit `dist/`, dependencies, secret configuration,
-receipts, or Terraform state. Read `docs/development.md` for toolchain guidance.
+receipts, or Terraform state. Read `docs/engineering/development.md` for toolchain guidance.
 
 ## External Actions
 

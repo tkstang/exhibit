@@ -1,3 +1,8 @@
+---
+title: 'Configuration'
+description: 'Configure storage, viewer URLs, branding, and local state.'
+---
+
 # Configuration
 
 ## Locations
@@ -58,7 +63,7 @@ This is a fragment of the complete configuration above. The name must contain
 1-80 characters after trimming; the accent must be a six-digit hexadecimal color
 such as `#1459a6`. Defaults are `Exhibit` and `#0f766e`. `init --brand-name` sets
 the name when creating a config; set the accent in JSON. There are no per-publish
-branding flags. An [organization wrapper skill](organization-skill.md) can bundle
+branding flags. An [organization wrapper skill](agents/organization-skill.md) can bundle
 these fields with its deployment config.
 
 | Where                       | Brand behavior                                                                                    |
@@ -127,8 +132,8 @@ origin rewrites, use separate matching configurations; `--dir` is not a routing
 table and does not switch deployments. Receipt identity includes the effective
 directory, so use the same `--dir` for subsequent management commands.
 
-See the [proposed bucket layout](bucket-layout.md) for repository/project namespaces,
-a matching [example config](../examples/config/namespaced.json), and the separate
+See the [proposed bucket layout](deployment/bucket-layout.md) for repository/project namespaces,
+a matching [example config](../../examples/config/namespaced.json), and the separate
 infrastructure requirements for `/internal/` routes.
 
 ## Credentials
