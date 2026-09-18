@@ -1,5 +1,10 @@
 # Local handoff for Sol
 
+> Historical source-generation handoff. The Mini qualification is now recorded at
+> the top of `VERIFICATION.md`; its installed lockfile, build, browser, packaging,
+> and Terraform checks supersede the pending steps below. Cloud qualification is
+> still pending. Use `pnpm add -g .` with pnpm 11; `pnpm link --global` was removed.
+
 Exhibit's source implementation is present. This is the place to start after
 unzipping, not a request to redesign the product or add deferred services.
 
@@ -44,7 +49,7 @@ once the lockfile exists. `private: true` deliberately prevents accidental publi
 pnpm preview
 # Public and protected sample pages on localhost:8787.
 # Fixture password: exhibit-demo-password
-pnpm link --global
+pnpm add -g .
 exhibit --version --json
 xbt --help
 ```

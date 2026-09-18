@@ -1,4 +1,6 @@
 {
+  "report_scope": "historical_creation_environment",
+  "current_local_report": "../VERIFICATION.md",
   "report_date": "2026-09-17",
   "source_unit_tests": 97,
   "executed_runtime_tests": 85,

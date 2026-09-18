@@ -12,7 +12,7 @@ pnpm format
 pnpm check
 pnpm exec playwright install chromium
 pnpm test:browser
-pnpm link --global
+pnpm add -g .
 exhibit --version --json
 xbt --version
 ```

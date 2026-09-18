@@ -13,10 +13,9 @@ xbt publish design.md --json
 
 `exhibit` and `xbt` are two binaries pointing at the same entrypoint.
 
-> **Initial source release.** Read [VERIFICATION.md](VERIFICATION.md) before
-> deploying. The generation environment could not install npm dependencies or run
-> Terraform; the report distinguishes executed checks from local validation still
-> required. The implementation is present, not an empty scaffold.
+> **Locally validated initial release.** Node 24 build, installed-dependency tests,
+> desktop/mobile HTTP browser flows, package contents, and Terraform validation
+> pass. Live S3/CDN qualification is still pending. See [VERIFICATION.md](VERIFICATION.md).
 
 ## The model
 
@@ -40,12 +39,11 @@ archive does not claim that package has already been published to npm.
 
 ```bash
 cd exhibit
-pnpm install                  # First bootstrap creates pnpm-lock.yaml; review and commit it.
-pnpm format                   # Normalize the generated sources with the actual pinned Oxfmt.
+pnpm install --frozen-lockfile
 pnpm check
 pnpm exec playwright install chromium
 pnpm test:browser
-pnpm link --global            # Makes BOTH exhibit and xbt available.
+pnpm add -g .                 # Makes BOTH exhibit and xbt available with pnpm 11.
 ```
 
 `pnpm setup` may be needed to configure pnpm's global binary directory. Review
@@ -60,6 +58,9 @@ pnpm preview
 ```
 
 The demo password is only for the non-sensitive example.
+
+For a new checkout/worktree, `pnpm worktree:init` installs locked dependencies,
+configures hooks, builds, and refreshes project OAT views. See [Development](docs/development.md).
 
 ## Configure and publish
 

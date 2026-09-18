@@ -2,7 +2,7 @@
 
 ## The command is not found
 
-Build first, then `pnpm link --global`. Verify pnpm's global binary directory is on
+Build first, then `pnpm add -g .` (pnpm 11). Verify pnpm's global binary directory is on
 PATH. Both names are package binaries. `node dist/cli.js --help` bypasses global
 link setup. This initial archive is not a claim that an npm package was published.
 

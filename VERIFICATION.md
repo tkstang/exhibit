@@ -1,5 +1,44 @@
 # Verification report
 
+## Mini Installed-Toolchain Qualification
+
+**2026-09-17, macOS arm64.** The laptop source manifest passed before import.
+The historical generation report below is preserved separately from these results.
+
+| Check            | Actual local result                                                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Toolchain        | Node 24.18.0, pnpm 11.8.0, TypeScript 7.0.2, Oxfmt 0.55.0, Oxlint 1.83.0, Vitest 4.1.11                                                                           |
+| Install          | Genuine lockfile committed; frozen install passes; only esbuild build script enabled                                                                              |
+| Main gate        | Strict typecheck, lint/contracts, 103 Vitest tests in 19 files, build, format check pass                                                                          |
+| Browser          | 12 real HTTP Chromium tests pass across 1440x1000 desktop and 390x844 mobile viewports                                                                            |
+| Browser coverage | Correct/wrong password, tamper rejection, opaque iframe, actual connect-src violation, inline interaction, lock/reload, public mode, Markdown layout and overflow |
+| Crypto           | Actual StatiCrypt 3.5.4 round trips and browser source; full shipped license matches installed upstream license                                                   |
+| AWS SDK          | Pinned 3.1135.0 sends conditional PUT/DELETE headers over loopback HTTP; stale requests translate to conflicts with no unconditional retry                        |
+| Package          | Real pnpm pack inspected; 95 files include viewer assets, licenses, docs, both skills, Terraform source, and handoff/verification docs; no provider cache/state   |
+| CLI              | Both global names work via pnpm 11 `add -g .`; version JSON resource paths, help, and Markdown dry-run exercised                                                  |
+| OAT/worktrees    | init, pjm init/doctor, project sync, and worktree:init pass on this checkout; archive settings mirrored without cloud sync                                        |
+| Terraform        | fmt, init -backend=false, validate pass with AWS provider 6.65.0; provider lockfile committed                                                                     |
+| Dependency audit | pnpm audit --prod reports no known vulnerabilities at this check                                                                                                  |
+
+The browser tests write desktop/mobile gate and Markdown screenshots under ignored
+`test-results/`; screenshots were visually inspected. Chromium version is
+153.0.8010.12 (Playwright 1.63.0). These are Chromium mobile viewport checks, not
+native Safari or Android device qualification.
+
+An independent read-only Codex review identified a delayed-delete receipt race and
+unchecked parent symlinks. Both were fixed and covered by local regression tests,
+including a lost PUT response and actual symlink fixtures. The reviewer did not
+perform a third-party audit. Long Markdown text overflow and Terraform cache
+inclusion in package tarballs were also reproduced and fixed during this pass.
+
+Remaining: live S3/CDN/public DNS/VPN/Basic Auth qualification; Windows ACL/junction
+behavior; native-device browsers; power-loss durability and adversarial same-user
+filesystem races. No Terraform plan/apply, cloud probe, live artifact publication,
+npm publish, or Exhibit GitHub push ran. The only requested external code action
+was [Foundations PR #1](https://github.com/tkstang/foundations/pull/1).
+
+## Historical Creation-Environment Report
+
 **Initial source delivery, 2026-09-17.** This report records executed checks, not
 an assertion that every requested tool was available or that AWS was deployed.
 

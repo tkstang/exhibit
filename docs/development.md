@@ -24,17 +24,24 @@ it does not touch AWS. `pnpm dev -- --help` may vary in argument forwarding betw
 package-manager versions; the unambiguous source command is
 `pnpm exec tsx src/cli.ts --help`.
 
-## Initial archive and lockfile
+## Installed toolchain
 
-The creation environment lacked outbound npm access and the requested installed
-toolchain. A lockfile was not invented. The first local install must resolve actual
-packages, then the lockfile must be reviewed and committed. CI includes a clearly
-marked bootstrap path when no lockfile exists; after that first commit, remove the
-bootstrap branch and enforce `--frozen-lockfile` unconditionally before release.
+The committed lockfile was resolved with Node 24.18.0 and pnpm 11.8.0 on the Mini.
+CI uses `pnpm install --frozen-lockfile` unconditionally. StatiCrypt 3.5.4 and AWS
+SDK 3.1135.0 resolved without changing their pins. The explicit SDK pin is the only
+minimum-release-age exception; esbuild is the only allowed dependency build script.
+Strict release-age handling prevents automatic future exceptions.
 
-Oxfmt could not run in the generation environment. Run `pnpm format` first and
-inspect its diff. Full compiler/linter/real dependency/browser/Terraform checks must
-then run without treating the offline fallback checks as substitutes.
+Oxfmt has been run on the imported sources. OAT-generated files and managed
+`AGENTS.md` blocks are excluded so formatting cannot invalidate OAT's exact markers.
+The original delivery's `MANIFEST.sha256` is historical provenance for the laptop
+archive, not a checksum list for the subsequently edited Git tree.
+
+pnpm 11 uses `pnpm add -g .` to register local binaries; see the
+[pnpm migration note](https://pnpm.io/11.x/cli/link). Both installed binaries were
+exercised locally. `pnpm test:package` packs into temporary storage, rejects state
+and provider caches, checks resources, and renders an encrypted viewer from the
+extracted package using the installed dependencies.
 
 ## Testing boundaries
 
@@ -74,15 +81,33 @@ terraform validate
 Use an explicitly reviewed account/workspace and plan before any apply. The example
 creates resources and can incur charges. Nothing in `pnpm check` deploys anything.
 
-## Agent setup and Git hooks
+## Worktrees and Git hooks
+
+Use Node 24, then run `pnpm worktree:init` in the new checkout. It copies missing
+root-local environment/provider config from the main worktree without overwriting
+destination files, installs frozen dependencies, configures hooks, builds, and uses
+`oat local sync` plus project-only `oat sync` when OAT is available. The OAT config
+owns which local project paths are synchronized. Exhibit user config and password
+receipts are never copied by this bootstrap.
+
+Archive downloads are opt-in: `SYNC_S3_ARCHIVES=1 pnpm worktree:init`.
+`SKIP_S3_ARCHIVE_SYNC=1` takes precedence. Normal initialization performs no cloud
+probe or publication. Install Chromium separately with `pnpm exec playwright install chromium`.
+
+`pnpm worktree:validate` requires a clean tree and runs `check`, HTTP browser tests,
+and package verification, then checks cleanliness again.
+
+The pre-commit hook runs lint, typecheck, and formatting checks without modifying
+files. The commit-msg hook enforces Conventional Commits. `GIT_HOOKS=0` is an explicit
+escape hatch; the full validation remains required before handoff.
 
 `AGENTS.md` and its `CLAUDE.md` include are present. Product skills under `skills/`
 are independent of any OAT development workflow. Run your normal `oat init` locally
 if you want OAT development skills; the archive does not pre-create lifecycle trees.
 
-`prepare` installs the local conventional-commit hook only when this directory has
-its own `.git`. It does not mutate a parent repository's hook configuration. After
-`git init`, run `pnpm prepare` deliberately. There is no .git history in the ZIP.
+`prepare` installs hooks only when the package root has its own `.git` directory or
+file, supporting linked worktrees without changing an ancestor repository. It
+reports configuration failures. After `git init`, run `pnpm prepare` deliberately.
 
 ## Deliberate npm release
 

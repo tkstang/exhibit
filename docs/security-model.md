@@ -101,6 +101,15 @@ keeps a stale receipt from being attached to a different remote revision. Old
 receipts are retained through overwrites so a failed/conflicting replacement does
 not destroy the previous password.
 
+Deletion removes only the receipt for the observed remote body digest. Other
+revision receipts remain, including prepared receipts from concurrent or uncertain
+uploads. Reads and deletes validate the state root, deployment, and slug directories
+before accessing a receipt; they never recursively delete a slug directory.
+The user account and ancestors above the configured state root must be trusted.
+These checks do not claim to prevent a malicious process running as the same user
+from replacing paths concurrently. Windows ACLs require user administration and
+have not been qualified by the macOS checks.
+
 No browser password/key is persisted by the viewer. Lock reloads the page and
 removes the visible document, but it is not a memory-erasure guarantee. Browser
 extensions, the machine, and anyone with the password remain trusted.
