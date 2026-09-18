@@ -10,12 +10,12 @@ Keep project state where it belongs. Publish selected Markdown and HTML snapshot
 
 ## What ships
 
-| Capability | Version one |
-| --- | --- |
-| Markdown | GFM, tables, task lists, fenced code |
-| HTML | Standalone document with isolated execution |
-| Storage | S3 with conditional writes |
-| Agents | Stable CLI JSON and two skills |
+| Capability | Version one                                 |
+| ---------- | ------------------------------------------- |
+| Markdown   | GFM, tables, task lists, fenced code        |
+| HTML       | Standalone document with isolated execution |
+| Storage    | S3 with conditional writes                  |
+| Agents     | Stable CLI JSON and two skills              |
 
 ## Publishing
 

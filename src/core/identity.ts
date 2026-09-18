@@ -15,7 +15,8 @@ export function validateSlug(value: string): Result<string, string> {
 
 export function requireSlug(value: string): string {
   const result = validateSlug(value);
-  if (!result.ok) throw new ExhibitError('E_SLUG', 'Invalid artifact slug.', { hint: result.error });
+  if (!result.ok)
+    throw new ExhibitError('E_SLUG', 'Invalid artifact slug.', { hint: result.error });
   return result.value;
 }
 
@@ -46,10 +47,17 @@ export function publicUrl(config: Config, slug: string): string {
 }
 
 export function deploymentId(config: Config): string {
-  return createHash('sha256').update(JSON.stringify([
-    config.storage.endpoint ?? 'aws', config.storage.region,
-    config.storage.bucket, config.storage.prefix, config.publicBaseUrl,
-  ])).digest('hex');
+  return createHash('sha256')
+    .update(
+      JSON.stringify([
+        config.storage.endpoint ?? 'aws',
+        config.storage.region,
+        config.storage.bucket,
+        config.storage.prefix,
+        config.publicBaseUrl,
+      ]),
+    )
+    .digest('hex');
 }
 
 export function sha256(value: string): string {

@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2024",
-    "lib": [
-      "ES2024",
-      "DOM"
-    ],
+    "lib": ["ES2024", "DOM"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
@@ -19,41 +16,17 @@
     "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "paths": {
-      "#core/*": [
-        "./src/core/*.ts"
-      ],
-      "#commands/*": [
-        "./src/commands/*.ts"
-      ],
-      "#artifacts/*": [
-        "./src/artifacts/*.ts"
-      ],
-      "#render/*": [
-        "./src/render/*.ts"
-      ],
-      "#security/*": [
-        "./src/security/*.ts"
-      ],
-      "#storage/*": [
-        "./src/storage/*.ts"
-      ],
-      "#state/*": [
-        "./src/state/*.ts"
-      ]
+      "#core/*": ["./src/core/*.ts"],
+      "#commands/*": ["./src/commands/*.ts"],
+      "#artifacts/*": ["./src/artifacts/*.ts"],
+      "#render/*": ["./src/render/*.ts"],
+      "#security/*": ["./src/security/*.ts"],
+      "#storage/*": ["./src/storage/*.ts"],
+      "#state/*": ["./src/state/*.ts"]
     }
   },
-  "include": [
-    "src",
-    "tests",
-    "vitest.config.ts",
-    "playwright.config.ts"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules"
-  ]
+  "include": ["src", "tests", "vitest.config.ts", "playwright.config.ts"],
+  "exclude": ["dist", "node_modules"]
 }

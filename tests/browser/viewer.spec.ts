@@ -11,7 +11,13 @@ import { SECURITY_HEADERS } from '#security/policy';
 const password = 'exhibit-browser-fixture-password';
 const config: Config = {
   schemaVersion: 1,
-  storage: { provider: 's3', bucket: 'exhibit-test', region: 'us-east-1', prefix: 'exhibit/', forcePathStyle: false },
+  storage: {
+    provider: 's3',
+    bucket: 'exhibit-test',
+    region: 'us-east-1',
+    prefix: 'exhibit/',
+    forcePathStyle: false,
+  },
   publicBaseUrl: 'http://127.0.0.1',
   maxInputBytes: 2 * 1024 * 1024,
   brand: { name: 'Exhibit', accent: '#0f766e' },
@@ -37,16 +43,26 @@ test.beforeAll(async () => {
   pages = {
     '/protected.html': await protectHtml(html, password, config, protector),
     '/public.html': await publicHtml(html, config),
-    '/tampered.html': await buildViewer({ mode: 'protected', ...payload, ciphertext: payload.ciphertext.slice(0, -1) + tail }, config, await protector.browserSource()),
+    '/tampered.html': await buildViewer(
+      { mode: 'protected', ...payload, ciphertext: payload.ciphertext.slice(0, -1) + tail },
+      config,
+      await protector.browserSource(),
+    ),
   };
   server = createServer((req, res) => {
     const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
     const body = pages[pathname];
     if (!body) {
       if (pathname !== '/favicon.ico') unexpectedRequests.push(pathname);
-      res.writeHead(404);res.end('Not found');return;
+      res.writeHead(404);
+      res.end('Not found');
+      return;
     }
-    res.writeHead(200, { ...SECURITY_HEADERS, 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+    res.writeHead(200, {
+      ...SECURITY_HEADERS,
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'no-store',
+    });
     res.end(body);
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -56,10 +72,14 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  await new Promise<void>((resolve, reject) =>
+    server.close((error) => (error ? reject(error) : resolve())),
+  );
 });
 
-test.beforeEach(() => { unexpectedRequests = []; });
+test.beforeEach(() => {
+  unexpectedRequests = [];
+});
 
 test('protected shell contains neither source title, plaintext, nor password', async ({ page }) => {
   const response = await page.goto(`${origin}/protected.html`);
@@ -72,7 +92,10 @@ test('protected shell contains neither source title, plaintext, nor password', a
 });
 
 test('wrong password and tampered ciphertext do not expose content', async ({ page }) => {
-  for (const [path, attempt] of [['protected', 'a-wrong-browser-password'], ['tampered', password]]) {
+  for (const [path, attempt] of [
+    ['protected', 'a-wrong-browser-password'],
+    ['tampered', password],
+  ]) {
     await page.goto(`${origin}/${path}.html`);
     await page.locator('#password').fill(attempt!);
     await page.locator('#unlock').click();
@@ -82,7 +105,9 @@ test('wrong password and tampered ciphertext do not expose content', async ({ pa
   }
 });
 
-test('decrypts locally, preserves inline interaction, and isolates source scripts', async ({ page }) => {
+test('decrypts locally, preserves inline interaction, and isolates source scripts', async ({
+  page,
+}) => {
   await page.goto(`${origin}/protected.html`);
   await page.evaluate(() => window.localStorage.setItem('canary', 'not-secret-test-value'));
   await page.locator('#password').fill(password);
@@ -110,9 +135,13 @@ test('lock discards viewer state and requires the password again', async ({ page
   await expect(page.locator('#password')).toHaveValue('');
 });
 
-test('public mode is immediately readable but keeps the same script isolation', async ({ page }) => {
+test('public mode is immediately readable but keeps the same script isolation', async ({
+  page,
+}) => {
   await page.goto(`${origin}/public.html`);
-  await expect(page.frameLocator('#viewer').locator('h1')).toHaveText('Private Unicode document αβ 🚀');
+  await expect(page.frameLocator('#viewer').locator('h1')).toHaveText(
+    'Private Unicode document αβ 🚀',
+  );
   await expect(page.locator('#mode-label')).toHaveText('Public artifact');
   await expect(page.locator('#lock')).toBeHidden();
   await expect(page.frameLocator('#viewer').locator('#isolation')).toHaveText('isolated');

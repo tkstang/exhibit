@@ -6,6 +6,8 @@
   "arrowParens": "always",
   "printWidth": 100,
   "ignorePatterns": [
+    ".oat/**",
+    "AGENTS.md",
     "dist/**",
     "node_modules/**",
     ".preview/**",

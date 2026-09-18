@@ -5,19 +5,19 @@ an assertion that every requested tool was available or that AWS was deployed.
 
 ## Passed in the creation environment
 
-| Check | Result | Boundary |
-| --- | --- | --- |
-| Runtime unit/contract tests | **85 / 85 passed**, 16 source test files | TypeScript transpiled in a separate harness; only `vitest` describe/it imports mapped to Node's test runner |
-| Source transpilation/syntax | No TypeScript syntax diagnostics | Installed TypeScript 5.8.3, not the target TS7 toolchain |
-| Partial strict type check | Passed | Internal source/tests checked using available Node typings; three external-dependency boundaries excluded as described below |
-| StatiCrypt round trips | Passed | Actual upstream engine/codec, not a toy or rewritten cipher |
-| Wrong-password and tamper checks | Passed | Actual upstream codec; ciphertext modification and incorrect password rejected |
-| Embedded browser-source branch | Passed | Generated browser engine/codec executed in a Node VM with WebCrypto and no Node `require` global |
-| Chromium in-memory viewer checks | **8 / 8 passed** | Public rendering, interaction, opaque iframe, meta-CSP network violation, toolbar, insecure-context refusal, mobile gate, viewport fit |
-| Spawned executable protocol | **6 / 6 passed** | Both executable names: version, help, and structured errors |
-| Infrastructure static assertions | Passed | CSP string parity, private-bucket flags, OAC/SourceArn/regional origin checks; not provider validation |
-| JSON/YAML/docs links | Passed | Config syntax, workflow/skill YAML, and all relative Markdown links |
-| CLI/source/package/skill contracts | Passed | Named imports, no raw console output in source, shared binary entrypoint, pinned crypto, valid skill identities |
+| Check                              | Result                                   | Boundary                                                                                                                               |
+| ---------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime unit/contract tests        | **85 / 85 passed**, 16 source test files | TypeScript transpiled in a separate harness; only `vitest` describe/it imports mapped to Node's test runner                            |
+| Source transpilation/syntax        | No TypeScript syntax diagnostics         | Installed TypeScript 5.8.3, not the target TS7 toolchain                                                                               |
+| Partial strict type check          | Passed                                   | Internal source/tests checked using available Node typings; three external-dependency boundaries excluded as described below           |
+| StatiCrypt round trips             | Passed                                   | Actual upstream engine/codec, not a toy or rewritten cipher                                                                            |
+| Wrong-password and tamper checks   | Passed                                   | Actual upstream codec; ciphertext modification and incorrect password rejected                                                         |
+| Embedded browser-source branch     | Passed                                   | Generated browser engine/codec executed in a Node VM with WebCrypto and no Node `require` global                                       |
+| Chromium in-memory viewer checks   | **8 / 8 passed**                         | Public rendering, interaction, opaque iframe, meta-CSP network violation, toolbar, insecure-context refusal, mobile gate, viewport fit |
+| Spawned executable protocol        | **6 / 6 passed**                         | Both executable names: version, help, and structured errors                                                                            |
+| Infrastructure static assertions   | Passed                                   | CSP string parity, private-bucket flags, OAC/SourceArn/regional origin checks; not provider validation                                 |
+| JSON/YAML/docs links               | Passed                                   | Config syntax, workflow/skill YAML, and all relative Markdown links                                                                    |
+| CLI/source/package/skill contracts | Passed                                   | Named imports, no raw console output in source, shared binary entrypoint, pinned crypto, valid skill identities                        |
 
 The runtime tests cover file confinement/permissions/UTF-8 limits, slugs/passwords,
 secret redaction, storage request metadata, conditional writes/deletes, remote

@@ -1,9 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript",
-    "import"
-  ],
+  "plugins": ["typescript", "import"],
   "env": {
     "node": true,
     "es2024": true,

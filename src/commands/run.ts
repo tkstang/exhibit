@@ -35,44 +35,82 @@ export interface FailureEnvelope {
   readonly schema_version: 1;
   readonly ok: false;
   readonly command: string;
-  readonly error: { readonly code: string; readonly message: string; readonly hint: string; readonly details?: unknown };
+  readonly error: {
+    readonly code: string;
+    readonly message: string;
+    readonly hint: string;
+    readonly details?: unknown;
+  };
 }
 export type Envelope = SuccessEnvelope | FailureEnvelope;
 
 async function openSession(configFile: string, stateDir: string): Promise<Session> {
-  const [{ loadConfig }, { createAwsTransport }, { createS3Store }, { createPublicationState }] = await Promise.all([
-    import('#core/config'), import('#storage/aws'), import('#storage/s3-store'), import('#state/store'),
-  ]);
+  const [{ loadConfig }, { createAwsTransport }, { createS3Store }, { createPublicationState }] =
+    await Promise.all([
+      import('#core/config'),
+      import('#storage/aws'),
+      import('#storage/s3-store'),
+      import('#state/store'),
+    ]);
   const config = await loadConfig(configFile);
   const aws = createAwsTransport(config);
-  return { config, store: createS3Store(config, aws.transport), state: createPublicationState(config, stateDir), close: aws.close };
+  return {
+    config,
+    store: createS3Store(config, aws.transport),
+    state: createPublicationState(config, stateDir),
+    close: aws.close,
+  };
 }
-async function resolvePassword(args: ParsedArgs, env: NodeJS.ProcessEnv, cwd: string): Promise<string | undefined> {
+async function resolvePassword(
+  args: ParsedArgs,
+  env: NodeJS.ProcessEnv,
+  cwd: string,
+): Promise<string | undefined> {
   const literal = args.text('password');
   const file = args.text('password-file');
   const variable = args.text('password-env');
-  if ([literal, file, variable].filter((value) => value !== undefined).length > 1) throw new ExhibitError('E_USAGE', 'Choose only one custom password source.');
-  if (args.flag('public') && [literal,file,variable].some((value) => value !== undefined)) throw new ExhibitError('E_USAGE', '--public cannot be combined with a password source.');
+  if ([literal, file, variable].filter((value) => value !== undefined).length > 1)
+    throw new ExhibitError('E_USAGE', 'Choose only one custom password source.');
+  if (args.flag('public') && [literal, file, variable].some((value) => value !== undefined))
+    throw new ExhibitError('E_USAGE', '--public cannot be combined with a password source.');
   let password = literal;
-  if (file !== undefined) password = (await readTextFile(resolve(cwd, file), 1026)).replace(/\r?\n$/, '');
+  if (file !== undefined)
+    password = (await readTextFile(resolve(cwd, file), 1026)).replace(/\r?\n$/, '');
   if (variable !== undefined) {
-    if (!/^[A-Z_][A-Z0-9_]*$/.test(variable)) throw new ExhibitError('E_PASSWORD', 'Invalid password environment variable name.');
+    if (!/^[A-Z_][A-Z0-9_]*$/.test(variable))
+      throw new ExhibitError('E_PASSWORD', 'Invalid password environment variable name.');
     password = env[variable];
-    if (password === undefined) throw new ExhibitError('E_PASSWORD', 'The password environment variable is not set.');
+    if (password === undefined)
+      throw new ExhibitError('E_PASSWORD', 'The password environment variable is not set.');
   }
   return password === undefined ? undefined : validatePassword(password);
 }
 
 /** No process writes here. One outer boundary owns stdout, stderr, and exit status. */
-export async function run(argv: readonly string[], dependencies: RuntimeDependencies = {}): Promise<{ envelope: Envelope; exitCode: number }> {
+export async function run(
+  argv: readonly string[],
+  dependencies: RuntimeDependencies = {},
+): Promise<{ envelope: Envelope; exitCode: number }> {
   let command = 'unknown';
   let session: Session | undefined;
   try {
     const args = parseCli(argv);
     command = args.command;
-    const success = (data: unknown) => ({ envelope: { schema_version: 1 as const, ok: true as const, command, data }, exitCode: 0 });
+    const success = (data: unknown) => ({
+      envelope: { schema_version: 1 as const, ok: true as const, command, data },
+      exitCode: 0,
+    });
     if (args.command === 'help') return success({ help: HELP });
-    if (args.command === 'version') return success({ name: 'Exhibit', version: VERSION, resources: { docs: fileURLToPath(new URL('../../docs/', import.meta.url)), skills: fileURLToPath(new URL('../../skills/', import.meta.url)), terraform: fileURLToPath(new URL('../../examples/terraform/aws/', import.meta.url)) } });
+    if (args.command === 'version')
+      return success({
+        name: 'Exhibit',
+        version: VERSION,
+        resources: {
+          docs: fileURLToPath(new URL('../../docs/', import.meta.url)),
+          skills: fileURLToPath(new URL('../../skills/', import.meta.url)),
+          terraform: fileURLToPath(new URL('../../examples/terraform/aws/', import.meta.url)),
+        },
+      });
     const env = dependencies.env ?? process.env;
     const cwd = dependencies.cwd ?? process.cwd();
     const locations = userPaths(env);
@@ -81,15 +119,34 @@ export async function run(argv: readonly string[], dependencies: RuntimeDependen
       const bucket = args.text('bucket');
       const region = args.text('region');
       const publicBaseUrl = args.text('public-base-url');
-      if (!bucket || !region || !publicBaseUrl) throw new ExhibitError('E_USAGE', 'init requires --bucket, --region, and --public-base-url.');
+      if (!bucket || !region || !publicBaseUrl)
+        throw new ExhibitError(
+          'E_USAGE',
+          'init requires --bucket, --region, and --public-base-url.',
+        );
       const initialize = dependencies.initialize ?? (await import('#core/config')).saveConfig;
-      const config = await initialize(configFile, {
-        schemaVersion: 1,
-        storage: { provider: 's3', bucket, region, prefix: args.text('prefix') ?? 'exhibit/',
-          ...(args.text('endpoint') ? { endpoint: args.text('endpoint') } : {}), forcePathStyle: args.flag('force-path-style') },
-        publicBaseUrl, brand: { name: args.text('brand-name') ?? 'Exhibit', accent: '#0f766e' },
-      }, args.flag('force'));
-      return success({ config_file: configFile, config, next: 'Run exhibit doctor --probe after your CDN and IAM configuration is ready.' });
+      const config = await initialize(
+        configFile,
+        {
+          schemaVersion: 1,
+          storage: {
+            provider: 's3',
+            bucket,
+            region,
+            prefix: args.text('prefix') ?? 'exhibit/',
+            ...(args.text('endpoint') ? { endpoint: args.text('endpoint') } : {}),
+            forcePathStyle: args.flag('force-path-style'),
+          },
+          publicBaseUrl,
+          brand: { name: args.text('brand-name') ?? 'Exhibit', accent: '#0f766e' },
+        },
+        args.flag('force'),
+      );
+      return success({
+        config_file: configFile,
+        config,
+        next: 'Run exhibit doctor --probe after your CDN and IAM configuration is ready.',
+      });
     }
     // Validate password options before touching cloud resources.
     const password = args.command === 'publish' ? await resolvePassword(args, env, cwd) : undefined;
@@ -97,35 +154,80 @@ export async function run(argv: readonly string[], dependencies: RuntimeDependen
     if (args.command === 'publish') {
       const file = args.positionals[0];
       if (!file) throw new ExhibitError('E_USAGE', 'A source file is required.');
-      const result = await publishArtifact({
-        file: resolve(cwd, file), title: args.text('title'), slug: args.text('slug'), password,
-        public: args.flag('public'), overwrite: args.flag('overwrite'), allowSecrets: args.flag('allow-secrets'),
-        strictSecrets: args.flag('strict-secrets'), noStorePassword: args.flag('no-store-password'), dryRun: args.flag('dry-run'),
-      }, session);
-      if (args.text('password') !== undefined) result.warnings.push({ code: 'W_PASSWORD_ARG', message: '--password can appear in shell history/process listings. Prefer --password-env or --password-file.' });
+      const result = await publishArtifact(
+        {
+          file: resolve(cwd, file),
+          title: args.text('title'),
+          slug: args.text('slug'),
+          password,
+          public: args.flag('public'),
+          overwrite: args.flag('overwrite'),
+          allowSecrets: args.flag('allow-secrets'),
+          strictSecrets: args.flag('strict-secrets'),
+          noStorePassword: args.flag('no-store-password'),
+          dryRun: args.flag('dry-run'),
+        },
+        session,
+      );
+      if (args.text('password') !== undefined)
+        result.warnings.push({
+          code: 'W_PASSWORD_ARG',
+          message:
+            '--password can appear in shell history/process listings. Prefer --password-env or --password-file.',
+        });
       return success(result);
     }
     if (args.command === 'list') {
       const limitText = args.text('limit') ?? '100';
-      if (!/^\d+$/.test(limitText)) throw new ExhibitError('E_USAGE', '--limit must be an integer from 1 through 1000.');
-      return success(await listArtifacts(session.config, session.store, session.state, { limit: Number(limitText), cursor: args.text('cursor'), showPasswords: args.flag('show-passwords') }));
+      if (!/^\d+$/.test(limitText))
+        throw new ExhibitError('E_USAGE', '--limit must be an integer from 1 through 1000.');
+      return success(
+        await listArtifacts(session.config, session.store, session.state, {
+          limit: Number(limitText),
+          cursor: args.text('cursor'),
+          showPasswords: args.flag('show-passwords'),
+        }),
+      );
     }
     if (args.command === 'remove') {
       const slug = args.positionals[0];
       if (!slug) throw new ExhibitError('E_USAGE', 'A slug is required.');
-      return success(await removeArtifact(session.store, session.state, slug, { dryRun: args.flag('dry-run'), missingOk: args.flag('missing-ok') }));
+      return success(
+        await removeArtifact(session.store, session.state, slug, {
+          dryRun: args.flag('dry-run'),
+          missingOk: args.flag('missing-ok'),
+        }),
+      );
     }
     const result = await doctor(session.config, session.store, { probe: args.flag('probe') });
-    if (!result.healthy) throw new ExhibitError('E_DOCTOR', 'One or more deployment checks failed.', { hint: 'Inspect details.checks. A cleanup_key, when present, names a non-sensitive probe to remove manually.', details: result });
+    if (!result.healthy)
+      throw new ExhibitError('E_DOCTOR', 'One or more deployment checks failed.', {
+        hint: 'Inspect details.checks. A cleanup_key, when present, names a non-sensitive probe to remove manually.',
+        details: result,
+      });
     return success(result);
   } catch (error) {
     const normalized = normalizeError(error);
-    return { envelope: { schema_version: 1, ok: false, command, error: {
-      code: normalized.code, message: normalized.message, hint: normalized.hint,
-      ...(normalized.details === undefined ? {} : { details: normalized.details }),
-    } }, exitCode: normalized.exitCode };
+    return {
+      envelope: {
+        schema_version: 1,
+        ok: false,
+        command,
+        error: {
+          code: normalized.code,
+          message: normalized.message,
+          hint: normalized.hint,
+          ...(normalized.details === undefined ? {} : { details: normalized.details }),
+        },
+      },
+      exitCode: normalized.exitCode,
+    };
   } finally {
     // Cleanup must not override an already-formed result or leak an SDK exception.
-    try { session?.close(); } catch { /* SDK cleanup is best-effort. */ }
+    try {
+      session?.close();
+    } catch {
+      /* SDK cleanup is best-effort. */
+    }
   }
 }

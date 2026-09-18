@@ -22,10 +22,10 @@ Implementation inputs were checked on 2026-09-17.
 The temporary verification harness used these exact upstream Git blobs, with
 Git object SHA-1 calculated from `blob <length>\0<bytes>` and matched before use:
 
-| Path | Bytes | Git blob SHA |
-| --- | ---: | --- |
-| `lib/cryptoEngine.js` | 7776 | `db81afd43f95c49e522ad33075728eb16da8d9e7` |
-| `lib/codec.js` | 3960 | `1772181fce9748e2808fde7c146b6a4f7937fe0b` |
+| Path                  | Bytes | Git blob SHA                               |
+| --------------------- | ----: | ------------------------------------------ |
+| `lib/cryptoEngine.js` |  7776 | `db81afd43f95c49e522ad33075728eb16da8d9e7` |
+| `lib/codec.js`        |  3960 | `1772181fce9748e2808fde7c146b6a4f7937fe0b` |
 
 Those temporary source copies are not shipped as an alternative dependency. The
 application requires the pinned `staticrypt` package from its normal installation.

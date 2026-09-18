@@ -5,7 +5,10 @@ const domains = ['core', 'commands', 'artifacts', 'render', 'security', 'storage
 export default defineConfig({
   resolve: {
     alias: Object.fromEntries(
-      domains.map((domain) => [`#${domain}`, fileURLToPath(new URL(`./src/${domain}`, import.meta.url))]),
+      domains.map((domain) => [
+        `#${domain}`,
+        fileURLToPath(new URL(`./src/${domain}`, import.meta.url)),
+      ]),
     ),
   },
   test: { include: ['src/**/*.test.ts'], globals: false, testTimeout: 20_000 },

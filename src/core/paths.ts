@@ -9,9 +9,11 @@ export function userPaths(
   home = homedir(),
 ): { configFile: string; stateDir: string } {
   const windows = platform === 'win32';
-  const configRoot = windows ? (env.APPDATA ?? join(home, 'AppData', 'Roaming'))
+  const configRoot = windows
+    ? (env.APPDATA ?? join(home, 'AppData', 'Roaming'))
     : (env.XDG_CONFIG_HOME ?? join(home, '.config'));
-  const stateRoot = windows ? (env.LOCALAPPDATA ?? join(home, 'AppData', 'Local'))
+  const stateRoot = windows
+    ? (env.LOCALAPPDATA ?? join(home, 'AppData', 'Local'))
     : (env.XDG_STATE_HOME ?? join(home, '.local', 'state'));
   if (!isAbsolute(configRoot) || !isAbsolute(stateRoot)) {
     throw new ExhibitError('E_CONFIG', 'Config and state base directories must be absolute.');

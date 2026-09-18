@@ -7,7 +7,11 @@ export function generatePassword(): string {
 }
 
 export function validatePassword(value: string): string {
-  if (value.length < 16 || Buffer.byteLength(value, 'utf8') > 1024 || /[\x00-\x1f\x7f]/.test(value)) {
+  if (
+    value.length < 16 ||
+    Buffer.byteLength(value, 'utf8') > 1024 ||
+    /[\x00-\x1f\x7f]/.test(value)
+  ) {
     throw new ExhibitError('E_PASSWORD', 'Use a unique password of at least 16 characters.', {
       hint: 'Omit password options to generate one. Custom passwords must contain no control characters and be at most 1024 UTF-8 bytes.',
     });

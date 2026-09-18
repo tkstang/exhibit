@@ -9,43 +9,115 @@ export function renderMarkdown(source: string, title: string, config: Config): R
   const warnings: Warning[] = [];
   const seen = new Map<string, number>();
   const parser = new Marked({ gfm: true, breaks: false, async: false });
-  parser.use({ renderer: {
-    html({ text }) {
-      warnings.push({ code: 'W_RAW_HTML', message: 'Raw HTML in Markdown is shown as text. Use an HTML artifact for executable content.' });
-      return escapeHtml(text);
+  parser.use({
+    renderer: {
+      html({ text }) {
+        warnings.push({
+          code: 'W_RAW_HTML',
+          message:
+            'Raw HTML in Markdown is shown as text. Use an HTML artifact for executable content.',
+        });
+        return escapeHtml(text);
+      },
+      image({ text }) {
+        warnings.push({
+          code: 'W_IMAGE_OMITTED',
+          message:
+            'A Markdown image was omitted. External/local assets are not uploaded in single-file mode.',
+        });
+        return `<span class="omitted-image">[Image: ${escapeHtml(text || 'untitled')}]</span>`;
+      },
+      heading({ depth, text, tokens }) {
+        const base =
+          text
+            .normalize('NFKC')
+            .toLowerCase()
+            .replace(/[^\p{L}\p{N}\s-]/gu, '')
+            .trim()
+            .replace(/\s+/g, '-') || 'section';
+        const count = seen.get(base) ?? 0;
+        seen.set(base, count + 1);
+        const id = count ? `${base}-${count}` : base;
+        return `<h${depth} id="${escapeHtml(id)}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
+      },
     },
-    image({ text }) {
-      warnings.push({ code: 'W_IMAGE_OMITTED', message: 'A Markdown image was omitted. External/local assets are not uploaded in single-file mode.' });
-      return `<span class="omitted-image">[Image: ${escapeHtml(text || 'untitled')}]</span>`;
-    },
-    heading({ depth, text, tokens }) {
-      const base = text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, '').trim().replace(/\s+/g, '-') || 'section';
-      const count = seen.get(base) ?? 0;
-      seen.set(base, count + 1);
-      const id = count ? `${base}-${count}` : base;
-      return `<h${depth} id="${escapeHtml(id)}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
-    },
-  } });
+  });
   const rendered = parser.parse(source, { async: false });
   const body = sanitizeHtml(rendered, {
-    allowedTags: ['h1','h2','h3','h4','h5','h6','p','br','hr','ul','ol','li','blockquote','pre','code','em','strong','del','s','a','table','thead','tbody','tr','th','td','input','span'],
+    allowedTags: [
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'p',
+      'br',
+      'hr',
+      'ul',
+      'ol',
+      'li',
+      'blockquote',
+      'pre',
+      'code',
+      'em',
+      'strong',
+      'del',
+      's',
+      'a',
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'th',
+      'td',
+      'input',
+      'span',
+    ],
     allowedAttributes: {
       a: ['href', 'title', 'rel', 'target'],
-      code: ['class'], th: ['align'], td: ['align'], ol: ['start'],
-      input: ['type', 'checked', 'disabled'], span: ['class'],
-      h1: ['id'], h2: ['id'], h3: ['id'], h4: ['id'], h5: ['id'], h6: ['id'],
+      code: ['class'],
+      th: ['align'],
+      td: ['align'],
+      ol: ['start'],
+      input: ['type', 'checked', 'disabled'],
+      span: ['class'],
+      h1: ['id'],
+      h2: ['id'],
+      h3: ['id'],
+      h4: ['id'],
+      h5: ['id'],
+      h6: ['id'],
     },
-    allowedSchemes: ['http','https','mailto'],
+    allowedSchemes: ['http', 'https', 'mailto'],
     allowProtocolRelative: false,
     transformTags: {
       a: (_tag, attributes) => {
         if (!isSafeLink(attributes.href ?? '')) {
-          warnings.push({ code: 'W_LINK_OMITTED', message: 'An unsafe or relative file link was rendered as text. Publish the target separately and use an absolute URL.' });
+          warnings.push({
+            code: 'W_LINK_OMITTED',
+            message:
+              'An unsafe or relative file link was rendered as text. Publish the target separately and use an absolute URL.',
+          });
           return { tagName: 'span', attribs: {} };
         }
-        return { tagName: 'a', attribs: { ...attributes, rel: 'noopener noreferrer', ...(attributes.href?.startsWith('#') ? {} : { target: '_blank' }) } };
+        return {
+          tagName: 'a',
+          attribs: {
+            ...attributes,
+            rel: 'noopener noreferrer',
+            ...(attributes.href?.startsWith('#') ? {} : { target: '_blank' }),
+          },
+        };
       },
-      input: (_tag, attributes) => ({ tagName: 'input', attribs: { type: 'checkbox', disabled: '', ...(attributes.checked !== undefined ? { checked: '' } : {}) } }),
+      input: (_tag, attributes) => ({
+        tagName: 'input',
+        attribs: {
+          type: 'checkbox',
+          disabled: '',
+          ...(attributes.checked !== undefined ? { checked: '' } : {}),
+        },
+      }),
     },
   });
   const accent = /^#[\da-f]{6}$/i.test(config.brand.accent) ? config.brand.accent : '#0f766e';
@@ -65,5 +137,8 @@ table{display:block;width:100%;overflow:auto;border-collapse:collapse;margin:24p
 @media(max-width:640px){.document{margin:0;border:0;border-radius:0;padding:28px 20px}body{font-size:16px}h1{font-size:1.9em}}
 @media print{body{background:#fff;color:#000}.document{margin:0;max-width:none;border:0;padding:0}pre,table{break-inside:avoid}a{color:inherit}footer{display:none}}
 </style></head><body><main class="document"><div class="eyebrow">${escapeHtml(config.brand.name)} · Artifact</div>${body}<footer>Published with Exhibit. This is a snapshot of the source document.</footer></main></body></html>`;
-  return { html, warnings: [...new Map(warnings.map((warning) => [warning.code, warning])).values()] };
+  return {
+    html,
+    warnings: [...new Map(warnings.map((warning) => [warning.code, warning])).values()],
+  };
 }

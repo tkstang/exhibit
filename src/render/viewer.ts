@@ -42,11 +42,19 @@ export async function buildViewer(
 </body></html>`;
 }
 
-export async function protectHtml(html: string, password: string, config: Config, protector: Protector): Promise<string> {
+export async function protectHtml(
+  html: string,
+  password: string,
+  config: Config,
+  protector: Protector,
+): Promise<string> {
   const payload: Ciphertext = await protector.encrypt(html, password);
   return buildViewer({ mode: 'protected', ...payload }, config, await protector.browserSource());
 }
 
 export function publicHtml(html: string, config: Config): Promise<string> {
-  return buildViewer({ mode: 'public', body: Buffer.from(html, 'utf8').toString('base64') }, config);
+  return buildViewer(
+    { mode: 'public', body: Buffer.from(html, 'utf8').toString('base64') },
+    config,
+  );
 }

@@ -1,5 +1,8 @@
 /** Small S3 wire subset: a DI seam, not an alternate SDK implementation. */
-export interface ObjectAddress { readonly Bucket: string; readonly Key: string; }
+export interface ObjectAddress {
+  readonly Bucket: string;
+  readonly Key: string;
+}
 export interface PutRequest extends ObjectAddress {
   readonly Body: string;
   readonly ContentType: string;

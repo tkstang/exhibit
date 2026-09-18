@@ -4,7 +4,7 @@ description: Publish a user-selected Markdown or standalone HTML artifact with t
 license: MIT
 metadata:
   author: Thomas Stang
-  version: "0.1.0"
+  version: '0.1.0'
 ---
 
 # Publish with Exhibit

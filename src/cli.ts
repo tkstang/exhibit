@@ -17,7 +17,13 @@ export async function main(argv: readonly string[] = process.argv.slice(2)): Pro
 }
 
 function isEntrypoint(): boolean {
-  try { return Boolean(process.argv[1]) && realpathSync(process.argv[1]!) === realpathSync(fileURLToPath(import.meta.url)); }
-  catch { return false; }
+  try {
+    return (
+      Boolean(process.argv[1]) &&
+      realpathSync(process.argv[1]!) === realpathSync(fileURLToPath(import.meta.url))
+    );
+  } catch {
+    return false;
+  }
 }
 if (isEntrypoint()) await main();

@@ -1,10 +1,27 @@
 export type ErrorCode =
-  | 'E_USAGE' | 'E_CONFIG' | 'E_CONFIG_NOT_FOUND' | 'E_CONFIG_EXISTS'
-  | 'E_INPUT' | 'E_INPUT_SIZE' | 'E_INPUT_ENCODING' | 'E_INPUT_TYPE'
-  | 'E_SLUG' | 'E_PASSWORD' | 'E_SECRET_DETECTED' | 'E_ENCRYPTION'
-  | 'E_CREDENTIALS' | 'E_BUCKET_ACCESS' | 'E_STORAGE' | 'E_CONFLICT'
-  | 'E_NOT_FOUND' | 'E_NOT_MANAGED' | 'E_STATE' | 'E_NETWORK'
-  | 'E_DOCTOR' | 'E_DEPENDENCY' | 'E_UNEXPECTED';
+  | 'E_USAGE'
+  | 'E_CONFIG'
+  | 'E_CONFIG_NOT_FOUND'
+  | 'E_CONFIG_EXISTS'
+  | 'E_INPUT'
+  | 'E_INPUT_SIZE'
+  | 'E_INPUT_ENCODING'
+  | 'E_INPUT_TYPE'
+  | 'E_SLUG'
+  | 'E_PASSWORD'
+  | 'E_SECRET_DETECTED'
+  | 'E_ENCRYPTION'
+  | 'E_CREDENTIALS'
+  | 'E_BUCKET_ACCESS'
+  | 'E_STORAGE'
+  | 'E_CONFLICT'
+  | 'E_NOT_FOUND'
+  | 'E_NOT_MANAGED'
+  | 'E_STATE'
+  | 'E_NETWORK'
+  | 'E_DOCTOR'
+  | 'E_DEPENDENCY'
+  | 'E_UNEXPECTED';
 
 export class ExhibitError extends Error {
   override readonly name = 'ExhibitError';

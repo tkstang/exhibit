@@ -13,11 +13,7 @@
   ],
   "partial_strict_typecheck": {
     "passed": true,
-    "unverified_boundaries": [
-      "src/core/config.ts",
-      "src/render/markdown.ts",
-      "src/storage/aws.ts"
-    ]
+    "unverified_boundaries": ["src/core/config.ts", "src/render/markdown.ts", "src/storage/aws.ts"]
   },
   "browser_in_memory": {
     "browser": "144.0.7559.96",

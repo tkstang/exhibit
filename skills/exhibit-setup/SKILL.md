@@ -4,7 +4,7 @@ description: Set up the Exhibit CLI with an existing S3/CDN deployment or guide 
 license: MIT
 metadata:
   author: Thomas Stang
-  version: "0.1.0"
+  version: '0.1.0'
 ---
 
 # Set up Exhibit

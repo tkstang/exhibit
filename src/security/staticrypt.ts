@@ -9,9 +9,16 @@ interface CryptoEngine {
 }
 interface Codec {
   encode(message: string, password: string, salt: string): Promise<string>;
-  decode(message: string, hash: string, salt: string): Promise<{ success: boolean; decoded?: string }>;
+  decode(
+    message: string,
+    hash: string,
+    salt: string,
+  ): Promise<{ success: boolean; decoded?: string }>;
 }
-export interface Ciphertext { readonly ciphertext: string; readonly salt: string; }
+export interface Ciphertext {
+  readonly ciphertext: string;
+  readonly salt: string;
+}
 export interface Protector {
   encrypt(html: string, password: string): Promise<Ciphertext>;
   decrypt(payload: Ciphertext, password: string): Promise<string | null>;
@@ -34,7 +41,8 @@ export function createProtector(): Protector {
     codec = module.init(engine);
   } catch {
     throw new ExhibitError('E_DEPENDENCY', 'The pinned StatiCrypt installation is unavailable.', {
-      exitCode: 2, hint: 'Run pnpm install. Exhibit 0.1 uses StatiCrypt 3.5.4; update its adapter and contract tests together.',
+      exitCode: 2,
+      hint: 'Run pnpm install. Exhibit 0.1 uses StatiCrypt 3.5.4; update its adapter and contract tests together.',
     });
   }
   return {
@@ -42,13 +50,21 @@ export function createProtector(): Protector {
       try {
         const salt = engine.generateRandomSalt();
         return { ciphertext: await codec.encode(html, password, salt), salt };
-      } catch { throw new ExhibitError('E_ENCRYPTION', 'Encryption failed before upload.', { exitCode: 2 }); }
+      } catch {
+        throw new ExhibitError('E_ENCRYPTION', 'Encryption failed before upload.', { exitCode: 2 });
+      }
     },
     async decrypt(payload, password) {
       try {
-        const result = await codec.decode(payload.ciphertext, await engine.hashPassword(password, payload.salt), payload.salt);
+        const result = await codec.decode(
+          payload.ciphertext,
+          await engine.hashPassword(password, payload.salt),
+          payload.salt,
+        );
         return result.success ? (result.decoded ?? null) : null;
-      } catch { return null; }
+      } catch {
+        return null;
+      }
     },
     async browserSource() {
       const [cryptoSource, codecSource, license] = await Promise.all([
@@ -57,7 +73,9 @@ export function createProtector(): Protector {
         readFile(new URL('../../assets/staticrypt-license.txt', import.meta.url), 'utf8'),
       ]);
       if (/<\/script/i.test(cryptoSource + codecSource)) {
-        throw new ExhibitError('E_ENCRYPTION', 'Unexpected upstream script content.', { exitCode: 2 });
+        throw new ExhibitError('E_ENCRYPTION', 'Unexpected upstream script content.', {
+          exitCode: 2,
+        });
       }
       return `/* StatiCrypt 3.5.4
 ${license}

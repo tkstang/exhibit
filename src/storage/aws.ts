@@ -1,5 +1,9 @@
 import {
-  S3Client, PutObjectCommand, HeadObjectCommand, ListObjectsV2Command, DeleteObjectCommand,
+  S3Client,
+  PutObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 
 import type { Config } from '#core/types';
@@ -19,8 +23,12 @@ export function createAwsTransport(config: Config): { transport: S3Transport; cl
       put: (input) => client.send(new PutObjectCommand(input), requestOptions()),
       head: (input) => client.send(new HeadObjectCommand(input), requestOptions()),
       list: (input) => client.send(new ListObjectsV2Command(input), requestOptions()),
-      async remove(input) { await client.send(new DeleteObjectCommand(input), requestOptions()); },
+      async remove(input) {
+        await client.send(new DeleteObjectCommand(input), requestOptions());
+      },
     },
-    close() { client.destroy(); },
+    close() {
+      client.destroy();
+    },
   };
 }
