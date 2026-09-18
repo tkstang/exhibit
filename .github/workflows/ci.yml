@@ -18,13 +18,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - name: Install
         shell: bash
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm install --frozen-lockfile
-          else
-            echo '::warning::Initial source export has no resolved lockfile. Commit the lockfile before publishing.'
-            pnpm install --no-frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:browser
