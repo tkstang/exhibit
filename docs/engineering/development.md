@@ -190,16 +190,18 @@ This structure can support a future Fumadocs site; no site runtime is installed.
 Opening or merging a source PR does not publish the package or qualify a hosting
 deployment. Before source merge, require review and green PR CI, which runs the
 strict checks, HTTP browser suite, package verification, and reference Terraform
-validation. Keep `private: true` until a separate npm release is approved. Track
+validation. Setting `private: false` in a reviewed first-release PR only enables
+publication metadata; actual npm publication still needs separate approval. Track
 live provider and route qualification in `docs/engineering/verification.md`; complete the
 [delivery-path checks](../user-guide/deployment/cloudfront.md#verify-each-delivery-path) before relying on
 the work deployment for sensitive content.
 
 Follow [npm releases](releases.md) for archive validation, the first-publication
 checklist, trusted publisher configuration, stable version/tag releases, and retry
-handling. Each release PR includes a version bump and a reviewed matching section
-in `CHANGELOG.md`; validation extracts the notes automatically for GitHub Release.
-Keep `private: true` until first-release approval and `NPM_RELEASE_ENABLED` disabled
+handling. The first-release PR confirms the initial version; later releases bump
+it. Each includes a reviewed matching section in `CHANGELOG.md`; validation extracts
+the notes automatically for GitHub Release.
+Keep `NPM_RELEASE_ENABLED` disabled
 until bootstrap publication and trust setup are complete. The private GitHub
 repository remains private when the npm package becomes public, and cannot supply
 npm provenance. No registry publication or remote setup is implied by these docs.

@@ -35,3 +35,6 @@ been published; check npm and GitHub Releases for publication status.
 - Agent-host plugin discovery, Windows permissions, and native mobile browsers
   have not been qualified. Directory names alone do not enforce access controls.
 - Deletion cannot revoke downloaded copies or older retained object versions.
+- Fragment navigation is a best-effort helper, not a full hash router. Malformed
+  HTML and some authored event-handling patterns require source adaptation; see
+  the packaged security-model documentation for supported behavior and limits.
