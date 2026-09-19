@@ -1,5 +1,5 @@
 locals {
-  prefix = var.prefix == "" ? "" : "${trimsuffix(var.prefix, "/")}/"
+  prefix = "${trimsuffix(var.prefix, "/")}/"
   csp = join("; ", [
     "default-src 'none'", "script-src 'unsafe-inline'", "style-src 'unsafe-inline'",
     "img-src data:", "font-src data:", "media-src data: blob:",
@@ -115,7 +115,7 @@ resource "aws_cloudfront_distribution" "artifacts" {
   origin {
     domain_name              = aws_s3_bucket.artifacts.bucket_regional_domain_name
     origin_id                = "private-s3"
-    origin_path              = local.prefix == "" ? "" : "/${trimsuffix(local.prefix, "/")}"
+    origin_path              = "/${trimsuffix(local.prefix, "/")}"
     origin_access_control_id = aws_cloudfront_origin_access_control.artifacts.id
   }
 

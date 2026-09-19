@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
+import { CONTENT_SECURITY_POLICY } from '../../src/security/policy.ts';
 
 async function files(dir: string): Promise<string[]> {
   const out: string[] = [];
@@ -32,6 +33,23 @@ for (const name of ['exhibit-publish', 'exhibit-setup']) {
   assert.match(text, /\ndescription: .+/);
   assert.ok(text.includes('exhibit'));
 }
+const terraform = await readFile('examples/terraform/aws/main.tf', 'utf8');
+// Require the reference's literal, JSON-compatible directive list; reject expressions.
+const terraformCsp = terraform.match(/\bcsp\s*=\s*join\("; ",\s*(\[[\s\S]*?\])\s*\)/);
+assert.ok(terraformCsp?.[1], 'Terraform must declare its literal CSP directive list.');
+const directives: unknown = JSON.parse(terraformCsp[1]);
+assert.ok(Array.isArray(directives) && directives.every((value) => typeof value === 'string'));
+assert.equal(
+  directives.join('; '),
+  CONTENT_SECURITY_POLICY,
+  'Terraform CSP differs from policy.ts.',
+);
+assert.match(terraform, /content_security_policy\s*=\s*local\.csp\b/);
+const deployment = await readFile('src/skills/exhibit-setup/references/deployment.md', 'utf8');
+const skillCsp = [...deployment.matchAll(/^Content-Security-Policy: (.+)$/gm)];
+assert.equal(skillCsp.length, 1, 'Setup skill must declare exactly one CSP header.');
+assert.equal(skillCsp[0]?.[1], CONTENT_SECURITY_POLICY, 'Setup skill CSP differs from policy.ts.');
+
 const pkg: unknown = JSON.parse(await readFile('package.json', 'utf8'));
 assert.ok(
   typeof pkg === 'object' &&
@@ -51,4 +69,6 @@ assert.ok(
 assert.equal(pkg.bin.exhibit, pkg.bin.xbt);
 assert.equal(typeof pkg.private, 'boolean', 'Package private must explicitly be true or false.');
 assert.ok(pkg.dependencies.staticrypt === '3.5.4');
-process.stdout.write('Source import, output, package, and skill contracts verified.\n');
+process.stdout.write(
+  'Source import, output, package, skill, and CSP alignment contracts verified.\n',
+);

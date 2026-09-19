@@ -7,19 +7,27 @@ variable "region" {
 variable "bucket_name" {
   description = "Globally unique name for a NEW Exhibit bucket. Do not point this example at an existing bucket without importing/reviewing it."
   type        = string
+  nullable    = false
   validation {
-    condition     = can(regex("^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$", var.bucket_name))
-    error_message = "Use 3–63 lowercase letters, numbers, and interior hyphens."
+    # Deliberately exclude dots, which also excludes IPv4 names and .mrap aliases.
+    # https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+    condition = (
+      can(regex("^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$", var.bucket_name)) &&
+      !can(regex("^(xn--|sthree-|amzn-s3-demo-)", var.bucket_name)) &&
+      !can(regex("(-s3alias|--ol-s3|--x-s3|--table-s3|-an)$", var.bucket_name))
+    )
+    error_message = "Use 3-63 lowercase letters, numbers, and interior hyphens, without AWS reserved prefixes or suffixes. This example uses the shared global namespace."
   }
 }
 
 variable "prefix" {
-  description = "Exhibit object prefix; CloudFront origin_path maps its root to this prefix."
+  description = "Nonempty Exhibit object prefix; CloudFront origin_path maps its root to this prefix."
   type        = string
   default     = "exhibit/"
+  nullable    = false
   validation {
-    condition     = length(var.prefix) <= 128 && (var.prefix == "" || can(regex("^[a-zA-Z0-9][a-zA-Z0-9._-]*(/[a-zA-Z0-9][a-zA-Z0-9._-]*)*/?$", var.prefix)))
-    error_message = "Use at most 128 characters of safe slash-separated segments, no leading slash or traversal."
+    condition     = length(var.prefix) <= 128 && can(regex("^[a-zA-Z0-9][a-zA-Z0-9._-]*(/[a-zA-Z0-9][a-zA-Z0-9._-]*)*/?$", var.prefix))
+    error_message = "Use a nonempty prefix of at most 128 characters of safe slash-separated segments, no leading slash or traversal."
   }
 }
 

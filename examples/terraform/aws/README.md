@@ -23,6 +23,11 @@ state backend and retain its access controls.
 
 ## Plan first
 
+Use Terraform 1.x (at least 1.7.0); CI is pinned to 1.15.1. Bucket names use
+the shared global namespace and exclude dots and AWS reserved prefixes/suffixes.
+The no-dot restriction also rejects IP-address names. See the
+[AWS naming rules](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html).
+
 ```bash
 cp terraform.tfvars.example terraform.tfvars
 # Edit bucket_name to a NEW globally unique bucket name.
@@ -37,6 +42,26 @@ terraform apply exhibit.tfplan
 Provisioning incurs AWS charges. Use the intended AWS account/profile. Do not point
 this new-bucket configuration at an existing production bucket; adopting existing
 resources requires import and a separately reviewed plan.
+
+## Local validation
+
+The provider lock is qualified for macOS arm64 and Linux amd64. When intentionally
+updating the provider, refresh both platform hashes from the upstream registry:
+
+```bash
+terraform providers lock -platform=darwin_arm64 -platform=linux_amd64
+terraform fmt -check -recursive
+terraform init -backend=false -lockfile=readonly
+terraform validate
+terraform test
+```
+
+In a source checkout, `terraform test` uses a mock AWS provider and plan-only runs;
+it does not contact AWS or create resources. The test fixtures are not included in
+the npm deployment example. The source contract check (`node tools/verification/contracts.ts`
+from the repository root with Node 24) checks the CSP against application policy
+and the setup skill. Platform hashes are populated with
+[Terraform's provider lock command](https://developer.hashicorp.com/terraform/cli/commands/providers/lock).
 
 ## Client configuration
 
@@ -63,7 +88,8 @@ inline HTML example.
 
 ## Prefix mapping
 
-The default prefix is `exhibit/`. CloudFront origin_path is `/exhibit`, so
+The prefix must be nonempty, keeping publisher and CloudFront grants scoped below
+the bucket root. The default prefix is `exhibit/`. CloudFront origin_path is `/exhibit`, so
 `https://<distribution>/review.html` retrieves `exhibit/review.html`. The output
 configuration accounts for this: do not append the prefix again. Explicit `.html`
 URLs need no CloudFront Function or index-document rewrite.
