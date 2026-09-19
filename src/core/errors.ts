@@ -1,3 +1,5 @@
+import type { Warning } from './types.js';
+
 export type ErrorCode =
   | 'E_USAGE'
   | 'E_CONFIG'
@@ -29,17 +31,24 @@ export class ExhibitError extends Error {
   readonly hint: string;
   readonly exitCode: 1 | 2;
   readonly details: unknown;
+  readonly warnings: readonly Warning[];
 
   constructor(
     code: ErrorCode,
     message: string,
-    options: { hint?: string; exitCode?: 1 | 2; details?: unknown } = {},
+    options: {
+      hint?: string;
+      exitCode?: 1 | 2;
+      details?: unknown;
+      warnings?: readonly Warning[];
+    } = {},
   ) {
     super(message);
     this.code = code;
     this.hint = options.hint ?? 'Run exhibit --help or consult docs/user-guide/troubleshooting.md.';
     this.exitCode = options.exitCode ?? 1;
     this.details = options.details;
+    this.warnings = options.warnings ?? [];
   }
 }
 

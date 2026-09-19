@@ -22,4 +22,10 @@ describe('best-effort secret guard', () => {
     assert.equal(scanSecrets(text).length, 50);
     assert.equal(scanSecrets(text).length, 50);
   });
+  it('does not let one token family exhaust every other rule', () => {
+    const text = ('ghp_' + 'a'.repeat(25) + '\n').repeat(100) + '-----BEGIN PRIVATE KEY-----';
+    const findings = scanSecrets(text);
+    assert.equal(findings.length, 50);
+    assert.ok(findings.some((finding) => finding.rule === 'private-key'));
+  });
 });

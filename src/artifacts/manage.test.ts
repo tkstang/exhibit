@@ -1,9 +1,60 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
-import { config, date, memory, object } from '#core/fixtures.test-support';
+import { config, date, memory, object, s3Error } from '#core/fixtures.test-support';
 import { listArtifacts, removeArtifact } from './manage.js';
 import { publishArtifact } from './publish.js';
 describe('remote inventory and removal', () => {
+  it('retains the password when a DELETE 404 does not establish remote absence', async () => {
+    const { store, state, transport } = memory();
+    const artifact = await store.put(object('plan'));
+    await state.save({
+      schemaVersion: 1,
+      slug: 'plan',
+      bodySha256: artifact.bodySha256,
+      etag: artifact.etag,
+      status: 'published',
+      password: 'only-fixture-password',
+      url: 'https://example.test/plan.html',
+      savedAt: date,
+    });
+    transport.remove = async () => {
+      transport.head = async () => {
+        throw s3Error('UnknownError', 404);
+      };
+      throw s3Error('UnknownError', 404);
+    };
+    await assert.rejects(removeArtifact(store, state, 'plan'), { code: 'E_STORAGE' });
+    assert.equal(transport.objects.size, 1);
+    assert.equal(
+      (await state.read('plan', artifact.bodySha256))?.password,
+      'only-fixture-password',
+    );
+  });
+  it('cleans only the observed receipt after an already-absent DELETE response', async () => {
+    const { store, state, transport } = memory();
+    const artifact = await store.put(object('plan'));
+    const staleDigest = 'a'.repeat(64);
+    for (const digest of [artifact.bodySha256, staleDigest])
+      await state.save({
+        schemaVersion: 1,
+        slug: 'plan',
+        bodySha256: digest,
+        etag: artifact.etag,
+        status: 'published',
+        password: 'fixture-password',
+        url: 'https://example.test/plan.html',
+        savedAt: date,
+      });
+    const remove = transport.remove.bind(transport);
+    transport.remove = async (request) => {
+      await remove(request);
+      throw s3Error('NoSuchKey', 404);
+    };
+    assert.equal((await removeArtifact(store, state, 'plan')).removed, true);
+    assert.equal(await state.read('plan', artifact.bodySha256), null);
+    assert.ok(await state.read('plan', staleDigest));
+    assert.equal(transport.deletes[0]?.IfMatch, artifact.etag);
+  });
   it('retains the recovery password when a delayed delete overlaps an uncertain new publish', async () => {
     const { store, state } = memory();
     const old = await store.put(object('plan', 'old'));

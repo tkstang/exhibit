@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
-import { config, date, memory, object } from '#core/fixtures.test-support';
+import { config, date, memory, object, s3Error } from '#core/fixtures.test-support';
 import { ExhibitError } from '#core/errors';
 import { publishArtifact } from './publish.js';
 import type { PublishDependencies } from './publish.js';
@@ -19,6 +19,30 @@ function setup(text = 'Private source sentinel') {
   return { ...m, deps };
 }
 describe('publication use case', () => {
+  it('publishes new keys under HEAD-denied, prefix-list-authorized storage', async () => {
+    const { deps, transport } = setup();
+    transport.head = async () => {
+      throw s3Error('AccessDenied', 403);
+    };
+    const result = await publishArtifact({ file: 'plan.md' }, deps);
+    assert.equal(result.dry_run, false);
+    assert.equal(transport.listCalls, 1);
+    assert.equal(transport.writes[0]?.IfNoneMatch, '*');
+  });
+  it('still rejects a concurrent create after listing established absence', async () => {
+    const { deps, transport, store, receipts } = setup();
+    transport.head = async () => {
+      throw s3Error('AccessDenied', 403);
+    };
+    const put = store.put.bind(store);
+    store.put = async (input) => {
+      await put(object(input.slug, 'concurrent object'));
+      return put(input);
+    };
+    await assert.rejects(publishArtifact({ file: 'plan.md' }, deps), { code: 'E_CONFLICT' });
+    assert.equal(transport.writes.length, 1);
+    assert.equal([...receipts.values()][0]?.status, 'prepared');
+  });
   it('defaults to protection and saves the key before upload', async () => {
     const { deps, transport, receipts } = setup();
     const result = await publishArtifact({ file: 'plan.md' }, deps);
@@ -105,5 +129,69 @@ describe('publication use case', () => {
     );
     await assert.rejects(publishArtifact({ file: 'plan.md', password: 'short' }, deps));
     await assert.rejects(publishArtifact({ file: 'plan.md', overwrite: true }, deps));
+  });
+  it('scans source titles as well as body text without exposing matches', async () => {
+    const { deps, transport } = setup();
+    const token = 'ghp_' + 't'.repeat(30);
+    const titled = {
+      ...deps,
+      read: async () => ({ text: 'ordinary body', type: 'markdown' as const, title: token }),
+    };
+    for (const options of [{ public: true }, { strictSecrets: true }]) {
+      await assert.rejects(
+        publishArtifact({ file: 'plan.md', ...options }, titled),
+        (error: unknown) => {
+          assert.ok(error instanceof ExhibitError);
+          assert.equal(error.code, 'E_SECRET_DETECTED');
+          assert.equal(JSON.stringify(error).includes(token), false);
+          return true;
+        },
+      );
+    }
+    assert.equal(transport.writes.length, 0);
+  });
+  it('validates dry-run passwords and explicitly leaves remote state unchecked', async () => {
+    const { deps, transport } = setup();
+    await assert.rejects(
+      publishArtifact({ file: 'plan.md', dryRun: true, password: 'short' }, deps),
+      { code: 'E_PASSWORD' },
+    );
+    const result = await publishArtifact({ file: 'plan.md', dryRun: true }, deps);
+    assert.ok('remote_checked' in result && result.remote_checked === false);
+    assert.ok(result.warnings.some((warning) => warning.code === 'W_DRY_RUN_LOCAL'));
+    assert.equal(transport.listCalls, 0);
+  });
+  it('never uploads or persists a password after encryption failure', async () => {
+    const { deps, transport, receipts } = setup();
+    await assert.rejects(
+      publishArtifact(
+        { file: 'plan.md' },
+        {
+          ...deps,
+          protect: async () => {
+            throw new ExhibitError('E_ENCRYPTION', 'Fixture failure');
+          },
+        },
+      ),
+      { code: 'E_ENCRYPTION' },
+    );
+    assert.equal(transport.writes.length, 0);
+    assert.equal(receipts.size, 0);
+  });
+  it('retains safe secret warnings when a write may have succeeded', async () => {
+    const token = 'ghp_' + 'x'.repeat(30);
+    const { deps, receipts } = setup(token);
+    deps.store.put = async () => {
+      throw new ExhibitError('E_STORAGE', 'Fixture timeout', { exitCode: 2 });
+    };
+    await assert.rejects(publishArtifact({ file: 'plan.md' }, deps), (error: unknown) => {
+      assert.ok(error instanceof ExhibitError);
+      assert.equal(error.code, 'E_STORAGE');
+      assert.equal(error.exitCode, 2);
+      assert.ok(error.warnings.some((warning) => warning.code === 'W_SECRETS'));
+      assert.equal(JSON.stringify(error).includes(token), false);
+      return true;
+    });
+    assert.equal([...receipts.values()][0]?.status, 'prepared');
   });
 });

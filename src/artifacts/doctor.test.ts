@@ -4,6 +4,7 @@ import { config, memory } from '#core/fixtures.test-support';
 import { SECURITY_HEADERS } from '#security/policy';
 import { doctor, readResponseText } from './doctor.js';
 import { createProtector } from '#security/staticrypt';
+import { ExhibitError } from '#core/errors';
 
 describe('deployment doctor', () => {
   it('is read-only without --probe', async () => {
@@ -46,5 +47,23 @@ describe('deployment doctor', () => {
     await assert.rejects(readResponseText(new Response('x'.repeat(100)), 10), {
       code: 'E_NETWORK',
     });
+  });
+  it('reports the exact cleanup key when conditional cleanup fails', async () => {
+    const { store, transport } = memory();
+    const remove = store.remove.bind(store);
+    store.remove = async (slug, etag) => {
+      if (etag === '"exhibit-impossible-etag"') return remove(slug, etag);
+      throw new ExhibitError('E_STORAGE', 'Fixture cleanup failure');
+    };
+    const result = await doctor(
+      config,
+      store,
+      { probe: true },
+      { fetch: async () => new Response('not found', { status: 404 }) },
+    );
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, transport.writes[0]?.Key);
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
+    assert.equal(transport.objects.size, 1);
   });
 });

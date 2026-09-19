@@ -1,4 +1,4 @@
-import { ExhibitError } from '#core/errors';
+import { ExhibitError, normalizeError } from '#core/errors';
 import { generateSlug, publicUrl, requireSlug, sha256 } from '#core/identity';
 import type {
   ArtifactStore,
@@ -39,7 +39,11 @@ export interface PublishDependencies {
   readonly makeSlug?: () => string;
 }
 
-export async function publishArtifact(options: PublishOptions, dependencies: PublishDependencies) {
+async function publish(
+  options: PublishOptions,
+  dependencies: PublishDependencies,
+  warnings: Warning[],
+) {
   if (options.public && options.password !== undefined)
     throw new ExhibitError('E_USAGE', '--public cannot be combined with a password.');
   if (options.overwrite && !options.slug)
@@ -54,8 +58,10 @@ export async function publishArtifact(options: PublishOptions, dependencies: Pub
     config.maxInputBytes,
     options.title,
   );
-  const findings = scanSecrets(input.text);
-  const warnings: Warning[] = [];
+  const findings = [
+    ...scanSecrets(input.text).map((finding) => ({ ...finding, source: 'body' })),
+    ...scanSecrets(input.title).map((finding) => ({ ...finding, source: 'title' })),
+  ];
   if (input.type === 'html' && options.title !== undefined) {
     warnings.push({
       code: 'W_HTML_TITLE',
@@ -81,9 +87,23 @@ export async function publishArtifact(options: PublishOptions, dependencies: Pub
   }
   const rendered = await (dependencies.render ?? renderArtifact)(input, config);
   warnings.push(...rendered.warnings);
+  if (options.password !== undefined) {
+    validatePassword(options.password);
+    warnings.push({
+      code: 'W_CUSTOM_PASSWORD',
+      message:
+        'A length check does not measure password strength. Use a unique high-entropy password.',
+    });
+  }
   if (options.dryRun) {
+    warnings.push({
+      code: 'W_DRY_RUN_LOCAL',
+      message:
+        'Local render/scan only. Remote existence, ownership, permissions, and conditional operations were not checked.',
+    });
     return {
       dry_run: true,
+      remote_checked: false,
       slug,
       url,
       source_type: input.type,
@@ -93,7 +113,6 @@ export async function publishArtifact(options: PublishOptions, dependencies: Pub
       warnings,
     };
   }
-  if (options.password !== undefined) validatePassword(options.password);
   const existing = await store.head(slug);
   if (existing?.kind === 'probe')
     throw new ExhibitError('E_NOT_MANAGED', 'This slug belongs to a diagnostic probe.');
@@ -155,13 +174,6 @@ export async function publishArtifact(options: PublishOptions, dependencies: Pub
       message: 'This password is only in the publication result. Save it securely now.',
     });
   }
-  if (options.password !== undefined) {
-    warnings.push({
-      code: 'W_CUSTOM_PASSWORD',
-      message:
-        'A length check does not measure password strength. Use a unique high-entropy password.',
-    });
-  }
   return {
     dry_run: false,
     id: slug,
@@ -179,4 +191,19 @@ export async function publishArtifact(options: PublishOptions, dependencies: Pub
     state_saved: stateSaved,
     warnings,
   };
+}
+
+export async function publishArtifact(options: PublishOptions, dependencies: PublishDependencies) {
+  const warnings: Warning[] = [];
+  try {
+    return await publish(options, dependencies, warnings);
+  } catch (error) {
+    const normalized = normalizeError(error);
+    throw new ExhibitError(normalized.code, normalized.message, {
+      hint: normalized.hint,
+      exitCode: normalized.exitCode,
+      details: normalized.details,
+      warnings: [...warnings, ...normalized.warnings],
+    });
+  }
 }
