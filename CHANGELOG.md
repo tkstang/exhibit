@@ -19,8 +19,10 @@ been published; check npm and GitHub Releases for publication status.
   and uncertain uploads without unconditional retries.
 - Inspect retained local receipts with `receipts <slug>` and deliberately forget
   one exact digest only with explicit acknowledgement of password loss.
+- Retain recovery receipts when deletion is only inferred from a provider listing,
+  and provide human-readable local inventory and repair guidance.
 - Keep fragment links inside Markdown and HTML viewers without relaxing isolation.
-- Preserve warnings on failed operations, scan titles as well as document bodies,
+- Preserve warnings on failed operations, scan rendered titles and document bodies,
   and report dry-run remote checks as unperformed.
 - Distribute publishing/setup skills as self-contained standalone or plugin
   bundles, with CLI availability checks and installation guidance.

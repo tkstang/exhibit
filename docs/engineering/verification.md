@@ -9,7 +9,7 @@ description: Reproduce local checks and distinguish tested behavior from deploym
 
 The installed-toolchain baseline was checked on macOS arm64 with Node 24.18.0
 and pnpm 11.8.0 on 2026-09-18. Local checks passed for strict types, lint/contracts,
-formatting, build, 159 Vitest tests in 23 files, and 50 real HTTP Chromium tests.
+formatting, build, 181 Vitest tests in 25 files, and 74 real HTTP Chromium tests.
 Package verification checks the packed resources, both binary entrypoints, and
 an encrypted viewer rendered from the extracted package.
 
@@ -37,7 +37,7 @@ SDK tests exercise conditional PUT/DELETE against a loopback HTTP fixture. Crypt
 tests use actual pinned StatiCrypt, not a substitute cipher. These checks do not
 contact a live storage provider. A signed SDK HTTP fixture checks HEAD 403 followed
 by an exact-key-prefix listing and create-only PUT. Reference Terraform formatting,
-backend-disabled/read-only initialization, validation, and 16 mocked tests passed
+backend-disabled/read-only initialization, validation, and 17 mocked tests passed
 locally; no apply or deployment acceptance is implied. The lockfile includes
 macOS arm64 and Linux amd64 provider hashes; existing registry ZIP hashes already
 covered multiple platforms, so the review's claim of inevitable Linux lockfile
@@ -61,14 +61,20 @@ For the reference infrastructure:
 ```bash
 cd examples/terraform/aws
 terraform fmt -check -recursive
-terraform init -backend=false
+terraform init -backend=false -lockfile=readonly -input=false
 terraform validate
 terraform test
 ```
 
-`pnpm worktree:validate` runs the application, browser, and package gates and
-requires a clean tree before and after. PR CI also initializes and validates the
-Terraform example on Linux. Check the actual PR status rather than treating a
+`pnpm terraform:check` runs those same reference-infrastructure checks from the
+repository root. `pnpm lint:workflows` runs actionlint 1.7.12 through Go; it requires
+Go and access to its module proxy on the first run. This pinned check passed locally
+on 2026-09-18; remote CI for these edits has not run.
+
+`pnpm worktree:validate` runs the application, browser, package, Terraform, and
+workflow-lint gates and requires a clean tree before and after. `pnpm check` remains
+the Node-only application gate. PR CI runs the same Terraform and workflow checks
+on Linux. Check the actual PR status rather than treating a
 local result as a CI result. See [development](development.md).
 
 ## Not yet qualified
@@ -88,6 +94,8 @@ local result as a CI result. See [development](development.md).
 File I/O tests verify file sync before rename/link and parent-directory sync after
 it. Directory sync is skipped on Windows and unsupported filesystems; unexpected
 I/O errors fail the write. These ordering checks are not power-cut testing.
+Syncing an ancestor that Exhibit does not own tolerates symlink/access limitations;
+the validated receipt directory still fails on unexpected sync errors after rename/link.
 
 ## September review follow-up
 
@@ -113,6 +121,36 @@ retained in the local review archive. Use the following map for re-review:
 | m5                      | Explicit local receipt inventory and exact-digest forgetting with consent; no automatic pruning or remote mutation; state and CLI tests   |
 | m16                     | CSP equality enforced across runtime, Terraform, and setup skill source                                                                   |
 | m19                     | `pnpm check` rejects non-24 Node; all follow-up validation uses Node 24.18.0                                                              |
+
+### Second review follow-up
+
+The review of `8da173d..5c9b911` reported 1 important, 6 medium, and 12 minor
+findings. The following map separates fixes from documented limitations and a
+disputed naming-rule claim:
+
+| Findings   | Treatment and evidence                                                                                                                                                                                    |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I1         | Symlinked ancestors and ancestor access failures no longer block private receipt writes; owned-directory sync remains strict; filesystem regressions                                                      |
+| M1         | Diagnostic stderr failure does not override a delivered result; undelivered result channels still fail; CLI regressions                                                                                   |
+| M2, m7     | Fragment guards cover stopped propagation, open shadow roots and SVG links; literal IDs and focus handling; HTTP browser regressions. Malformed tails and full hash-routing remain documented limitations |
+| M3         | Inferred absence retains all receipts, returns `removed: false` and `W_DELETE_UNCONFIRMED`; confirmed conditional deletion remains distinct; stale-listing and doctor-cleanup regressions                 |
+| M4         | Inventory remains fail-closed with static, secret-free repair guidance for stray entries and damaged receipts; filesystem/CLI tests                                                                       |
+| M5         | Terraform README now matches packed test fixtures                                                                                                                                                         |
+| M6         | Reproducible pinned actionlint command and CI gate; prior local actionlint evidence was a one-off, not a pre-existing CI check                                                                            |
+| m1, m4, m5 | Known help topics, human receipt output, and explicit flag coupling; command tests                                                                                                                        |
+| m2, m6     | Injected receipt dependencies and colocated domain tests; failure warnings retained                                                                                                                       |
+| m3         | Exact Node version aligned across `.nvmrc`, CI and docs                                                                                                                                                   |
+| m8, m12    | Scan only embedded titles; monotonic line counting avoids repeated prefix allocation; listed keys do not trigger redundant absence probes on denied HEADs                                                 |
+| m9, m10    | Internal `E_NETWORK` documented; shared local/CI Terraform gate includes read-only lockfile initialization and mocked tests                                                                               |
+| m11        | AWS explicitly reserves the entire `-an` suffix; validation retained with a regression and source link. Tooling source-import exception documented                                                        |
+
+The viewer is still a best-effort fragment helper, not a DOM event or hash-routing
+engine. Closed shadow roots, malformed tails, immediate propagation stops, late
+window handlers, and cancellation listeners installed during the same dispatch
+have explicit limits in the [security model](../user-guide/security-model.md).
+The last case was independently reproduced during this pass and is documented,
+not claimed fixed. Doctor also reports a cleanup key when HEAD only suggests the
+probe is absent; a stale listing cannot certify cleanup.
 
 This project has not received an independent security audit. Read the
 [security model](../user-guide/security-model.md) and
