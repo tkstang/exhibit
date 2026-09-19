@@ -7,7 +7,9 @@ description: 'Run local checks, use worktrees and hooks, and prepare an intentio
 
 ## Toolchain
 
-Node 24, pnpm 11.8.0, TypeScript 7, Oxc, Vitest 4, and Playwright. Runtime modules
+Node 24, pnpm 11.8.0, TypeScript 7, Oxc, Vitest 4, and Playwright. `.nvmrc` pins
+Node 24.18.0; `tools/verification/runtime.ts` requires Node 24 for `pnpm check`.
+Runtime modules
 are ESM. The SDK and crypto pins are deliberate; see `package.json` and the adapter
 contract test before upgrading them.
 
@@ -39,8 +41,9 @@ Strict release-age handling prevents automatic future exceptions.
 
 Oxfmt has been run on the imported sources. OAT-generated files and managed
 `AGENTS.md` blocks are excluded so formatting cannot invalidate OAT's exact markers.
-The original delivery's `MANIFEST.sha256` is historical provenance for the laptop
-archive, not a checksum list for the subsequently edited Git tree.
+The obsolete root `MANIFEST.sha256` was removed; its original delivery provenance
+remains in Git history. Release checksums describe the corresponding release
+artifacts, not the working tree.
 
 pnpm 11 uses `pnpm add -g .` to register local binaries; see the
 [pnpm migration note](https://pnpm.io/11.x/cli/link). Both installed binaries were

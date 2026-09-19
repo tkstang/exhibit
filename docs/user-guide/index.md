@@ -16,5 +16,6 @@ and password with the intended recipients.
 - [CLI reference](cli.md)
 - [Security model](security-model.md)
 - [Troubleshooting](troubleshooting.md)
+- [Receipt and publication recovery](recovery.md)
 - [Agents and organization skills](agents/index.md)
 - [Deployment](deployment/index.md)

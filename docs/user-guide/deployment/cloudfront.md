@@ -29,6 +29,12 @@ reviewing origin trust and caching. Configure:
    undermine origin cache directives.
 6. Security response headers matching `src/security/policy.ts`.
 
+The Terraform example additionally emits `Strict-Transport-Security` (HSTS).
+HSTS is not part of `src/security/policy.ts` and is not checked by `doctor --probe`;
+verify it separately on the deployed HTTPS response. The example does not configure
+CloudFront or S3 access logging; arrange any required logging and retention through
+separately approved infrastructure changes.
+
 Do not share this origin with application login/session cookies. Avoid a CDN
 behavior that forwards user cookies, Authorization, or arbitrary query strings to
 S3. The viewer has no server-side session.

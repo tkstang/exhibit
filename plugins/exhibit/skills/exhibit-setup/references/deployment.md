@@ -42,6 +42,10 @@ storage API, not the viewer URL; choose region and path style for that provider.
 URLs require HTTPS except loopback development and must not contain credentials,
 query strings, or fragments. Never put access keys in this configuration.
 
+With `xbt init`, pass `--endpoint <url>` for the storage API and
+`--force-path-style` when the provider requires path-style requests. Both are
+distinct from the required `--public-base-url` viewer URL.
+
 The viewer URL root must map to the storage prefix exactly once. With the template,
 CloudFront's origin path is `/exhibits`; any private ALB route must perform the
 equivalent mapping. `--dir` appends a relative path to both configured roots:
@@ -68,6 +72,11 @@ Grant publishers prefix-scoped `s3:ListBucket`, `s3:GetObject`, `s3:PutObject`, 
 `s3:DeleteObject`, without broad administrative permissions. Viewers receive no
 publisher credentials. Require create-only writes and ETag-conditional overwrite
 and delete support; do not bypass failed conditions with unconditional retries.
+
+HEAD 403 triggers an exact-key prefix-scoped list to establish absence only from
+a successful untruncated result without that key. Listing never proves ownership;
+recognized metadata and an ETag from HEAD are still required for management.
+Metadata dates must be canonical UTC `YYYY-MM-DDTHH:mm:ss.sssZ` timestamps.
 
 Encryption and audience access are separate. Encryption is on by default in every
 directory. `--no-encrypt` (legacy alias `--public`) makes content readable without
@@ -114,6 +123,11 @@ blocked. Keep standalone HTML self-contained. Do not replace this with a blanket
 tag cannot enforce it. The private ALB bypasses CloudFront's response headers and
 must supply its own anti-framing policy, even for VPN clients. Review the effect
 of header changes on other applications sharing a listener.
+
+The reference Terraform additionally supplies HSTS. `xbt doctor --probe` does not
+check HSTS; inspect the deployed HTTPS response separately. CloudFront/S3 access
+logging is deliberately not configured by the reference example. Design and
+approve any logging, retention, and access controls separately.
 
 ## Verify the actual routes
 

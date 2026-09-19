@@ -17,6 +17,11 @@ been published; check npm and GitHub Releases for publication status.
   `--no-encrypt` only for deliberately unencrypted publication.
 - Use conditional writes/deletes and local password receipts to handle conflicts
   and uncertain uploads without unconditional retries.
+- Inspect retained local receipts with `receipts <slug>` and deliberately forget
+  one exact digest only with explicit acknowledgement of password loss.
+- Keep fragment links inside Markdown and HTML viewers without relaxing isolation.
+- Preserve warnings on failed operations, scan titles as well as document bodies,
+  and report dry-run remote checks as unperformed.
 - Distribute publishing/setup skills as self-contained standalone or plugin
   bundles, with CLI availability checks and installation guidance.
 - Configure private S3/CDN hosting using deployment guides, a new-bucket Terraform
