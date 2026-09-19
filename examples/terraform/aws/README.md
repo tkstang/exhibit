@@ -27,6 +27,8 @@ Use Terraform 1.x (at least 1.7.0); CI is pinned to 1.15.1. Bucket names use
 the shared global namespace and exclude dots and AWS reserved prefixes/suffixes.
 The no-dot restriction also rejects IP-address names. See the
 [AWS naming rules](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html).
+AWS reserves every `-an` suffix for account regional buckets, including names such
+as `example-an`; this shared-global-namespace example intentionally rejects them.
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
@@ -45,23 +47,31 @@ resources requires import and a separately reviewed plan.
 
 ## Local validation
 
-The provider lock is qualified for macOS arm64 and Linux amd64. When intentionally
-updating the provider, refresh both platform hashes from the upstream registry:
+From the source repository root, run `pnpm terraform:check`. Local worktree
+validation and CI use the same script. In an extracted npm package, run the
+equivalent commands from this example directory:
 
 ```bash
-terraform providers lock -platform=darwin_arm64 -platform=linux_amd64
 terraform fmt -check -recursive
-terraform init -backend=false -lockfile=readonly
+terraform init -backend=false -lockfile=readonly -input=false
 terraform validate
 terraform test
 ```
 
-In a source checkout, `terraform test` uses a mock AWS provider and plan-only runs;
-it does not contact AWS or create resources. The test fixtures are not included in
-the npm deployment example. The source contract check (`node tools/verification/contracts.ts`
+`terraform test` uses a mock AWS provider and plan-only runs; it does not contact
+AWS or create resources. The test fixtures and provider lockfile are included in
+the npm deployment example. Initialization may download providers from the registry,
+but validation leaves the lockfile unchanged. The source contract check (`node tools/verification/contracts.ts`
 from the repository root with Node 24) checks the CSP against application policy
-and the setup skill. Platform hashes are populated with
-[Terraform's provider lock command](https://developer.hashicorp.com/terraform/cli/commands/providers/lock).
+and the setup skill.
+
+The provider lock is qualified for macOS arm64 and Linux amd64. Only when
+intentionally updating the provider, refresh both platform hashes with
+[Terraform's provider lock command](https://developer.hashicorp.com/terraform/cli/commands/providers/lock):
+
+```bash
+terraform providers lock -platform=darwin_arm64 -platform=linux_amd64
+```
 
 ## Client configuration
 

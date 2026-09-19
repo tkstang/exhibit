@@ -10,6 +10,7 @@ variable "bucket_name" {
   nullable    = false
   validation {
     # Deliberately exclude dots, which also excludes IPv4 names and .mrap aliases.
+    # AWS reserves every -an suffix for account regional buckets, not this global namespace.
     # https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
     condition = (
       can(regex("^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$", var.bucket_name)) &&

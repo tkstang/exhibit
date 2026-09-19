@@ -119,6 +119,14 @@ run "table_bucket" {
   expect_failures = [var.bucket_name]
 }
 
+run "reserved_an_suffix" {
+  command = plan
+  variables {
+    bucket_name = "example-an"
+  }
+  expect_failures = [var.bucket_name]
+}
+
 run "account_regional_bucket" {
   command = plan
   variables {

@@ -66,6 +66,8 @@
     "build": "tsc -p tsconfig.build.json && node tools/verification/build.ts",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.tools.json",
     "lint": "oxlint && node tools/verification/contracts.ts && pnpm skills:check && pnpm docs:check",
+    "lint:workflows": "go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck= -pyflakes=",
+    "terraform:check": "node tools/verification/terraform.ts",
     "skills:build": "node tools/packaging/skills.ts",
     "skills:check": "node tools/packaging/skills.ts --check",
     "test:skills": "node --test tools/packaging/skills.test.ts",

@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
+// Tooling exception: inspect current source before build; #security/* resolves to dist in Node.
 import { CONTENT_SECURITY_POLICY } from '../../src/security/policy.ts';
 
 async function files(dir: string): Promise<string[]> {

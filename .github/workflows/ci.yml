@@ -23,6 +23,7 @@ jobs:
         shell: bash
         run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - run: pnpm lint:workflows
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:browser
       - run: pnpm test:package
@@ -36,9 +37,7 @@ jobs:
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
           terraform_version: '1.15.1'
-      - working-directory: examples/terraform/aws
-        run: |
-          terraform fmt -check -recursive
-          terraform init -backend=false -lockfile=readonly
-          terraform validate
-          terraform test
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - run: node tools/verification/terraform.ts

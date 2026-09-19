@@ -14,4 +14,6 @@ assert_clean
 pnpm check
 pnpm test:browser
 pnpm test:package
+pnpm terraform:check
+pnpm lint:workflows
 assert_clean

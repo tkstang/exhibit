@@ -93,15 +93,29 @@ preview adapter also remains JavaScript and runs after `pnpm build`.
 
 ## Infrastructure checks
 
+Install Terraform 1.15.1 (the CI version), then run from the repository root:
+
 ```bash
-cd examples/terraform/aws
-terraform fmt -check
-terraform init -backend=false
-terraform validate
+pnpm terraform:check
 ```
+
+This runs formatting checks, backend-disabled initialization with
+`-lockfile=readonly -input=false`, validation, and mock-provider, plan-only tests.
+Initialization may download providers from the registry; these checks do not
+contact AWS or create resources. CI calls the same `tools/verification/terraform.ts`.
+Terraform remains separate from `pnpm check` and runs in `pnpm worktree:validate`.
 
 Use an explicitly reviewed account/workspace and plan before any apply. The example
 creates resources and can incur charges. Nothing in `pnpm check` deploys anything.
+
+## Workflow checks
+
+With a recent Go toolchain installed, run `pnpm lint:workflows` from the repository
+root. It runs `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck= -pyflakes=`
+against all GitHub workflows. Go downloads the pinned tool and its dependencies
+on first use. Optional shellcheck and pyflakes integrations are disabled so the
+same workflow checks run regardless of which extra tools are installed. CI and
+`pnpm worktree:validate` run this command too.
 
 ## Worktrees and Git hooks
 
@@ -117,7 +131,8 @@ Archive downloads are opt-in: `SYNC_S3_ARCHIVES=1 pnpm worktree:init`.
 probe or publication. Install Chromium separately with `pnpm exec playwright install chromium`.
 
 `pnpm worktree:validate` requires a clean tree and runs `check`, HTTP browser tests,
-and package verification, then checks cleanliness again.
+package verification, Terraform checks, and workflow lint, then checks cleanliness
+again. Install Terraform and Go before running this complete gate.
 
 The pre-commit hook runs lint, typecheck, and formatting checks without modifying
 files. The commit-msg hook enforces Conventional Commits. `GIT_HOOKS=0` is an explicit
