@@ -93,7 +93,8 @@ preview adapter also remains JavaScript and runs after `pnpm build`.
 
 ## Infrastructure checks
 
-Install Terraform 1.15.1 (the CI version), then run from the repository root:
+Install Terraform 1.7.0 or later, below 2.0.0 (CI pins 1.15.1), then run from the
+repository root:
 
 ```bash
 pnpm terraform:check
@@ -115,7 +116,8 @@ root. It runs `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellc
 against all GitHub workflows. Go downloads the pinned tool and its dependencies
 on first use. Optional shellcheck and pyflakes integrations are disabled so the
 same workflow checks run regardless of which extra tools are installed. CI and
-`pnpm worktree:validate` run this command too.
+`pnpm worktree:validate` run this command too; CI installs a pinned Go toolchain
+with a commit-pinned `actions/setup-go` first.
 
 ## Worktrees and Git hooks
 

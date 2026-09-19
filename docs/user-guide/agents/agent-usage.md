@@ -72,9 +72,14 @@ It does not provision infrastructure or replace IAM/CDN access controls.
 Every `--json` invocation emits exactly one envelope, including help/version/errors,
 when the output stream is writable. Output delivery failure exits 2 and the
 operation may already have completed; preserve receipts before retrying.
-Diagnostics and warning prose go to stderr. Parse stdout; do not scrape terminal
-output or branch on English error messages. Exit 0 is success, 1 an actionable
-input/environment problem, 2 an unexpected/system/transport problem.
+Diagnostics and warning prose go to stderr and are advisory; only the envelope's
+`warnings` are guaranteed. Parse stdout; do not scrape terminal output or branch on
+English error messages. `ok: true` means the command completed, not that every
+remote effect was confirmed: after `remove`, require `data.removed === true`. With
+`removed: false` and `W_DELETE_UNCONFIRMED`, the deletion is unverified and the
+receipt is retained; follow [recovery](../recovery.md) instead of retrying blindly.
+Exit 0 is success, 1 an actionable input/environment problem, 2 an
+unexpected/system/transport problem.
 
 ```bash
 exhibit publish /absolute/path/to/design.md --json

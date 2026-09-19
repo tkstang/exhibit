@@ -38,7 +38,9 @@ boolean options such as `--json` take no value.
 All commands accept `--config <file>`, `--json`, `-h` / `--help`, and `-v` /
 `--version`. Config precedence is `--config`, `EXHIBIT_CONFIG`, then the per-user
 default; see [configuration](configuration.md) for paths and environment variables.
-`help` and `version` are also commands. Help/version do not contact storage.
+`help` and `version` are also commands. `help <command>` accepts one known command
+name or alias and prints this same general help; an unknown name is an `E_USAGE`
+error (`Unknown help topic.`). Help/version do not contact storage.
 
 | Command        | Option                     | Meaning/default                                                                          |
 | -------------- | -------------------------- | ---------------------------------------------------------------------------------------- |
@@ -156,6 +158,9 @@ not necessarily have a success warnings array. With `--json`, stdout contains on
 envelope, including argument errors; parse stable codes rather than English text.
 An output-stream failure can prevent envelope delivery and exits 2; the operation
 may already have completed. Retain receipts and inspect state before retrying.
+Stderr diagnostics are advisory: if only stderr is unwritable, the delivered result
+keeps its exit code and human-mode warning prose is lost. Only `--json` carries
+warnings inside the result itself.
 Failure details can contain diagnostic
 checks or non-sensitive rule/line findings. Errors do not expose arbitrary AWS error
 messages or secrets. `command` can be `unknown` if argument parsing failed.

@@ -9,7 +9,7 @@ description: Reproduce local checks and distinguish tested behavior from deploym
 
 The installed-toolchain baseline was checked on macOS arm64 with Node 24.18.0
 and pnpm 11.8.0 on 2026-09-18. Local checks passed for strict types, lint/contracts,
-formatting, build, 181 Vitest tests in 25 files, and 74 real HTTP Chromium tests.
+formatting, build, 185 Vitest tests in 25 files, and 74 real HTTP Chromium tests.
 Package verification checks the packed resources, both binary entrypoints, and
 an encrypted viewer rendered from the extracted package.
 
@@ -150,7 +150,11 @@ window handlers, and cancellation listeners installed during the same dispatch
 have explicit limits in the [security model](../user-guide/security-model.md).
 The last case was independently reproduced during this pass and is documented,
 not claimed fixed. Doctor also reports a cleanup key when HEAD only suggests the
-probe is absent; a stale listing cannot certify cleanup.
+probe is absent; a stale listing cannot certify cleanup. The exception is a probe
+upload that was denied (`E_BUCKET_ACCESS` or `E_CREDENTIALS`): doctor still inspects
+the slug and removes a probe left by an earlier retried attempt; when none is
+visible it reports a skipped cleanup check and no key. Any other upload failure,
+including a conflict, stays uncertain and keeps the key.
 
 This project has not received an independent security audit. Read the
 [security model](../user-guide/security-model.md) and
