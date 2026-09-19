@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { marked } from 'marked';
+import { normalizeReleaseArchive } from './archive.ts';
 import {
   hashes,
   preparationDecision,
@@ -86,6 +87,7 @@ async function main() {
   const archiveName = archives[0];
   assert.ok(archiveName);
   const archive = join(out, archiveName);
+  await writeFile(archive, normalizeReleaseArchive(await readFile(archive)));
   run(process.execPath, ['tools/packaging/package.ts', '--archive', archive, '--install-smoke'], {
     stdio: 'inherit',
   });

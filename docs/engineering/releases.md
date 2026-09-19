@@ -56,6 +56,20 @@ and licenses, and for the absence of secrets, receipts, and caches. Review the
 notes alongside it. In the output directory, check `shasum -a 256 -c SHA256SUMS`.
 Retain the output through publication and any retry.
 
+Release preparation normalizes the fresh archive's gzip operating-system byte to
+`255` (unspecified), before installation checks, hashing, and registry comparison.
+The tar contents, compressed payload, and checksum trailer are unchanged. This
+removes the host-specific header difference observed between macOS and Linux;
+it does not guarantee that arbitrary toolchain versions produce identical output.
+PR release dry runs build on both operating systems and require all four prepared
+release files to match byte for byte. Plain `pnpm pack` output is not normalized;
+use the archive from `pnpm release:validate` for publication.
+
+Normalization applies only to newly prepared archives. Never rewrite a retained,
+approved, or published archive, or normalize registry bytes to bypass the exact
+integrity comparison. The gzip header field is defined in
+[RFC 1952](https://www.rfc-editor.org/rfc/rfc1952.html#section-2.3.1).
+
 For publication readiness, add the exact stable tag:
 
 ```bash
