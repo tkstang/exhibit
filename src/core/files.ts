@@ -60,7 +60,7 @@ export async function ensurePrivateDirectory(path: string): Promise<void> {
   try {
     await mkdir(path, { recursive: true, mode: 0o700 });
     await assertPrivateDirectory(path);
-    await syncDirectory(dirname(path));
+    await syncDirectory(dirname(path), true);
   } catch {
     throw new ExhibitError('E_STATE', 'Cannot create a private local directory.', {
       hint: 'Use an owned, non-symlink directory. Check EXHIBIT_STATE_DIR and EXHIBIT_CONFIG.',
@@ -69,14 +69,18 @@ export async function ensurePrivateDirectory(path: string): Promise<void> {
 }
 
 /** Persist directory entries where supported; unexpected I/O failures remain fatal. */
-async function syncDirectory(path: string): Promise<void> {
+async function syncDirectory(path: string, ancestor = false): Promise<void> {
   if (process.platform === 'win32') return;
   let directory;
   try {
     directory = await open(path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
     await directory.sync();
   } catch (error) {
-    if (!['EINVAL', 'ENOTSUP', 'ENOSYS'].some((code) => hasCode(error, code))) throw error;
+    // Ancestors are not Exhibit-owned: a valid private child can live below a
+    // symlink or a searchable directory that we cannot open for reading.
+    const tolerated = ['EINVAL', 'ENOTSUP', 'ENOSYS'];
+    if (ancestor) tolerated.push('ELOOP', 'EACCES', 'EPERM', 'EROFS');
+    if (!tolerated.some((code) => hasCode(error, code))) throw error;
   } finally {
     await directory?.close();
   }

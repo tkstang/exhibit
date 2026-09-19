@@ -30,7 +30,7 @@ describe('remote inventory and removal', () => {
       'only-fixture-password',
     );
   });
-  it('cleans only the observed receipt after an already-absent DELETE response', async () => {
+  it('retains receipts when an already-absent DELETE response only infers absence', async () => {
     const { store, state, transport } = memory();
     const artifact = await store.put(object('plan'));
     const staleDigest = 'a'.repeat(64);
@@ -50,8 +50,10 @@ describe('remote inventory and removal', () => {
       await remove(request);
       throw s3Error('NoSuchKey', 404);
     };
-    assert.equal((await removeArtifact(store, state, 'plan')).removed, true);
-    assert.equal(await state.read('plan', artifact.bodySha256), null);
+    const result = await removeArtifact(store, state, 'plan');
+    assert.equal(result.removed, false);
+    assert.equal(result.warnings[0]?.code, 'W_DELETE_UNCONFIRMED');
+    assert.ok(await state.read('plan', artifact.bodySha256));
     assert.ok(await state.read('plan', staleDigest));
     assert.equal(transport.deletes[0]?.IfMatch, artifact.etag);
   });
@@ -62,7 +64,7 @@ describe('remote inventory and removal', () => {
       {
         ...store,
         async remove(slug, etag) {
-          await store.remove(slug, etag);
+          const outcome = await store.remove(slug, etag);
           await assert.rejects(
             publishArtifact(
               { file: 'fixture.html', slug: 'plan', password: 'new-fixture-password' },
@@ -82,6 +84,7 @@ describe('remote inventory and removal', () => {
               },
             ),
           );
+          return outcome;
         },
       },
       state,
@@ -91,6 +94,32 @@ describe('remote inventory and removal', () => {
     assert.ok(current);
     assert.notEqual(current.bodySha256, old.bodySha256);
     assert.equal((await state.read('plan', current.bodySha256))?.password, 'new-fixture-password');
+  });
+  it('retains the only password when a backend serves a stale empty listing after DELETE 404', async () => {
+    const { store, state, transport } = memory();
+    const artifact = await store.put(object('plan'));
+    await state.save({
+      schemaVersion: 1,
+      slug: 'plan',
+      bodySha256: artifact.bodySha256,
+      etag: artifact.etag,
+      status: 'published',
+      password: 'only-fixture-password',
+      url: 'https://example.test/plan.html',
+      savedAt: date,
+    });
+    transport.remove = async () => {
+      throw s3Error('UnknownError', 404);
+    };
+    transport.list = async () => ({ IsTruncated: false, Contents: [] });
+    const result = await removeArtifact(store, state, 'plan');
+    assert.equal(result.removed, false);
+    assert.equal(transport.objects.size, 1);
+    assert.equal(
+      (await state.read('plan', artifact.bodySha256))?.password,
+      'only-fixture-password',
+    );
+    assert.match(result.warnings[0]!.message, new RegExp(`--forget ${artifact.bodySha256}`));
   });
   it('never shows local passwords without an explicit flag', async () => {
     const { store, state } = memory();

@@ -48,8 +48,9 @@ Remove:
 Receipts:
   --show-passwords          Explicitly reveal locally retained passwords
   --forget <body-sha256>    Select one exact local receipt to forget; never deletes remote data
-  --dry-run                 Inspect the selected receipt without forgetting it
-  --force                   Acknowledge permanent loss of the selected receipt's password
+                            Cannot be combined with --show-passwords; requires --force or --dry-run
+  --dry-run                 Requires --forget; inspect the selected receipt without forgetting it
+  --force                   Requires --forget; acknowledge permanent loss of its password
 
 Doctor:
   --probe                   Explicitly write/fetch/delete a non-sensitive encrypted fixture;

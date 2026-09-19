@@ -1,16 +1,23 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, readFile } from 'node:fs/promises';
+import { mkdtemp, rm, readFile, mkdir, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, it, vi } from 'vitest';
 import { writePrivateJson } from './files.js';
 
-const audit = vi.hoisted(() => ({ events: [] as string[], failure: '' }));
+const audit = vi.hoisted(() => ({
+  events: [] as string[],
+  failure: '',
+  deniedPath: '',
+  deniedCode: '',
+}));
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>();
   return {
     ...actual,
     open: async (...args: Parameters<typeof actual.open>) => {
+      if (args[0] === audit.deniedPath)
+        throw Object.assign(new Error('fixture'), { code: audit.deniedCode });
       const handle = await actual.open(...args);
       const directory = (await handle.stat()).isDirectory();
       const sync = handle.sync.bind(handle);
@@ -35,7 +42,52 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 afterEach(() => {
   audit.events.length = 0;
   audit.failure = '';
+  audit.deniedPath = '';
+  audit.deniedCode = '';
 });
+
+it.skipIf(process.platform === 'win32')(
+  'permits symlinked ancestors but not a symlinked private directory',
+  async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'exhibit-ancestor-'));
+    try {
+      await mkdir(join(dir, 'real'));
+      await symlink(join(dir, 'real'), join(dir, 'alias'));
+      const target = join(dir, 'alias', 'private', 'receipt.json');
+      await writePrivateJson(target, { fixture: true });
+      assert.deepEqual(JSON.parse(await readFile(target, 'utf8')), { fixture: true });
+      await assert.rejects(writePrivateJson(join(dir, 'alias', 'receipt.json'), {}), {
+        code: 'E_STATE',
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  },
+);
+
+it.skipIf(process.platform === 'win32')(
+  'tolerates ancestor access limitations, never owned receipt-directory failures',
+  async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'exhibit-ancestor-'));
+    try {
+      const child = join(dir, 'private');
+      for (const code of ['EACCES', 'EPERM', 'EROFS']) {
+        audit.deniedPath = dir;
+        audit.deniedCode = code;
+        await writePrivateJson(join(child, 'receipt.json'), {});
+        audit.deniedPath = child;
+        await assert.rejects(writePrivateJson(join(child, 'receipt.json'), {}), {
+          code: 'E_STATE',
+        });
+      }
+      audit.deniedPath = dir;
+      audit.deniedCode = 'EIO';
+      await assert.rejects(writePrivateJson(join(child, 'receipt.json'), {}), { code: 'E_STATE' });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  },
+);
 
 it.skipIf(process.platform === 'win32')(
   'syncs the parent after rename and create-only link',

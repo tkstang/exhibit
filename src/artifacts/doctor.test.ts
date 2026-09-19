@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
-import { config, memory } from '#core/fixtures.test-support';
+import { config, memory, s3Error } from '#core/fixtures.test-support';
 import { SECURITY_HEADERS } from '#security/policy';
 import { doctor, readResponseText } from './doctor.js';
 import { createProtector } from '#security/staticrypt';
@@ -65,5 +65,50 @@ describe('deployment doctor', () => {
     assert.equal(result.cleanup_key, transport.writes[0]?.Key);
     assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
     assert.equal(transport.objects.size, 1);
+  });
+  it('does not certify cleanup based only on inferred deletion', async () => {
+    const { store, transport } = memory();
+    const remove = store.remove.bind(store);
+    store.remove = async (slug, etag) =>
+      etag === '"exhibit-impossible-etag"' ? remove(slug, etag) : 'absence-inferred';
+    const result = await doctor(
+      config,
+      store,
+      { probe: true },
+      {
+        fetch: async () => new Response('not found', { status: 404 }),
+      },
+    );
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, transport.writes[0]?.Key);
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
+    assert.equal(transport.objects.size, 1);
+  });
+  it('reports a cleanup key when HEAD plus a stale listing only suggests probe absence', async () => {
+    const { store, transport } = memory();
+    transport.head = async () => {
+      throw s3Error('AccessDenied', 403);
+    };
+    transport.list = async () => ({ Contents: [], IsTruncated: false });
+    const result = await doctor(
+      config,
+      store,
+      { probe: true },
+      {
+        fetch: async () =>
+          new Response(transport.writes[0]?.Body, {
+            headers: {
+              ...SECURITY_HEADERS,
+              'content-type': 'text/html',
+              'cache-control': 'no-store',
+            },
+          }),
+      },
+    );
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, transport.writes[0]?.Key);
+    assert.equal(transport.objects.size, 1);
+    assert.equal(transport.deletes.length, 0);
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
   });
 });

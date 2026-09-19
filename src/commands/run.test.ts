@@ -8,6 +8,7 @@ describe('CLI envelopes', () => {
   it('returns structured help and version without loading AWS', async () => {
     for (const argv of [
       ['--help', '--json'],
+      ['help', 'publish', '--json'],
       ['--version', '--json'],
     ]) {
       const r = await run(argv);

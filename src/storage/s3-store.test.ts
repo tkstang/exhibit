@@ -38,7 +38,7 @@ describe('S3 artifact adapter', () => {
     const { store, transport } = memory();
     const saved = await store.put(object());
     await assert.rejects(store.remove(saved.slug, 'wrong'), { code: 'E_CONFLICT' });
-    await store.remove(saved.slug, saved.etag);
+    assert.equal(await store.remove(saved.slug, saved.etag), 'deleted');
     assert.equal(await store.head(saved.slug), null);
     assert.equal(transport.deletes[0]?.IfMatch, saved.etag);
   });
@@ -157,7 +157,7 @@ describe('S3 artifact adapter', () => {
         assert.equal(request.IfMatch, '"observed"');
         throw s3Error(name, 404);
       };
-      await store.remove('fixture', '"observed"');
+      assert.equal(await store.remove('fixture', '"observed"'), 'absence-inferred');
     }
     transport.remove = async () => {
       throw s3Error('NoSuchBucket', 404);
@@ -179,5 +179,17 @@ describe('S3 artifact adapter', () => {
       await assert.rejects(store.head('fixture'), { code: 'E_NOT_MANAGED' });
       transport.objects.clear();
     }
+  });
+  it('does not repeat absence listings for denied HEADs of already-listed keys', async () => {
+    const { store, transport } = memory();
+    for (let index = 0; index < 20; index += 1) await store.put(object(`plan-${index}`));
+    let heads = 0;
+    transport.head = async () => {
+      heads += 1;
+      throw s3Error('AccessDenied', 403);
+    };
+    await assert.rejects(store.list({ limit: 100 }), { code: 'E_BUCKET_ACCESS' });
+    assert.equal(transport.listCalls, 1);
+    assert.equal(heads, 8);
   });
 });

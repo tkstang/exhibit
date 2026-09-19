@@ -208,7 +208,7 @@ exit 1 for an unsupported conditional operation or 2 for an uncertain PUT.
 | `E_STATE`                          | Fix private local receipt permissions/storage before retrying                                      |
 | `E_ENCRYPTION`, `E_DEPENDENCY`     | Check the pinned installation; never fall back to public                                           |
 | `E_DOCTOR`                         | Inspect `error.details.checks` and any `cleanup_key`                                               |
-| `E_NETWORK`                        | Reserved by the error union; no current CLI emission site                                          |
+| `E_NETWORK`                        | Doctor probe response failure; CLI returns `E_DOCTOR` with a failed `public-read` check            |
 | `E_UNEXPECTED`                     | Unexpected failure or undeliverable output; inspect receipts and remote state before retrying      |
 
 See `src/core/errors.ts` for the closed code union and
@@ -233,8 +233,15 @@ See `src/core/errors.ts` for the closed code union and
 | `W_STATE_READ`          | Matching local receipt could not be read; password output may be unavailable                                     |
 | `W_STATE_REMOVE`        | Remote deletion succeeded but matching local receipt cleanup failed                                              |
 | `W_DELETE_LIMITS`       | Current origin object removed; cached/downloaded copies and old versions remain possible                         |
+| `W_DELETE_UNCONFIRMED`  | Conditional DELETE returned 404 and listing was empty; `removed: false`, receipt retained (see below)            |
 | `W_LOCAL_RECEIPTS`      | Local inventory/forget results do not establish remote state; prepared receipts may belong to successful uploads |
 | `W_FORGET_PASSWORD`     | Forget or its preview may lose the only password; neither removes remote artifacts nor revokes copies            |
+
+For `W_DELETE_UNCONFIRMED`, an empty listing does not confirm deletion. Independently
+verify the origin before considering receipt removal. Then preview exactly that
+receipt with `xbt receipts <slug> --forget <body-sha256> --dry-run`, using the same
+config and `--dir` scope as the removal attempt. Only replace `--dry-run` with
+`--force` when intentionally accepting permanent loss of that receipt's password.
 
 Doctor additionally reports checks with `status: "warn"` in `checks`; these are
 not `W_*` codes. Inspect checks on both healthy and failed probe results.

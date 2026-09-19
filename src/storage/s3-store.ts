@@ -173,25 +173,30 @@ export function createS3Store(config: Config, transport: S3Transport): ArtifactS
       throw translateS3Error(error);
     }
   };
-  const store: ArtifactStore = {
-    async head(slug) {
-      try {
-        return decodeHead(
-          config,
-          slug,
-          await transport.head({ Bucket: config.storage.bucket, Key: objectKey(config, slug) }),
-        );
-      } catch (error) {
-        const name = errorName(error);
-        if (missingObject(error)) return null;
-        // Prefix-scoped ListBucket does not authorize HEAD's missing-key 404.
-        // A successful exact-prefix listing can establish absence, never ownership.
-        if (name !== 'NoSuchBucket' && (status(error) === 403 || name === 'AccessDenied')) {
-          if (await absentByListing(slug)) return null;
-        }
-        throw translateS3Error(error);
+  const head = async (slug: string, confirmAbsence: boolean): Promise<StoredArtifact | null> => {
+    try {
+      return decodeHead(
+        config,
+        slug,
+        await transport.head({ Bucket: config.storage.bucket, Key: objectKey(config, slug) }),
+      );
+    } catch (error) {
+      const name = errorName(error);
+      if (missingObject(error)) return null;
+      // Prefix-scoped ListBucket does not authorize HEAD's missing-key 404.
+      // A successful exact-prefix listing can establish absence, never ownership.
+      if (
+        confirmAbsence &&
+        name !== 'NoSuchBucket' &&
+        (status(error) === 403 || name === 'AccessDenied')
+      ) {
+        if (await absentByListing(slug)) return null;
       }
-    },
+      throw translateS3Error(error);
+    }
+  };
+  const store: ArtifactStore = {
+    head: (slug) => head(slug, true),
     async put(input) {
       const request = buildPutRequest(config, input);
       try {
@@ -237,7 +242,9 @@ export function createS3Store(config: Config, transport: S3Transport): ArtifactS
           const batch = await Promise.all(
             keys.slice(index, index + 8).map(async (slug) => {
               try {
-                return await store.head(slug);
+                // The outer listing already observed this key. A denied HEAD
+                // must fail closed, without an extra absence probe per object.
+                return await head(slug, false);
               } catch (error) {
                 if (error instanceof ExhibitError && error.code === 'E_NOT_MANAGED') return null;
                 throw error;
@@ -272,13 +279,15 @@ export function createS3Store(config: Config, transport: S3Transport): ArtifactS
           Key: objectKey(config, slug),
           IfMatch: etag,
         });
+        return 'deleted';
       } catch (error) {
         // A lost successful response can be retried against an already-absent key.
         // Never retry without IfMatch or treat a missing bucket as successful cleanup.
         if (missingObject(error)) {
           // A proxy can return a generic 404 even while the object remains live.
-          // A successful listing, not another ambiguous HEAD 404, must confirm absence.
-          if (await absentByListing(slug)) return;
+          // Compatible backends may serve stale listings. Preserve the distinction
+          // so callers retain recovery material rather than trusting inferred absence.
+          if (await absentByListing(slug)) return 'absence-inferred';
         }
         throw translateS3Error(error);
       }

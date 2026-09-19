@@ -11,6 +11,9 @@ import {
 import { deploymentId, requireSlug } from '#core/identity';
 import type { Config, PublicationReceipt, PublicationState } from '#core/types';
 
+const RECEIPT_RECOVERY_HINT =
+  'Pause local Exhibit writers and privately back up the receipt state directory. Inspect it locally for stray files (including .DS_Store or .exhibit-*.tmp) and unreadable or corrupt receipts. Move only identified stray entries to a private backup outside the inventory; restore damaged receipts from a trusted backup. Keep all originals and passwords; do not delete receipts to bypass this error. Retry after repair. See docs/user-guide/recovery.md.';
+
 function validReceipt(value: unknown): value is PublicationReceipt {
   if (typeof value !== 'object' || value === null) return false;
   const record = value as Record<string, unknown>;
@@ -46,7 +49,9 @@ export async function enumerateReceipts(
     }
     const names = (await readdir(directory)).sort();
     if (names.some((name) => !/^[a-f0-9]{64}\.json$/.test(name))) {
-      throw new ExhibitError('E_STATE', 'Local publication inventory contains unknown entries.');
+      throw new ExhibitError('E_STATE', 'Local publication inventory contains unknown entries.', {
+        hint: RECEIPT_RECOVERY_HINT,
+      });
     }
     const state = createPublicationState(config, stateRoot);
     const receipts: PublicationReceipt[] = [];
@@ -54,13 +59,17 @@ export async function enumerateReceipts(
       const receipt = await state.read(slug, name.slice(0, -5));
       // A disappearing entry is not evidence of a complete inventory.
       if (receipt === null)
-        throw new ExhibitError('E_STATE', 'Local publication inventory changed while reading.');
+        throw new ExhibitError('E_STATE', 'Local publication inventory changed while reading.', {
+          hint: RECEIPT_RECOVERY_HINT,
+        });
       receipts.push(receipt);
     }
     return receipts;
   } catch (error) {
     if (error instanceof ExhibitError) throw error;
-    throw new ExhibitError('E_STATE', 'Could not enumerate local publication receipts.');
+    throw new ExhibitError('E_STATE', 'Could not enumerate local publication receipts.', {
+      hint: RECEIPT_RECOVERY_HINT,
+    });
   }
 }
 
@@ -103,12 +112,15 @@ export function createPublicationState(config: Config, stateRoot: string): Publi
       try {
         value = JSON.parse(await readTextFile(target, 64 * 1024));
       } catch {
-        throw new ExhibitError('E_STATE', 'Local publication state is unreadable or invalid.');
+        throw new ExhibitError('E_STATE', 'Local publication state is unreadable or invalid.', {
+          hint: RECEIPT_RECOVERY_HINT,
+        });
       }
       if (!validReceipt(value) || value.slug !== slug || value.bodySha256 !== digest) {
         throw new ExhibitError(
           'E_STATE',
           'Local publication receipt does not match this artifact.',
+          { hint: RECEIPT_RECOVERY_HINT },
         );
       }
       return value;

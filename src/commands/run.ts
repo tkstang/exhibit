@@ -10,6 +10,7 @@ import { publishArtifact } from '#artifacts/publish';
 import { listArtifacts, removeArtifact } from '#artifacts/manage';
 import { doctor } from '#artifacts/doctor';
 import { inspectReceipts } from '#artifacts/receipts';
+import type { ReceiptDependencies } from '#artifacts/receipts';
 import { validatePassword } from '#security/password';
 import { parseCli, wantsJson } from './parse.js';
 import type { ParsedArgs } from './parse.js';
@@ -25,6 +26,8 @@ export interface RuntimeDependencies {
   readonly env?: NodeJS.ProcessEnv;
   readonly cwd?: string;
   readonly loadConfig?: (configFile: string) => Promise<Config>;
+  /** Receives directory-scoped config; must not open a cloud session. */
+  readonly receipts?: (config: Config, stateDir: string) => Promise<ReceiptDependencies>;
   /** Factories must scope config, storage, and receipts to the normalized directory. */
   readonly session?: (configFile: string, stateDir: string, directory?: string) => Promise<Session>;
   readonly initialize?: (configFile: string, data: unknown, force: boolean) => Promise<Config>;
@@ -48,6 +51,14 @@ export interface FailureEnvelope {
   };
 }
 export type Envelope = SuccessEnvelope | FailureEnvelope;
+
+async function openReceipts(config: Config, stateDir: string): Promise<ReceiptDependencies> {
+  const { createPublicationState, enumerateReceipts } = await import('#state/store');
+  return {
+    state: createPublicationState(config, stateDir),
+    enumerate: (slug) => enumerateReceipts(config, stateDir, slug),
+  };
+}
 
 async function openSession(
   configFile: string,
@@ -179,8 +190,9 @@ export async function run(
     if (args.command === 'receipts') {
       const load = dependencies.loadConfig ?? (await import('#core/config')).loadConfig;
       const config = scopeDirectory(await load(configFile), normalizedDirectory);
+      const receipts = await (dependencies.receipts ?? openReceipts)(config, locations.stateDir);
       return success(
-        await inspectReceipts(config, locations.stateDir, args.positionals[0]!, {
+        await inspectReceipts(receipts, args.positionals[0]!, {
           forget: args.text('forget'),
           force: args.flag('force'),
           dryRun: args.flag('dry-run'),

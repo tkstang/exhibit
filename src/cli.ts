@@ -34,8 +34,8 @@ export async function main(
       json || envelope.ok ? output.stdout : output.stderr,
       json ? `${JSON.stringify(envelope)}\n` : humanOutput(envelope),
     );
-    const warned = await writeOutput(output.stderr, diagnostics(envelope));
-    if (written && warned) {
+    await writeOutput(output.stderr, diagnostics(envelope));
+    if (written) {
       process.exitCode = exitCode;
       return;
     }

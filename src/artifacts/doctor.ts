@@ -188,11 +188,12 @@ export async function doctor(
   if (attemptedPut) {
     try {
       const current = await store.head(slug);
-      if (current) {
-        if (current.kind !== 'probe' || current.bodySha256 !== expectedDigest)
-          throw new ExhibitError('E_CONFLICT', 'Probe identity changed; refusing cleanup.');
-        await store.remove(slug, current.etag);
-      }
+      if (!current)
+        throw new ExhibitError('E_STORAGE', 'Probe cleanup could not be confirmed from HEAD.');
+      if (current.kind !== 'probe' || current.bodySha256 !== expectedDigest)
+        throw new ExhibitError('E_CONFLICT', 'Probe identity changed; refusing cleanup.');
+      if ((await store.remove(slug, current.etag)) !== 'deleted')
+        throw new ExhibitError('E_STORAGE', 'Probe deletion was only inferred from a listing.');
       checks.push({
         name: 'cleanup',
         status: 'pass',

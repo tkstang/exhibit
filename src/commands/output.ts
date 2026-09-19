@@ -13,8 +13,22 @@ export function humanOutput(envelope: Envelope): string {
   if (envelope.command === 'publish') {
     return `${data.dry_run ? 'Dry run' : 'Published'} ${data.protected ? 'protected' : 'public'} exhibit\n${String(data.url)}\n${typeof data.password === 'string' ? `Password: ${data.password}\n` : ''}`;
   }
-  if (envelope.command === 'remove')
-    return `${data.dry_run ? 'Would remove' : data.removed ? 'Removed' : 'Already absent'}: ${String(data.slug)}\n`;
+  if (envelope.command === 'remove') {
+    const unconfirmed =
+      Array.isArray(data.warnings) &&
+      data.warnings.some((warning: unknown) => record(warning).code === 'W_DELETE_UNCONFIRMED');
+    return `${data.dry_run ? 'Would remove' : data.removed ? 'Removed' : unconfirmed ? 'Removal unconfirmed' : 'Already absent'}: ${String(data.slug)}\n`;
+  }
+  if (envelope.command === 'receipts') {
+    if (Array.isArray(data.receipts)) {
+      const lines = data.receipts.map((item: unknown) => {
+        const receipt = record(item);
+        return `${String(receipt.body_sha256)}  ${String(receipt.status)}\n  Saved: ${String(receipt.saved_at)}\n  URL: ${String(receipt.url)}\n  ETag: ${receipt.etag === null ? 'none' : String(receipt.etag)}\n  Password retained: ${receipt.has_password ? 'yes' : 'no'}${typeof receipt.password === 'string' ? `\n  Password: ${receipt.password}` : ''}`;
+      });
+      return `Local receipts for ${String(data.slug)} (remote state not checked)\n${lines.length ? lines.join('\n') : 'No local receipts.'}\n`;
+    }
+    return `${data.dry_run ? 'Would forget' : data.forgotten ? 'Forgot' : 'Not forgotten'} local receipt: ${String(data.slug)}\nDigest: ${String(data.body_sha256)}\nRemote state not checked.\n`;
+  }
   if (envelope.command === 'list' && Array.isArray(data.artifacts)) {
     const lines = data.artifacts.map((item: unknown) => {
       const artifact = record(item);

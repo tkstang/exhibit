@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { Writable } from 'node:stream';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { afterEach, describe, it } from 'vitest';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, it, vi } from 'vitest';
+import { config } from '#core/fixtures.test-support';
 import { main } from './cli.js';
 
 function capture() {
@@ -20,6 +24,7 @@ describe('CLI output boundary', () => {
   const originalExitCode = process.exitCode;
   afterEach(() => {
     process.exitCode = originalExitCode;
+    vi.unstubAllEnvs();
   });
 
   it('emits one JSON error envelope for malformed JSON options', async () => {
@@ -59,6 +64,52 @@ describe('CLI output boundary', () => {
     await main(['unknown'], { stdout: stdout.stream, stderr });
     assert.equal(process.exitCode, 2);
     assert.equal(stdout.text(), '');
+  });
+
+  it('keeps a delivered success successful when warning diagnostics cannot be written', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'exhibit-stderr-'));
+    try {
+      const configFile = join(root, 'config.json');
+      vi.stubEnv('EXHIBIT_STATE_DIR', join(root, 'state'));
+      await writeFile(configFile, JSON.stringify(config));
+      const stdout = capture();
+      let attempts = 0;
+      const stderr = new Writable({
+        write(_chunk, _encoding, callback) {
+          attempts++;
+          setImmediate(() => callback(new Error('private-stderr-error')));
+        },
+      });
+      await main(['receipts', 'stderr-fixture', '--config', configFile, '--json'], {
+        stdout: stdout.stream,
+        stderr,
+      });
+      const envelope = JSON.parse(stdout.text());
+      assert.equal(envelope.ok, true);
+      assert.equal(envelope.data.warnings[0].code, 'W_LOCAL_RECEIPTS');
+      assert.equal(stdout.text().trim().split('\n').length, 1);
+      assert.equal(stdout.text().includes('private-stderr-error'), false);
+      assert.equal(attempts, 1);
+      assert.equal(process.exitCode, 0);
+      assert.equal(stderr.listenerCount('error'), 0);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('preserves a delivered JSON failure exit code when its diagnostics fail', async () => {
+    const stdout = capture();
+    const stderr = new Writable({
+      write(_chunk, _encoding, callback) {
+        callback(new Error('private-stderr-error'));
+      },
+    });
+    await main(['publish', 'unused.md', '--password', 'short', '--json'], {
+      stdout: stdout.stream,
+      stderr,
+    });
+    assert.equal(JSON.parse(stdout.text()).error.code, 'E_PASSWORD');
+    assert.equal(process.exitCode, 1);
   });
 
   it('guards the actual entrypoint when its stdout consumer closes', async () => {

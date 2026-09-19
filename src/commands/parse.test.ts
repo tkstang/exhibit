@@ -44,7 +44,8 @@ describe('CLI parsing', () => {
       ['--help', '--probe'],
       ['list', '--help', '--public'],
       ['list', '--version', '--overwrite'],
-      ['help', 'extra'],
+      ['help', 'publish', 'extra'],
+      ['help', 'unknown'],
       ['version', 'extra'],
       ['list', 'extra', '--help'],
       ['unknown', '--help'],
@@ -88,5 +89,8 @@ describe('CLI parsing', () => {
     assert.equal(parseCli([]).command, 'help');
     assert.equal(parseCli(['publish', '--help']).command, 'help');
     assert.equal(parseCli(['--version', '--json']).command, 'version');
+    assert.equal(parseCli(['help', 'publish']).command, 'help');
+    assert.equal(parseCli(['help', 'rm']).command, 'help');
+    assert.equal(parseCli(['help', 'receipts', '--json']).json, true);
   });
 });

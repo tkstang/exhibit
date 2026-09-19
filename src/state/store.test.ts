@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, it } from 'vitest';
 import { config, date } from '#core/fixtures.test-support';
+import { ExhibitError } from '#core/errors';
 import { deploymentId, scopeDirectory } from '#core/identity';
 import type { PublicationReceipt } from '#core/types';
 import { createPublicationState, enumerateReceipts } from './store.js';
@@ -172,6 +173,7 @@ describe('local receipt inventory', () => {
   for (const defect of [
     'unknown file',
     'temporary file',
+    'Finder file',
     'invalid JSON',
     'invalid schema',
     'wrong slug',
@@ -199,6 +201,9 @@ describe('local receipt inventory', () => {
             break;
           case 'temporary file':
             await writeFile(join(directory, '.exhibit-fixture.tmp'), '{}', { mode: 0o600 });
+            break;
+          case 'Finder file':
+            await writeFile(join(directory, '.DS_Store'), 'private Finder data', { mode: 0o600 });
             break;
           case 'invalid JSON':
             await writeFile(target, 'invalid fixture content', { mode: 0o600 });
@@ -239,11 +244,31 @@ describe('local receipt inventory', () => {
             break;
         }
         await assert.rejects(enumerateReceipts(config, root, 'plan'), (error: unknown) => {
-          assert.ok(error instanceof Error && 'code' in error);
+          assert.ok(error instanceof ExhibitError);
           assert.equal(error.code, 'E_STATE');
           assert.ok(!error.message.includes(root));
           assert.ok(!error.message.includes(prepared.password!));
           assert.ok(!error.message.includes('invalid fixture content'));
+          assert.ok(!error.hint.includes(root));
+          assert.ok(!error.hint.includes(prepared.password!));
+          assert.ok(!error.hint.includes('invalid fixture content'));
+          if (
+            [
+              'unknown file',
+              'temporary file',
+              'Finder file',
+              'invalid JSON',
+              'invalid schema',
+              'wrong slug',
+              'wrong digest',
+              'oversized receipt',
+            ].includes(defect)
+          ) {
+            assert.match(error.hint, /privately back up/);
+            assert.match(error.hint, /private backup outside the inventory/);
+            assert.match(error.hint, /restore damaged receipts from a trusted backup/);
+            assert.match(error.hint, /do not delete receipts/);
+          }
           return true;
         });
         assert.deepEqual(

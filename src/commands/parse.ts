@@ -139,10 +139,18 @@ export function parseCli(argv: readonly string[]): ParsedArgs {
       throw new ExhibitError('E_USAGE', 'An option is not valid for this command.');
   }
   const expected =
-    name === undefined ? 0 : ['publish', 'remove', 'receipts'].includes(name) ? 2 : 1;
+    name === undefined ? 0 : ['publish', 'remove', 'receipts', 'help'].includes(name) ? 2 : 1;
   const informational = ['help', 'version'].includes(command);
   if (positionals.length > expected || (!informational && positionals.length !== expected))
     throw new ExhibitError('E_USAGE', 'Incorrect number of arguments for this command.');
+  const topic = positionals[1];
+  if (
+    name === 'help' &&
+    topic !== undefined &&
+    !Object.hasOwn(ALLOWED, topic) &&
+    !['rm', 'help', 'version'].includes(topic)
+  )
+    throw new ExhibitError('E_USAGE', 'Unknown help topic.');
   return {
     command: command as CommandName,
     positionals: positionals.slice(1),

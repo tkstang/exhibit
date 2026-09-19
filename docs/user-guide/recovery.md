@@ -97,14 +97,26 @@ and `W_LOCAL_RECEIPTS`. A forget or its preview also reports `W_FORGET_PASSWORD`
 
 ## Resolve receipt warnings
 
+If inventory fails with `E_STATE`, pause local Exhibit writers and privately back
+up the state directory before inspecting it. A stray `.DS_Store`, interrupted-write
+`.exhibit-*.tmp`, or damaged receipt causes inventory to fail closed. Move only
+identified stray entries to a private backup outside the inventory and restore
+damaged receipts from a trusted backup. Keep originals and passwords; do not delete
+receipts or loosen their permissions to bypass the check. Retry after repair.
+
 - `W_STATE_SAVE`: keep the prepared receipt after a successful upload whose final
   receipt update failed. For public artifacts, local history may not have saved.
 - `W_STATE_READ`: check state location, ownership, permissions, and disk health;
   missing password output does not mean no password exists.
 - `W_STATE_REMOVE`: remote removal succeeded but the matching local receipt remains.
   Inspect and forget only that exact digest after informed consent.
+- `W_DELETE_UNCONFIRMED`: DELETE returned not-found and a subsequent listing
+  suggested absence, but did not confirm deletion. Exhibit reports `removed: false`
+  and retains all receipts; a compatible backend may serve a stale listing.
+  Independently verify the origin before considering exact-digest forgetting.
 
-`rm` removes only the receipt matching the observed deleted remote revision.
+After confirmed conditional deletion, `rm` removes only the receipt matching the
+observed deleted remote revision.
 Other receipts remain. `rm --missing-ok` accepts remote absence and leaves local
 receipts intact. Remote deletion cannot revoke cached/downloaded copies or old
 S3 versions. Never remove an entire state directory as a recovery shortcut.
