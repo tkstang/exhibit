@@ -36,10 +36,9 @@ export function humanOutput(envelope: Envelope): string {
 }
 
 export function diagnostics(envelope: Envelope): string {
-  if (!envelope.ok) return '';
-  const data = record(envelope.data);
-  if (!Array.isArray(data.warnings)) return '';
-  return data.warnings
+  const warnings = envelope.ok ? record(envelope.data).warnings : envelope.warnings;
+  if (!Array.isArray(warnings)) return '';
+  return warnings
     .map((item: unknown) => {
       const warning = record(item);
       return `${String(warning.code)}: ${String(warning.message)}\n`;

@@ -1,4 +1,4 @@
-import { lstat, unlink } from 'node:fs/promises';
+import { lstat, readdir, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { ExhibitError, hasCode } from '#core/errors';
@@ -25,6 +25,43 @@ function validReceipt(value: unknown): value is PublicationReceipt {
     typeof record.bodySha256 === 'string' &&
     /^[a-f0-9]{64}$/.test(record.bodySha256)
   );
+}
+
+/** Local inventory only. Returns secrets; callers must redact passwords unless requested. */
+export async function enumerateReceipts(
+  config: Config,
+  stateRoot: string,
+  slug: string,
+): Promise<PublicationReceipt[]> {
+  const deployment = join(stateRoot, deploymentId(config));
+  const directory = join(deployment, requireSlug(slug));
+  try {
+    try {
+      for (const parent of [stateRoot, deployment, directory]) {
+        await assertPrivateDirectory(parent);
+      }
+    } catch (error) {
+      if (hasCode(error, 'ENOENT')) return [];
+      throw error;
+    }
+    const names = (await readdir(directory)).sort();
+    if (names.some((name) => !/^[a-f0-9]{64}\.json$/.test(name))) {
+      throw new ExhibitError('E_STATE', 'Local publication inventory contains unknown entries.');
+    }
+    const state = createPublicationState(config, stateRoot);
+    const receipts: PublicationReceipt[] = [];
+    for (const name of names) {
+      const receipt = await state.read(slug, name.slice(0, -5));
+      // A disappearing entry is not evidence of a complete inventory.
+      if (receipt === null)
+        throw new ExhibitError('E_STATE', 'Local publication inventory changed while reading.');
+      receipts.push(receipt);
+    }
+    return receipts;
+  } catch (error) {
+    if (error instanceof ExhibitError) throw error;
+    throw new ExhibitError('E_STATE', 'Could not enumerate local publication receipts.');
+  }
 }
 
 /** Receipts are per deployment + slug + ciphertext digest; overwrites never erase old keys. */

@@ -11,6 +11,51 @@ describe('CLI parsing', () => {
     assert.equal(parseCli(['publish', '--', '--json']).positionals[0], '--json');
     assert.equal(wantsJson(['publish', '--', '--json']), false);
   });
+  it('recognizes malformed JSON options without treating values or filenames as flags', () => {
+    for (const option of ['--json=true', '--json=false', '--json=']) {
+      assert.equal(wantsJson(['list', option]), true);
+      assert.throws(() => parseCli(['list', option]), { code: 'E_USAGE' });
+      assert.equal(wantsJson(['publish', '--', option]), false);
+    }
+    assert.equal(wantsJson(['publish', 'file.md', '--password=--json']), false);
+    assert.equal(wantsJson(['publish', 'file.md', '--title', '--json']), false);
+    assert.equal(wantsJson(['list', '--unknown', '--json']), true);
+  });
+  it('rejects repeated options including aliases and equal values', () => {
+    for (const argv of [
+      ['list', '--dir', 'first', '--dir=second'],
+      ['list', '--json', '--json'],
+      ['--help', '-h'],
+      ['--version', '-v'],
+      ['publish', 'file.md', '--password=secret-value', '--password=secret-value'],
+    ]) {
+      assert.throws(() => parseCli(argv), { code: 'E_USAGE' });
+      try {
+        parseCli(argv);
+      } catch (error) {
+        assert.equal(String(error).includes('secret-value'), false);
+      }
+    }
+  });
+  it('validates options and arguments even for help and version', () => {
+    for (const argv of [
+      ['help', '--public'],
+      ['version', '--dir', 'internal'],
+      ['--help', '--probe'],
+      ['list', '--help', '--public'],
+      ['list', '--version', '--overwrite'],
+      ['help', 'extra'],
+      ['version', 'extra'],
+      ['list', 'extra', '--help'],
+      ['unknown', '--help'],
+      ['--help', '--version'],
+    ])
+      assert.throws(() => parseCli(argv), { code: 'E_USAGE' });
+    assert.equal(parseCli(['publish', '--help', '--slug', 'review']).command, 'help');
+    assert.equal(parseCli(['publish', 'file.md', '--help']).command, 'help');
+    assert.equal(parseCli(['list', '--version', '--dir', 'internal']).command, 'version');
+    assert.equal(parseCli(['version', '--json']).command, 'version');
+  });
   it('rejects inappropriate flags', () => {
     assert.throws(() => parseCli(['list', '--public']), { code: 'E_USAGE' });
     for (const argv of [
