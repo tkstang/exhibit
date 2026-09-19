@@ -177,8 +177,9 @@ See [receipt recovery](docs/user-guide/recovery.md) after uncertain uploads or b
 forgetting a local password receipt. Dry runs validate custom passwords but return
 `remote_checked: false` with `W_DRY_RUN_LOCAL`; they do not verify remote readiness.
 
-MIT licensed. `private: true` prevents accidental npm publication; see
-[Development](docs/engineering/development.md) for deliberate release steps.
+MIT licensed. Package metadata permits public npm publication, but a source merge
+does not publish a release. See [npm releases](docs/engineering/releases.md) for
+the separate validation, approval, and publication steps.
 
 ## Acknowledgments
 

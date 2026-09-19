@@ -41,8 +41,8 @@ flags you need. Do not infer support from another checkout's documentation.
 
 ## Install only with authorization
 
-The source package is `@tkstang/exhibit` with `private: true`; these instructions
-do not claim a registry release. Use an approved built package or an approved
+The source package is `@tkstang/exhibit`. Its metadata permits publication, but
+these instructions do not claim a registry release. Use an approved built package or an approved
 checkout/revision of the private [tkstang/exhibit](https://github.com/tkstang/exhibit)
 repository. Do not automatically clone, fetch, or substitute an unapproved download.
 

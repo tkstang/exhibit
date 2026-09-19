@@ -165,6 +165,7 @@ before relying on a deployment for sensitive content. A successful probe digest
 does not prove browser isolation or route authentication.
 
 Source merge, npm release, and deployment acceptance are separate decisions.
-Keep `private: true` until publication is approved. Historical source-generation
+Publication-ready package metadata does not authorize publishing. Keep automation
+disabled until bootstrap publication and trust setup are complete. Historical source-generation
 checks and import handoffs remain in Git history; they are not current acceptance
 evidence and are not shipped as operational instructions.

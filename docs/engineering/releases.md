@@ -7,8 +7,9 @@ description: Prepare one reviewed archive, bootstrap trusted publishing, and rel
 
 Exhibit releases one package, `@tkstang/exhibit`, using Node 24 and pnpm 11.8.0.
 The release workflows and local checks are defined in this repository. That does
-not establish that npm trust is configured or publication has passed. Keep `private: true` until a separate
-first-release approval. Source merge, npm publication, and hosting qualification
+not establish that npm trust is configured or publication has passed. The first-release
+preparation sets `private: false`; this permits publication but does not authorize
+or perform it. Source merge, npm publication, and hosting qualification
 are separate decisions. No multi-package release tooling or Changesets is needed.
 
 The GitHub repository is currently private. Publishing a public npm package does
@@ -39,8 +40,9 @@ both paths. None of these checks publish to npm. The output contains:
 - `release.json` with release metadata.
 - `release-notes.md`, extracted from `CHANGELOG.md`.
 
-`CHANGELOG.md` is canonical. Each release PR must include a version bump and a
-reviewed `## [<packageversion>]` section, for example `## [0.1.0]`. Release
+`CHANGELOG.md` is canonical. The first-release PR confirms the initial `0.1.0`
+version; later release PRs increment it. Each includes a reviewed
+`## [<packageversion>]` section, for example `## [0.1.0]`. Release
 validation fails if the matching section is missing or empty. Skills may draft
 the entry under the repository's release-authoring guidance; review it in the PR.
 CI extracts that section automatically and supplies it to GitHub Release through
