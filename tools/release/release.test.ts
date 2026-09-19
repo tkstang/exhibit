@@ -4,6 +4,8 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { gunzipSync, gzipSync } from 'node:zlib';
+import { normalizeReleaseArchive } from './archive.ts';
 import {
   hashes,
   preparationDecision,
@@ -21,6 +23,107 @@ const candidate: unknown = JSON.parse(
 validateMetadata(candidate);
 const source = candidate;
 const publishable = { ...source, private: false };
+
+test('archive normalization makes macOS and Unix gzip bytes and hashes identical', () => {
+  const mac = gzipSync(Buffer.from('release archive contents'));
+  mac[9] = 19;
+  const unix = Buffer.from(mac);
+  unix[9] = 3;
+  const macBefore = Buffer.from(mac);
+  const unixBefore = Buffer.from(unix);
+  assert.notDeepEqual(hashes(mac), hashes(unix));
+
+  const normalizedMac = normalizeReleaseArchive(mac);
+  const normalizedUnix = normalizeReleaseArchive(unix);
+  assert.equal(normalizedMac[9], 255);
+  assert.equal(normalizedUnix[9], 255);
+  assert.deepEqual(normalizedMac, normalizedUnix);
+  assert.deepEqual(hashes(normalizedMac), hashes(normalizedUnix));
+  assert.deepEqual(mac, macBefore);
+  assert.deepEqual(unix, unixBefore);
+  assert.deepEqual(normalizeReleaseArchive(normalizedMac), normalizedMac);
+});
+
+test('archive normalization changes only the OS byte and preserves decompressed contents', () => {
+  const contents = Buffer.from('release archive contents\nwith another line\n');
+  const bytes = gzipSync(contents, { level: 9 });
+  bytes.writeUInt32LE(123456789, 4);
+  bytes[9] = 19;
+  const before = Buffer.from(bytes);
+
+  const normalized = normalizeReleaseArchive(bytes);
+  assert.equal(normalized.length, before.length);
+  assert.equal(normalized[9], 255);
+  assert.deepEqual(normalized.subarray(0, 9), before.subarray(0, 9));
+  assert.deepEqual(normalized.subarray(10), before.subarray(10));
+  assert.deepEqual(gunzipSync(normalized), contents);
+  assert.deepEqual(gunzipSync(normalized), gunzipSync(before));
+  assert.deepEqual(bytes, before);
+});
+
+test('archive normalization rejects short headers, non-gzip bytes, and other compression methods', () => {
+  const valid = gzipSync(Buffer.from('release archive contents'));
+  for (let length = 0; length < 10; length++)
+    assert.throws(() => normalizeReleaseArchive(valid.subarray(0, length)));
+  assert.throws(() => normalizeReleaseArchive(Buffer.alloc(valid.length)));
+  for (const offset of [0, 1, 2]) {
+    const invalid = Buffer.from(valid);
+    invalid[offset] = 0;
+    assert.throws(() => normalizeReleaseArchive(invalid));
+  }
+});
+
+test('archive normalization rejects optional gzip fields and header CRC flags', () => {
+  const valid = gzipSync(Buffer.from('release archive contents'));
+  for (const [flag, extra] of [
+    [0x04, Buffer.from([0, 0])],
+    [0x08, Buffer.from('archive.tar\0')],
+    [0x10, Buffer.from('comment\0')],
+  ] as const) {
+    const flagged = Buffer.concat([valid.subarray(0, 10), extra, valid.subarray(10)]);
+    flagged[3] = flag;
+    assert.deepEqual(gunzipSync(flagged), gunzipSync(valid));
+    assert.throws(() => normalizeReleaseArchive(flagged));
+  }
+  const headerCrc = Buffer.from(valid);
+  headerCrc[3] = 0x02;
+  assert.throws(() => normalizeReleaseArchive(headerCrc));
+});
+
+test('archive normalization rejects corrupt and truncated gzip streams', () => {
+  const valid = gzipSync(Buffer.from('release archive contents'));
+  const corrupt = Buffer.from(valid);
+  corrupt.writeUInt32LE((corrupt.readUInt32LE(corrupt.length - 8) ^ 1) >>> 0, corrupt.length - 8);
+  for (const invalid of [
+    corrupt,
+    valid.subarray(0, 10),
+    valid.subarray(0, valid.length - 8),
+    valid.subarray(0, valid.length - 1),
+  ]) {
+    assert.throws(() => gunzipSync(invalid));
+    assert.throws(() => normalizeReleaseArchive(invalid));
+  }
+});
+
+test('normalized archives retain content differences and registry recovery rejects them', () => {
+  const original = normalizeReleaseArchive(gzipSync(Buffer.from('original archive contents')));
+  const changed = normalizeReleaseArchive(gzipSync(Buffer.from('changed archive contents')));
+  const originalHashes = hashes(original);
+  const changedHashes = hashes(changed);
+  assert.notEqual(originalHashes.sha256, changedHashes.sha256);
+  assert.notEqual(originalHashes.integrity, changedHashes.integrity);
+  const release = { name: source.name, version: source.version, ...originalHashes };
+  const record = {
+    name: source.name,
+    version: source.version,
+    dist: { integrity: originalHashes.integrity },
+  };
+  assert.equal(registryDecision(200, record, release), 'already-published');
+  assert.throws(
+    () => registryDecision(200, record, { ...release, ...changedHashes }),
+    /different bytes/,
+  );
+});
 
 test('dry run accepts private packages but publication requires explicit opt-in', () => {
   validateMetadata({ ...source, private: true });

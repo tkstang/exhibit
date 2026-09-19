@@ -19,12 +19,26 @@ details. Package verification also checks every standalone/plugin bundle byte
 against its source-derived output and relocates each packed skill independently.
 These checks do not establish installation or discovery in a live agent host.
 
-Eleven Node release tests cover metadata/tag checks, changelog extraction, archive
-and notes integrity, registry error handling, and real temporary Git histories.
+Seventeen Node release tests cover gzip header normalization, metadata/tag checks,
+changelog extraction, archive and notes integrity, registry error handling, and
+real temporary Git histories.
 Local release dry runs also install the actual archive with npm outside the source
 checkout and verify both executable aliases. New versions receive a non-publishing
 npm dry run; existing-version recovery checks registry integrity instead.
-Live npm OIDC publication and GitHub Release creation remain unverified.
+On 2026-09-19, `0.1.0` was published manually to npm, and the downloaded package
+matched the approved archive. Its [first release workflow](https://github.com/tkstang/exhibit/actions/runs/35453894764)
+passed the code, browser, and install checks but stopped at the exact
+archive-integrity check. The retained [Linux dry-run archive](https://github.com/tkstang/exhibit/actions/runs/35450775158)
+matching that run's hash differed from the macOS archive
+only at gzip header byte 9 (the originating operating system); decompressed tar
+bytes were identical. The GitHub Release was completed using the retained original
+archive, with both downloaded release assets verified. The failed run remains
+historical evidence, not a green automated release.
+
+Release preparation now normalizes this header on newly packed archives. Release
+regressions cover normalization and unchanged strict registry integrity checks;
+the PR dry-run workflow compares macOS/Linux prepared outputs. Live npm OIDC
+publication and automatic provenance generation remain unverified.
 
 The browser suite uses desktop and mobile viewport sizes. It covers correct/wrong
 passwords, tampering, source isolation, blocked network access, inline HTML
