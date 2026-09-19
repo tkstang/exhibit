@@ -66,6 +66,43 @@ describe('deployment doctor', () => {
     assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
     assert.equal(transport.objects.size, 1);
   });
+  it('reports no cleanup work when the probe upload is definitively denied', async () => {
+    const { store, transport } = memory();
+    transport.put = async () => {
+      throw s3Error('AccessDenied', 403);
+    };
+    const result = await doctor(config, store, { probe: true });
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, null);
+    assert.ok(result.checks.some((check) => check.name === 'probe' && check.status === 'fail'));
+    assert.ok(
+      result.checks.some((check) => check.name === 'cleanup' && check.status === 'skipped'),
+    );
+    assert.equal(transport.deletes.length, 0);
+  });
+  it('still removes a probe created by an earlier attempt when the final upload is denied', async () => {
+    const { store, transport } = memory();
+    const put = transport.put.bind(transport);
+    transport.put = async (request) => {
+      await put(request);
+      throw s3Error('AccessDenied', 403);
+    };
+    const result = await doctor(config, store, { probe: true });
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, null);
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'pass'));
+    assert.equal(transport.objects.size, 0);
+  });
+  it('keeps cleanup unconfirmed when an uncertain probe upload leaves no visible object', async () => {
+    const { store, transport } = memory();
+    transport.put = async () => {
+      throw s3Error('InternalError', 500);
+    };
+    const result = await doctor(config, store, { probe: true });
+    assert.equal(result.healthy, false);
+    assert.equal(typeof result.cleanup_key, 'string');
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
+  });
   it('does not certify cleanup based only on inferred deletion', async () => {
     const { store, transport } = memory();
     const remove = store.remove.bind(store);

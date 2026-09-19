@@ -45,7 +45,8 @@ or grant permission to overwrite it; denied/inconclusive reads remain errors.
 Check `publicBaseUrl`, the origin-path prefix mapping, OAC/bucket policy, regional
 REST endpoint, and deployment propagation. The example produces `.html` URLs; no
 extensionless rewrite is expected. A failed doctor probe reports an exact cleanup
-key if cleanup cannot be confirmed.
+key if cleanup cannot be confirmed. A denied probe upload with no visible probe
+object reports a skipped cleanup check and no cleanup key.
 
 ## Doctor fails off VPN but the page opens on VPN
 

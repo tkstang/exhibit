@@ -70,6 +70,7 @@ export async function doctor(
     '<!doctype html><html><body><p>Exhibit non-sensitive diagnostic probe</p></body></html>';
   let expectedDigest: string | null = null;
   let attemptedPut = false;
+  let putDenied = false;
   let cleanupKey: string | null = null;
   try {
     const protector = dependencies.protector ?? createProtector();
@@ -98,7 +99,16 @@ export async function doctor(
       updatedAt: now,
     };
     attemptedPut = true;
-    await store.put(input);
+    try {
+      await store.put(input);
+    } catch (error) {
+      // A denied upload normally created nothing, but an earlier retried attempt may
+      // have. Cleanup still inspects the slug; only a denial with no visible probe
+      // is reported as nothing to clean. Other failures stay uncertain.
+      putDenied =
+        error instanceof ExhibitError && ['E_BUCKET_ACCESS', 'E_CREDENTIALS'].includes(error.code);
+      throw error;
+    }
     checks.push({ name: 's3-write', status: 'pass', message: 'Temporary probe uploaded.' });
     try {
       const response = await (dependencies.fetch ?? fetch)(publicUrl(config, slug), {
@@ -188,17 +198,23 @@ export async function doctor(
   if (attemptedPut) {
     try {
       const current = await store.head(slug);
-      if (!current)
+      if (!current && !putDenied)
         throw new ExhibitError('E_STORAGE', 'Probe cleanup could not be confirmed from HEAD.');
-      if (current.kind !== 'probe' || current.bodySha256 !== expectedDigest)
-        throw new ExhibitError('E_CONFLICT', 'Probe identity changed; refusing cleanup.');
-      if ((await store.remove(slug, current.etag)) !== 'deleted')
-        throw new ExhibitError('E_STORAGE', 'Probe deletion was only inferred from a listing.');
-      checks.push({
-        name: 'cleanup',
-        status: 'pass',
-        message: 'Temporary origin probe is absent.',
-      });
+      if (current) {
+        if (current.kind !== 'probe' || current.bodySha256 !== expectedDigest)
+          throw new ExhibitError('E_CONFLICT', 'Probe identity changed; refusing cleanup.');
+        if ((await store.remove(slug, current.etag)) !== 'deleted')
+          throw new ExhibitError('E_STORAGE', 'Probe deletion was only inferred from a listing.');
+      }
+      checks.push(
+        current
+          ? { name: 'cleanup', status: 'pass', message: 'Temporary origin probe is absent.' }
+          : {
+              name: 'cleanup',
+              status: 'skipped',
+              message: 'The probe upload was denied and no probe object is visible.',
+            },
+      );
     } catch {
       cleanupKey = objectKey(config, slug);
       checks.push({
