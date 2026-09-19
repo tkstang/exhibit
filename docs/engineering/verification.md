@@ -35,6 +35,12 @@ bytes were identical. The GitHub Release was completed using the retained origin
 archive, with both downloaded release assets verified. The failed run remains
 historical evidence, not a green automated release.
 
+A fresh npm registry installation of `@tkstang/exhibit@0.1.0` into an isolated
+prefix also passed on macOS with Node 24. Both `exhibit` and `xbt` reported
+`0.1.0` from outside the source checkout, and installed help was available.
+This confirms the published package's local installation path, not a live hosting
+deployment or agent-host skill discovery.
+
 Release preparation now normalizes this header on newly packed archives. Release
 regressions cover normalization and unchanged strict registry integrity checks;
 the PR dry-run workflow compares macOS/Linux prepared outputs. Live npm OIDC

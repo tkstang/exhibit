@@ -7,9 +7,19 @@ description: 'Diagnose configuration, publication, viewer, and cleanup failures.
 
 ## The command is not found
 
-Build first, then `pnpm add -g .` (pnpm 11). Verify pnpm's global binary directory is on
-PATH. Both names are package binaries. `node dist/cli.js --help` bypasses global
-link setup. This initial archive is not a claim that an npm package was published.
+Check both `exhibit --version --json` and `xbt --version --json` from the project
+where you intend to use Exhibit. If neither is installed, obtain installation
+authorization, use Node 24, and choose `npm install --global @tkstang/exhibit@latest`
+or `pnpm add --global @tkstang/exhibit@latest`. The
+[installation guide](installation.md) covers pinning an approved published version,
+approved archive/source alternatives, and version/help verification.
+
+If already installed, check that the chosen manager's global binary directory is
+on PATH. Both names are package binaries. Resolve a broken installation before
+reinstalling or upgrading. Do not use `sudo` or automatically change PATH, clone,
+or fetch a checkout. In an approved, already-built source checkout,
+`node dist/cli.js --help` bypasses global installation; it does not verify that the
+CLI is available in other projects.
 
 ## Config exists, but the command cannot use it
 

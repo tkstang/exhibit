@@ -59,8 +59,9 @@ Before distributing the bundle in your organization's skills repo:
    that discovers `.agents/skills/`, the destination is
    `.agents/skills/share-exhibit/`. Follow other hosts' discovery conventions.
 
-Install the Exhibit CLI separately through an approved process. This repository's
-package is still private; the example does not assume an npm release exists.
+Install the Exhibit CLI separately through an approved process. The public
+`@tkstang/exhibit` package can be installed with npm or pnpm; follow the
+[installation guide](../installation.md) and select an approved published version.
 Publishing permission applies to the selected file, not its directory or repository.
 Never store password receipts inside the shared skill bundle.
 

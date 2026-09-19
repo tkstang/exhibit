@@ -1,6 +1,6 @@
 {
   "name": "exhibit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Set up Exhibit and publish encrypted Markdown or standalone HTML artifacts.",
   "author": { "name": "Thomas Stang" },
   "license": "MIT",

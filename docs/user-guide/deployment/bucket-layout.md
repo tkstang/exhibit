@@ -14,6 +14,10 @@ or Basic Auth everywhere except `/public/` descendants. The
 [`/internal/` alternative](#alternative-internal-directory-only) remains available
 for deployments that intentionally make other routes public.
 
+The selected infrastructure change is still awaiting merge and deployment
+qualification. The examples below describe its intended policy, not an active
+access guarantee. Verify the actual routes after the infrastructure is approved.
+
 ## One root for exhibits
 
 Reserve `exhibits/` for published artifacts. If the bucket also holds OAT archives,

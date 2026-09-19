@@ -5,6 +5,35 @@ been published; check npm and GitHub Releases for publication status.
 
 ## [Unreleased]
 
+## [0.1.1]
+
+### Fixed
+
+- Normalize the gzip operating-system header in newly prepared release archives
+  so macOS and Linux builds produce matching bytes. Registry integrity checks
+  remain exact; previously published archives and tags are unchanged.
+- Compare complete macOS/Linux release outputs in pull-request checks before
+  preparing a new release.
+
+### Documentation
+
+- Add npm and pnpm registry installation instructions to the user guide and
+  bundled agent skills, retaining approved archive and source-install alternatives.
+- Clarify the proposed gated-by-default hosting policy: only `/public/` descendants
+  skip infrastructure authentication. Encryption remains on by default everywhere;
+  `--no-encrypt` and its `--public` alias do not select a destination path.
+- Describe the distinct CloudFront and shared-ALB response-header policies and
+  their separate deployment checks.
+
+### Limitations
+
+- No CLI or configuration migration is required. Existing `0.1.0` archives remain
+  authoritative; do not rewrite them with the new header normalization.
+- The selected infrastructure changes are not yet merged or qualified. A route
+  example is not proof of VPN, Basic Auth, or public-exception enforcement.
+- Trusted publishing and automatic provenance require a successful live release;
+  source checks and saved publisher settings do not establish that outcome.
+
 ## [0.1.0]
 
 ### Added

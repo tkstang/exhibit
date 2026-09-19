@@ -76,14 +76,31 @@ Apply authentication before delivering cached or origin responses. Gate bare
 paths, dot segments, duplicate slashes, and public-looking siblings such as
 `/publicity/`. Never forward the viewer's Basic Auth credentials to S3.
 
-The private ALB route bypasses CloudFront response headers. It must provide the
-[viewer security headers](../security-model.md#browser-isolation-and-network-policy)
-too, particularly HTTP `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+The private ALB route bypasses CloudFront response headers. It must provide HTTP
+`frame-ancestors 'none'` and `X-Frame-Options: DENY` independently.
 VPN reachability does not prevent another website from framing the viewer in a
 VPN-connected browser. Preserve inline HTML delivery and reviewed no-store/cache
 behavior on both paths. ALB header insertion applies to all responses on the
 listener, so review existing archive compatibility before changing a shared
 listener. See [AWS header modification](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/header-modification.html).
+
+The selected, not-yet-merged infrastructure proposal keeps the full
+[viewer security-header policy](../security-model.md#browser-isolation-and-network-policy)
+on CloudFront. Its shared ALB listener adds only anti-framing headers to avoid
+applying Exhibit's restrictive CSP to unrelated archive pages:
+
+| Response                                                          | CloudFront                                              | Shared ALB / VPN route                                             |
+| ----------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------ |
+| CSP                                                               | Full Exhibit policy, including `frame-ancestors 'none'` | `frame-ancestors 'none'` only; generated HTML retains its meta CSP |
+| `X-Frame-Options`                                                 | `DENY`                                                  | `DENY`                                                             |
+| `Cache-Control`                                                   | `no-store, max-age=0` policy override                   | Exhibit object header                                              |
+| `X-Content-Type-Options`, `Referrer-Policy`, `X-Robots-Tag`, HSTS | Set by response policy                                  | Not added by this listener configuration                           |
+
+This is a deliberate policy difference, not header parity. `xbt doctor --probe`
+still warns for differences in the headers it checks; HSTS requires separate
+inspection. Review warnings rather than weakening the checks. Verify anti-framing and browser isolation on both routes
+after deployment. Neither a Terraform change nor a successful npm release proves
+that those routes are configured or reachable.
 
 ### Verify each delivery path
 

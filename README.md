@@ -34,9 +34,23 @@ downloaded. Read the [security model](docs/user-guide/security-model.md).
 
 ## Start locally
 
-Running Exhibit requires Node 24. Install an approved built archive with npm or
-pnpm using the [installation guide](docs/user-guide/installation.md).
-The scoped package name is `@tkstang/exhibit`; no registry release is assumed.
+Running Exhibit requires Node 24. With installation authorization, choose one
+package manager to install the public npm package:
+
+```bash
+npm install --global @tkstang/exhibit@latest
+# Or with pnpm:
+pnpm add --global @tkstang/exhibit@latest
+```
+
+Both install `exhibit` and `xbt`. To pin an approved published version, replace
+`@latest` with `@0.1.0`. A version being prepared in this repository is not yet
+available from npm. See the [installation guide](docs/user-guide/installation.md)
+for verification and approved archive/source alternatives. Do not use `sudo` or
+automatically clone or fetch a checkout for installation.
+
+### Develop from an approved checkout
+
 For source development, use Node 24 and pnpm 11:
 
 ```bash
@@ -177,8 +191,8 @@ See [receipt recovery](docs/user-guide/recovery.md) after uncertain uploads or b
 forgetting a local password receipt. Dry runs validate custom passwords but return
 `remote_checked: false` with `W_DRY_RUN_LOCAL`; they do not verify remote readiness.
 
-MIT licensed. Package metadata permits public npm publication, but a source merge
-does not publish a release. See [npm releases](docs/engineering/releases.md) for
+MIT licensed. `@tkstang/exhibit@0.1.0` is published on npm and as a GitHub release.
+A source merge does not publish the next release. See [npm releases](docs/engineering/releases.md) for
 the separate validation, approval, and publication steps.
 
 ## Acknowledgments
