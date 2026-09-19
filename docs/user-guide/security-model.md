@@ -48,10 +48,32 @@ links, but not same-origin access, forms, or top-level navigation. Source script
 cannot read the parent gate's DOM or localStorage through same-origin access.
 Inline interactivity remains available.
 
-Ordinary fragment links scroll inside the document instead of navigating the
-iframe to the outer viewer. This is not a full hash router: the helper does not
-update `location.hash`, emit `hashchange`, or activate CSS `:target`. Standalone
-HTML that depends on those behaviors needs its own inline interaction logic.
+Ordinary fragment links scroll and move keyboard focus inside the document instead
+of navigating the iframe to the outer viewer. Literal IDs take priority over
+percent-decoded IDs. HTML and SVG links (including `xlink:href`) in the document
+and open shadow roots are supported; shadow-local IDs take priority over document
+IDs for links in that root. Authored handlers that cancel the click retain control,
+including delegated document/window handlers. Window handlers should register by
+`DOMContentLoaded`, before the helper installs. Within that ordering,
+`stopPropagation()` alone does not allow native fragment navigation.
+
+Register cancellation handlers before click dispatch. A listener installed during
+that same click may run after the helper's propagation guard has already scrolled
+and focused the target. Dynamic listener registration during dispatch is not a
+supported way to override fragment navigation.
+
+This is not a full hash router: the helper does not update `location.hash`, add
+history entries, emit `hashchange`, or activate CSS `:target`. Standalone HTML that
+depends on those behaviors needs its own inline interaction logic. Closed shadow
+roots hide their links from the helper. Handlers using `stopImmediatePropagation()`
+must also call `preventDefault()` for fragment links, since they can suppress the
+helper's guards. Window capture handlers added after helper installation can also
+bypass the guards by stopping propagation; they must cancel fragment clicks too.
+The helper runs after parsing: clicks dispatched during document
+initialization and malformed HTML ending in an unterminated comment, script,
+textarea, or title are unsupported. Such tails can swallow the appended helper,
+leaving native fragment navigation able to replace the iframe document. Close
+those constructs in the source; Exhibit does not rewrite malformed HTML.
 
 The default CSP permits inline scripts/styles and embedded data assets but rejects
 remote scripts, styles, images, fonts, network connections, forms, plugins, and eval.
