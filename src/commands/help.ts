@@ -2,6 +2,7 @@ export const VERSION = '0.1.0';
 export const HELP = `Exhibit — share a document, not a workspace.
 
 Usage: exhibit <command> [options]
+       exhibit help [command]   Show this help; the command name is validated
 Alias: xbt (same executable)
 
 Commands:

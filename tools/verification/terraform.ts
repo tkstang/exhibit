@@ -10,7 +10,9 @@ for (const args of [
 ]) {
   const result = spawnSync('terraform', args, { cwd, stdio: 'inherit' });
   if (result.error) {
-    process.stderr.write('Cannot run Terraform. Install Terraform 1.15.1 and check PATH.\n');
+    process.stderr.write(
+      'Cannot run Terraform. Install Terraform >= 1.7.0, < 2.0.0 (CI pins 1.15.1) and check PATH.\n',
+    );
     process.exit(1);
   }
   if (result.status !== 0) process.exit(result.status ?? 1);
