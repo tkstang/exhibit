@@ -110,11 +110,12 @@ xbt publish plan.md                           # New opaque URL, fresh random pas
 xbt publish report.html --slug review         # Deliberately named URL.
 xbt publish report.html --slug review --overwrite
 xbt publish announcement.md --no-encrypt      # Readable plaintext, NOT encrypted.
-xbt publish plan.md --dry-run --json          # Render/scan; no S3 request or mutation.
+xbt publish plan.md --dry-run --json          # Validate/render/scan locally; no S3 request.
 xbt list --json                              # Remote objects, no passwords by default.
 xbt list --show-passwords --json              # Explicitly include matching local receipts.
 xbt rm review --dry-run
 xbt rm review
+xbt receipts review --json                   # Local receipt metadata only; no cloud requests.
 ```
 
 Use `--dir` to place artifacts beneath the configured storage prefix and URL base:
@@ -161,7 +162,10 @@ supported but can expose the secret in shell history and process arguments.
 - Unit/contract tests, browser tests, a local preview, and [development guidance](docs/engineering/development.md).
 
 No ZIP/directory hosting, exact expiry, burn-after-read, remote MCP, accounts,
-comments, or collaboration in this version. External images/scripts/fonts and
+comments, collaboration, or CloudFront/S3 access-log configuration in this version.
+Access logging is deliberately omitted from the reference infrastructure; operators
+must separately design and approve logging, retention, and access controls when
+required. External images/scripts/fonts and
 network requests are deliberately blocked. Publish **self-contained** HTML.
 
 ## Documentation
@@ -169,6 +173,9 @@ network requests are deliberately blocked. Publish **self-contained** HTML.
 Start with [Getting started](docs/user-guide/getting-started.md), [Configuration](docs/user-guide/configuration.md),
 and [Security](docs/user-guide/security-model.md). The [documentation index](docs/index.md)
 covers infrastructure, agent usage, implementation decisions, and troubleshooting.
+See [receipt recovery](docs/user-guide/recovery.md) after uncertain uploads or before
+forgetting a local password receipt. Dry runs validate custom passwords but return
+`remote_checked: false` with `W_DRY_RUN_LOCAL`; they do not verify remote readiness.
 
 MIT licensed. `private: true` prevents accidental npm publication; see
 [Development](docs/engineering/development.md) for deliberate release steps.

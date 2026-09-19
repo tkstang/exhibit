@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import { config, memory } from '#core/fixtures.test-support';
+import { ExhibitError } from '#core/errors';
 import { run } from './run.js';
 import { diagnostics } from './output.js';
 describe('CLI envelopes', () => {
   it('returns structured help and version without loading AWS', async () => {
     for (const argv of [
       ['--help', '--json'],
+      ['help', 'publish', '--json'],
       ['--version', '--json'],
     ]) {
       const r = await run(argv);
@@ -19,6 +21,52 @@ describe('CLI envelopes', () => {
     assert.equal(r.envelope.ok, false);
     assert.equal(r.exitCode, 1);
     if (!r.envelope.ok) assert.equal(r.envelope.error.code, 'E_USAGE');
+  });
+  it('retains JSON intent on parse errors and parsed mode on success', async () => {
+    const failed = await run(['list', '--json=true']);
+    assert.equal(failed.json, true);
+    assert.equal(failed.envelope.ok, false);
+    if (!failed.envelope.ok) assert.equal(failed.envelope.error.code, 'E_USAGE');
+    assert.equal((await run(['version', '--json'])).json, true);
+    assert.equal((await run(['version'])).json, false);
+  });
+  it('retains domain warnings and password argument warnings on failure', async () => {
+    const warnings = [
+      { code: 'W_SECRETS', message: 'Potential secrets found. Inspect the source.' },
+    ];
+    const result = await run(['publish', 'file.md', '--password', 'test-password-only', '--json'], {
+      session: async () => {
+        throw new ExhibitError('E_STORAGE', 'The write failed.', { warnings });
+      },
+    });
+    assert.equal(result.envelope.ok, false);
+    if (!result.envelope.ok) {
+      assert.equal(result.envelope.error.code, 'E_STORAGE');
+      assert.deepEqual(
+        result.envelope.warnings.map((warning) => warning.code),
+        ['W_PASSWORD_ARG', 'W_SECRETS'],
+      );
+    }
+    assert.match(diagnostics(result.envelope), /W_PASSWORD_ARG/);
+    assert.match(diagnostics(result.envelope), /W_SECRETS/);
+    assert.equal(JSON.stringify(result).includes('test-password-only'), false);
+  });
+  it('warns about direct password arguments even when password validation fails', async () => {
+    const result = await run(['publish', 'file.md', '--password', 'short']);
+    assert.equal(result.envelope.ok, false);
+    if (!result.envelope.ok) assert.equal(result.envelope.error.code, 'E_PASSWORD');
+    assert.match(diagnostics(result.envelope), /W_PASSWORD_ARG/);
+  });
+  it('never reflects warnings attached to untrusted errors', async () => {
+    const result = await run(['list', '--json'], {
+      session: async () => {
+        throw Object.assign(new Error('raw-secret'), {
+          warnings: [{ code: 'raw-secret', message: 'raw-secret' }],
+        });
+      },
+    });
+    assert.equal(JSON.stringify(result).includes('raw-secret'), false);
+    assert.equal(diagnostics(result.envelope), '');
   });
   it('redacts unexpected exception text', async () => {
     const r = await run(['list', '--json'], {

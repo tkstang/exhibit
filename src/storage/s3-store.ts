@@ -30,7 +30,7 @@ export function translateS3Error(error: unknown): ExhibitError {
     name === 'ConditionalRequestConflict'
   ) {
     return new ExhibitError('E_CONFLICT', 'The object exists or changed during this operation.', {
-      hint: 'Refresh with exhibit list. Use --overwrite deliberately; retry only after checking the current artifact.',
+      hint: 'Refresh with exhibit list. Your own earlier write may have succeeded. Use --overwrite deliberately; retry only after checking the current artifact and retained receipts.',
     });
   }
   if (
@@ -96,6 +96,20 @@ export function buildPutRequest(config: Config, input: PutArtifact): PutRequest 
   };
 }
 
+function canonicalDate(value: string | undefined): boolean {
+  if (!value || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
+  const time = Date.parse(value);
+  return Number.isFinite(time) && new Date(time).toISOString() === value;
+}
+
+function missingObject(error: unknown): boolean {
+  const name = errorName(error);
+  return (
+    name !== 'NoSuchBucket' &&
+    (name === 'NotFound' || name === 'NoSuchKey' || status(error) === 404)
+  );
+}
+
 export function decodeHead(config: Config, slug: string, response: HeadResponse): StoredArtifact {
   const meta = response.Metadata ?? {};
   const kind = meta['exhibit-kind'];
@@ -111,8 +125,8 @@ export function decodeHead(config: Config, slug: string, response: HeadResponse)
     !['true', 'false'].includes(protectedValue ?? '') ||
     !created ||
     !updated ||
-    !Number.isFinite(Date.parse(created)) ||
-    !Number.isFinite(Date.parse(updated)) ||
+    !canonicalDate(created) ||
+    !canonicalDate(updated) ||
     !digest ||
     !/^[a-f0-9]{64}$/.test(digest) ||
     !response.ETag
@@ -139,29 +153,60 @@ export function decodeHead(config: Config, slug: string, response: HeadResponse)
 
 export function createS3Store(config: Config, transport: S3Transport): ArtifactStore {
   const prefix = normalizePrefix(config.storage.prefix);
-  const store: ArtifactStore = {
-    async head(slug) {
-      try {
-        return decodeHead(
-          config,
-          slug,
-          await transport.head({ Bucket: config.storage.bucket, Key: objectKey(config, slug) }),
-        );
-      } catch (error) {
-        const name = errorName(error);
-        if (
-          name === 'NotFound' ||
-          name === 'NoSuchKey' ||
-          (status(error) === 404 && name !== 'NoSuchBucket')
-        )
-          return null;
-        throw translateS3Error(error);
+  const absentByListing = async (slug: string): Promise<boolean> => {
+    try {
+      const key = objectKey(config, slug);
+      const page = await transport.list({
+        Bucket: config.storage.bucket,
+        Prefix: key,
+        Delimiter: '/',
+        MaxKeys: 1,
+      });
+      return (
+        page.IsTruncated === false &&
+        (page.Contents ?? []).every(
+          (item) => typeof item.Key === 'string' && item.Key.startsWith(key),
+        ) &&
+        !(page.Contents ?? []).some((item) => item.Key === key)
+      );
+    } catch (error) {
+      throw translateS3Error(error);
+    }
+  };
+  const head = async (slug: string, confirmAbsence: boolean): Promise<StoredArtifact | null> => {
+    try {
+      return decodeHead(
+        config,
+        slug,
+        await transport.head({ Bucket: config.storage.bucket, Key: objectKey(config, slug) }),
+      );
+    } catch (error) {
+      const name = errorName(error);
+      if (missingObject(error)) return null;
+      // Prefix-scoped ListBucket does not authorize HEAD's missing-key 404.
+      // A successful exact-prefix listing can establish absence, never ownership.
+      if (
+        confirmAbsence &&
+        name !== 'NoSuchBucket' &&
+        (status(error) === 403 || name === 'AccessDenied')
+      ) {
+        if (await absentByListing(slug)) return null;
       }
-    },
+      throw translateS3Error(error);
+    }
+  };
+  const store: ArtifactStore = {
+    head: (slug) => head(slug, true),
     async put(input) {
       const request = buildPutRequest(config, input);
       try {
         const response = await transport.put(request);
+        if (!response.ETag) {
+          throw new ExhibitError('E_STORAGE', 'The upload response did not include an ETag.', {
+            exitCode: 2,
+            hint: 'The write may have succeeded. Inspect the slug and retain prepared password receipts before retrying.',
+          });
+        }
         return decodeHead(config, input.slug, {
           ETag: response.ETag,
           ContentLength: Buffer.byteLength(input.body),
@@ -197,7 +242,9 @@ export function createS3Store(config: Config, transport: S3Transport): ArtifactS
           const batch = await Promise.all(
             keys.slice(index, index + 8).map(async (slug) => {
               try {
-                return await store.head(slug);
+                // The outer listing already observed this key. A denied HEAD
+                // must fail closed, without an extra absence probe per object.
+                return await head(slug, false);
               } catch (error) {
                 if (error instanceof ExhibitError && error.code === 'E_NOT_MANAGED') return null;
                 throw error;
@@ -232,7 +279,16 @@ export function createS3Store(config: Config, transport: S3Transport): ArtifactS
           Key: objectKey(config, slug),
           IfMatch: etag,
         });
+        return 'deleted';
       } catch (error) {
+        // A lost successful response can be retried against an already-absent key.
+        // Never retry without IfMatch or treat a missing bucket as successful cleanup.
+        if (missingObject(error)) {
+          // A proxy can return a generic 404 even while the object remains live.
+          // Compatible backends may serve stale listings. Preserve the distinction
+          // so callers retain recovery material rather than trusting inferred absence.
+          if (await absentByListing(slug)) return 'absence-inferred';
+        }
         throw translateS3Error(error);
       }
     },

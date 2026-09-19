@@ -20,12 +20,30 @@ const RULES: readonly [string, RegExp][] = [
 
 /** Returns rule/line only. A finding never includes the matched secret or a snippet. */
 export function scanSecrets(text: string): readonly SecretFinding[] {
-  const findings: SecretFinding[] = [];
+  const groups: SecretFinding[][] = [];
   for (const [rule, pattern] of RULES) {
+    const matches: SecretFinding[] = [];
     const regex = new RegExp(pattern.source, pattern.flags);
+    let position = 0;
+    let line = 1;
     for (const match of text.matchAll(regex)) {
-      findings.push({ rule, line: text.slice(0, match.index).split('\n').length });
-      if (findings.length >= 50) return findings;
+      // Each rule advances through the source once, without allocating prefixes.
+      while (position < match.index) {
+        if (text.charCodeAt(position) === 10) line += 1;
+        position += 1;
+      }
+      matches.push({ rule, line });
+      if (matches.length >= 50) break;
+    }
+    groups.push(matches);
+  }
+  // Share the bounded result budget across rules, so repeated tokens cannot hide another kind.
+  const findings: SecretFinding[] = [];
+  for (let index = 0; index < 50 && findings.length < 50; index += 1) {
+    for (const group of groups) {
+      const finding = group[index];
+      if (finding) findings.push(finding);
+      if (findings.length === 50) break;
     }
   }
   return findings;

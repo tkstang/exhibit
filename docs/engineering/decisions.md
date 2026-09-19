@@ -7,7 +7,7 @@ description: 'Rationale for the package structure, crypto adapter, rendering, an
 
 ## Keep it small
 
-Single package, five command families, and plain viewer assets. No monorepo,
+Single package, a small CLI command surface, and plain viewer assets. No monorepo,
 MCP, host provisioning API, account system, or OAT runtime dependency. Skills call
 the CLI. Named Node import maps plus matching TypeScript/Vitest aliases avoid a
 post-build alias-rewriting dependency.
@@ -49,6 +49,11 @@ Persist passwords before an uncertain PUT and key receipts by remote-body digest
 Do not replace a single per-slug password prematurely. Reading S3 remains necessary
 for management. `--show-passwords` is explicit. `--no-store-password` allows an
 intentionally ephemeral workflow but reports its recovery limitation.
+
+Receipt inspection is local-only; local status does not classify remote orphans.
+Forgetting requires an exact body digest and explicit acknowledgement of password
+loss. There is no automatic age-based cleanup. File and supported directory syncs
+improve persistence without claiming qualified power-loss durability.
 
 ## Generated passwords, deliberate public exceptions
 

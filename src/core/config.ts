@@ -7,6 +7,7 @@ import { readTextFile, writePrivateJson } from './files.js';
 import type { Config } from './types.js';
 
 function safeUrl(raw: string): boolean {
+  if (/[?#]/.test(raw)) return false;
   try {
     const url = new URL(raw);
     const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
@@ -104,7 +105,14 @@ export async function loadConfig(path: string): Promise<Config> {
       });
     throw new ExhibitError('E_CONFIG', 'Unable to inspect the config file.');
   }
-  const text = await readTextFile(path, 64 * 1024);
+  let text: string;
+  try {
+    text = await readTextFile(path, 64 * 1024);
+  } catch {
+    throw new ExhibitError('E_CONFIG', 'Unable to read the config file.', {
+      hint: 'Use a readable regular, non-symlink UTF-8 config file no larger than 64 KiB.',
+    });
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -116,6 +124,13 @@ export async function loadConfig(path: string): Promise<Config> {
 
 export async function saveConfig(path: string, value: unknown, force = false): Promise<Config> {
   const config = parseConfig(value);
-  await writePrivateJson(path, config, force, false);
+  try {
+    await writePrivateJson(path, config, force, false);
+  } catch (error) {
+    if (error instanceof ExhibitError && error.code === 'E_CONFIG_EXISTS') throw error;
+    throw new ExhibitError('E_CONFIG', 'Unable to write the config file.', {
+      hint: 'Check config directory ownership, permissions, free space, and that the target is a regular file.',
+    });
+  }
   return config;
 }

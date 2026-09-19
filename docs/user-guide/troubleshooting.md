@@ -26,6 +26,8 @@ the error unless you accept that the output is the only password copy.
 
 A warning after a successful upload can indicate failure updating the final receipt;
 the prepared receipt remains useful. Do not discard it. Never commit state files.
+Use `xbt receipts <slug>` for a local-only inventory and follow
+[receipt recovery](recovery.md) before revealing or forgetting passwords.
 
 ## AccessDenied / credential failures
 
@@ -34,12 +36,17 @@ ListBucket and Get/Put/DeleteObject permissions. A CDN needs separate origin-rea
 permission. Anonymous viewers do not need either credential. Do not switch to public
 bucket ACLs as an expedient fix.
 
+On HEAD 403, Exhibit uses an exact-key prefix-scoped list only to establish absence
+from a successful untruncated response. A listed key does not establish ownership
+or grant permission to overwrite it; denied/inconclusive reads remain errors.
+
 ## Upload succeeded, but the URL is 403/404
 
 Check `publicBaseUrl`, the origin-path prefix mapping, OAC/bucket policy, regional
 REST endpoint, and deployment propagation. The example produces `.html` URLs; no
 extensionless rewrite is expected. A failed doctor probe reports an exact cleanup
-key if cleanup cannot be confirmed.
+key if cleanup cannot be confirmed. A denied probe upload with no visible probe
+object reports a skipped cleanup check and no cleanup key.
 
 ## Doctor fails off VPN but the page opens on VPN
 
@@ -75,6 +82,11 @@ Do not automatically re-run with an unconditional write. List the remote slug an
 inspect the current result/ETag. Generated passwords from attempted writes may be
 in prepared local receipts. `list --show-passwords` selects a receipt matching the
 current remote digest, including a prepared receipt when appropriate.
+
+A successful PUT response missing its ETag is also uncertain `E_STORAGE`. Retain
+receipts and inspect the remote artifact before retrying. Review top-level
+`warnings` on failed JSON envelopes too: a failed upload may have succeeded after
+`W_SECRETS` was collected. Follow [receipt recovery](recovery.md).
 
 A stable slug does not guarantee a stable password. Each protected publication uses
 a fresh generated password unless you supply a custom password. Distribute the

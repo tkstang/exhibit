@@ -2,12 +2,14 @@ export const VERSION = '0.1.0';
 export const HELP = `Exhibit — share a document, not a workspace.
 
 Usage: exhibit <command> [options]
+       exhibit help [command]   Show this help; the command name is validated
 Alias: xbt (same executable)
 
 Commands:
   publish <file>   Render Markdown or preserve standalone HTML, encrypt, and upload
   list            List remote Exhibit artifacts, one page at a time
   remove <slug>   Conditionally delete a managed artifact (alias: rm)
+  receipts <slug> Inspect retained local receipts; no cloud requests
   doctor          Read-only configuration/credential/bucket checks
   init            Write local non-secret configuration; never provisions cloud resources
 
@@ -17,7 +19,7 @@ Global options:
   -h, --help                Show help
   -v, --version             Show version
 
-Artifact scope (publish, list, remove):
+Artifact scope (publish, list, remove, receipts):
   --dir <path>              Relative directory beneath the configured prefix and URL base
                             Does not set access controls; encryption stays on by default
 
@@ -43,6 +45,13 @@ List:
 Remove:
   --dry-run                 Inspect only
   --missing-ok              Absent remote object is not an error
+
+Receipts:
+  --show-passwords          Explicitly reveal locally retained passwords
+  --forget <body-sha256>    Select one exact local receipt to forget; never deletes remote data
+                            Cannot be combined with --show-passwords; requires --force or --dry-run
+  --dry-run                 Requires --forget; inspect the selected receipt without forgetting it
+  --force                   Requires --forget; acknowledge permanent loss of its password
 
 Doctor:
   --probe                   Explicitly write/fetch/delete a non-sensitive encrypted fixture;

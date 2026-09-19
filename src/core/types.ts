@@ -62,7 +62,8 @@ export interface ArtifactStore {
   head(slug: string): Promise<StoredArtifact | null>;
   put(input: PutArtifact): Promise<StoredArtifact>;
   list(options: { readonly limit: number; readonly cursor?: string }): Promise<ArtifactPage>;
-  remove(slug: string, etag: string): Promise<void>;
+  /** Inferred absence is not confirmation of a successful conditional DELETE. */
+  remove(slug: string, etag: string): Promise<'deleted' | 'absence-inferred'>;
   checkAccess(): Promise<void>;
 }
 

@@ -71,5 +71,11 @@ message is convenient but offers no second-channel protection.
 local receipts. On another machine, the artifact will still list, but its password
 will be absent unless receipts have been transferred securely.
 
-`exhibit rm <slug>` deletes the current remote object and local receipts for that
-slug. Downloaded copies and any retained object versions are outside that operation.
+`exhibit rm <slug>` conditionally deletes the current remote object and removes
+only the local receipt matching its observed body digest. Other revision receipts,
+including prepared receipts from uncertain uploads, remain. `--missing-ok` accepts
+an already absent object without deleting receipts. Downloaded copies and retained
+object versions are outside that operation.
+
+Use `xbt receipts <slug>` to inspect local receipt metadata without cloud access.
+Read [receipt recovery](recovery.md) before forgetting any password receipt.

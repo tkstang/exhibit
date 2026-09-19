@@ -48,6 +48,33 @@ links, but not same-origin access, forms, or top-level navigation. Source script
 cannot read the parent gate's DOM or localStorage through same-origin access.
 Inline interactivity remains available.
 
+Ordinary fragment links scroll and move keyboard focus inside the document instead
+of navigating the iframe to the outer viewer. Literal IDs take priority over
+percent-decoded IDs. HTML and SVG links (including `xlink:href`) in the document
+and open shadow roots are supported; shadow-local IDs take priority over document
+IDs for links in that root. Authored handlers that cancel the click retain control,
+including delegated document/window handlers. Window handlers should register by
+`DOMContentLoaded`, before the helper installs. Within that ordering,
+`stopPropagation()` alone does not allow native fragment navigation.
+
+Register cancellation handlers before click dispatch. A listener installed during
+that same click may run after the helper's propagation guard has already scrolled
+and focused the target. Dynamic listener registration during dispatch is not a
+supported way to override fragment navigation.
+
+This is not a full hash router: the helper does not update `location.hash`, add
+history entries, emit `hashchange`, or activate CSS `:target`. Standalone HTML that
+depends on those behaviors needs its own inline interaction logic. Closed shadow
+roots hide their links from the helper. Handlers using `stopImmediatePropagation()`
+must also call `preventDefault()` for fragment links, since they can suppress the
+helper's guards. Window capture handlers added after helper installation can also
+bypass the guards by stopping propagation; they must cancel fragment clicks too.
+The helper runs after parsing: clicks dispatched during document
+initialization and malformed HTML ending in an unterminated comment, script,
+textarea, or title are unsupported. Such tails can swallow the appended helper,
+leaving native fragment navigation able to replace the iframe document. Close
+those constructs in the source; Exhibit does not rewrite malformed HTML.
+
 The default CSP permits inline scripts/styles and embedded data assets but rejects
 remote scripts, styles, images, fonts, network connections, forms, plugins, and eval.
 The exact policy lives in `src/security/policy.ts` and the Terraform response-header
@@ -96,15 +123,20 @@ Infrastructure can separately restrict who receives the viewer. A `/public/`
 directory does not disable encryption, and an `internal/` name does not enforce
 authentication. See the [route policy examples](deployment/bucket-layout.md).
 
-The scanner warns for protected publishing and blocks high-signal matches in public
-mode unless `--allow-secrets` is explicitly supplied. `--strict-secrets` blocks
-matches in protected mode too. Findings contain rule names and line numbers, never
-matched secret values. False negatives and false positives are possible.
+The scanner checks both body text and title, including the filename-derived
+default title and an explicit `--title`. It warns for protected publishing and
+blocks any finding in public mode unless `--allow-secrets` is explicitly supplied.
+There is no severity threshold. `--strict-secrets` blocks matches in protected mode
+too and cannot be combined with `--allow-secrets`. Findings identify their `body`
+or `title` source, rule names, and line numbers, never matched secret values.
+False negatives and false positives are possible. Warnings collected before a
+later failure remain in the failure envelope and stderr diagnostics.
 
 ## Local state and output
 
 The publish result intentionally contains the password. So does an explicit
-`list --show-passwords` when a matching local receipt exists. Treat command stdout,
+`list --show-passwords` when a matching local receipt exists, or
+`receipts <slug> --show-passwords` for a local inventory. Treat command stdout,
 saved JSON, terminal scrollback, agent transcripts, and screenshots accordingly.
 Diagnostics do not include passwords or raw SDK error text. Direct `--password`
 can expose the secret in process arguments; prefer a private file or environment
@@ -116,6 +148,18 @@ lost. Failed attempts can therefore leave prepared receipts. Body-digest identit
 keeps a stale receipt from being attached to a different remote revision. Old
 receipts are retained through overwrites so a failed/conflicting replacement does
 not destroy the previous password.
+
+Receipt writes sync file contents and attempt to sync parent directory entries
+after atomic rename/link and directory creation. Directory sync is best effort
+where unsupported and is skipped on Windows; other I/O failures remain errors.
+This improves persistence but does not establish tested power-loss durability.
+
+`receipts <slug>` inspects local metadata only. Neither `prepared` nor `published`
+proves an artifact is live, absent, or orphaned. Forgetting one exact body-digest
+receipt requires `--forget <body-sha256> --force`; a `--dry-run` preview needs no
+force. This may erase the only password for a live artifact or retained copy.
+There is no automatic age-based or orphan cleanup. Follow the
+[recovery guide](recovery.md) and obtain informed consent before deletion.
 
 Deletion removes only the receipt for the observed remote body digest. Other
 revision receipts remain, including prepared receipts from concurrent or uncertain
@@ -136,6 +180,17 @@ New objects use `If-None-Match: *`. Overwrites require an explicit slug and
 `--overwrite`, and use the observed ETag in `If-Match`. Delete uses the observed
 ETag too. Unrecognized objects are not overwritten/deleted, and no operation
 silently falls back to an unconditional request.
+
+HEAD 403 triggers an exact-key prefix-scoped list to prove absence only when the
+response is successful, untruncated, and lacks the exact key. That fallback never
+proves ownership. Recognition requires valid Exhibit metadata and an ETag from
+HEAD, including canonical UTC timestamps in `YYYY-MM-DDTHH:mm:ss.sssZ` form with
+valid calendar values. Other date formats are rejected as `E_NOT_MANAGED`.
+A PUT that returns no ETag is uncertain `E_STORAGE`: retain prepared receipts
+because the write may already have succeeded.
+An absent-object response to conditional DELETE requires a subsequent successful,
+complete exact-prefix listing before local receipt cleanup. A proxy 404 alone cannot discard a
+password while the artifact may still exist.
 
 Reference cache TTLs are zero and responses use `no-store`. That improves freshness,
 not cryptographic revocation. Saved ciphertext remains decryptable with the old

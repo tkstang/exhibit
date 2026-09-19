@@ -28,6 +28,12 @@ before calling a link live. Return passwords only to intended recipients.
 stderr is diagnostic output. Never paste complete publish results, receipts, or
 custom passwords into shared logs or PRs.
 
+Read `data.warnings` on success and top-level `warnings` on failure; warnings
+collected before an uncertain upload still matter. A publish dry run validates
+custom passwords and scans body and title, but remains local-only. It returns
+`remote_checked: false` and `W_DRY_RUN_LOCAL`, generates no password, and does not
+check remote existence, ownership, permissions, or conditional operations.
+
 Generated passwords are stored in private local receipts unless the user opts
 out. Receipts are plaintext secrets, not canonical remote state or a vault.
 `list --show-passwords` intentionally reveals matching local passwords. Protect
@@ -45,6 +51,32 @@ the output. Lost receipts cannot be recovered from S3.
 A timeout can hide a successful upload. Prepared receipts may contain its password.
 Inspect the current artifact before retrying. Failed overwrites must not discard
 the previous password. Each protected replacement normally has a new password.
+
+A PUT response missing its ETag is uncertain `E_STORAGE`, not `E_NOT_MANAGED`.
+An `E_CONFLICT` may follow your own successful earlier write. Retain receipts and
+inspect the same config/directory before retrying. Any scanner finding blocks
+public mode by default; source text and rendered Markdown titles are scanned,
+without a severity threshold. HTML titles are scanned as part of the source text;
+unused HTML filename-derived titles are not scanned separately.
+
+`xbt receipts <slug> [--dir <path>] --json` lists local metadata without cloud
+requests. `--show-passwords` explicitly reveals retained passwords, separately
+from `--forget`. Neither `prepared` nor `published` classifies remote orphans.
+Inventory/forget results carry `W_LOCAL_RECEIPTS` and `remote_checked: false`.
+
+Only with informed consent for the exact receipt, use
+`xbt receipts <slug> --forget <body-sha256> --force [--dir <path>] --json`.
+It deletes that local receipt only and may erase the only password for a live
+artifact or retained copy. Preview with `--dry-run` without `--force`; both
+preview and deletion carry `W_FORGET_PASSWORD`. Do not combine `--show-passwords`
+with `--forget`. Never automatically clean receipts by age or assumed orphan status.
+
+`xbt rm <slug> [--dir <path>] --missing-ok` accepts an absent remote object without
+removing receipts. Confirmed removal deletes only the receipt matching the observed
+remote body digest; other revisions remain. No local forgetting revokes remote copies.
+`W_DELETE_UNCONFIRMED` with `removed: false` means a not-found DELETE and a listing
+only suggested absence. Keep all receipts: compatible backends can serve stale
+listings. Independently verify the origin before any exact-digest forgetting.
 
 `xbt doctor` is read-only, but `xbt doctor --probe` writes and deletes a temporary fixture
 and needs separate intentional authorization. Removal needs authorization for the

@@ -7,7 +7,9 @@ description: 'Run local checks, use worktrees and hooks, and prepare an intentio
 
 ## Toolchain
 
-Node 24, pnpm 11.8.0, TypeScript 7, Oxc, Vitest 4, and Playwright. Runtime modules
+Node 24, pnpm 11.8.0, TypeScript 7, Oxc, Vitest 4, and Playwright. `.nvmrc` pins
+Node 24.18.0; `tools/verification/runtime.ts` requires Node 24 for `pnpm check`.
+Runtime modules
 are ESM. The SDK and crypto pins are deliberate; see `package.json` and the adapter
 contract test before upgrading them.
 
@@ -39,8 +41,9 @@ Strict release-age handling prevents automatic future exceptions.
 
 Oxfmt has been run on the imported sources. OAT-generated files and managed
 `AGENTS.md` blocks are excluded so formatting cannot invalidate OAT's exact markers.
-The original delivery's `MANIFEST.sha256` is historical provenance for the laptop
-archive, not a checksum list for the subsequently edited Git tree.
+The obsolete root `MANIFEST.sha256` was removed; its original delivery provenance
+remains in Git history. Release checksums describe the corresponding release
+artifacts, not the working tree.
 
 pnpm 11 uses `pnpm add -g .` to register local binaries; see the
 [pnpm migration note](https://pnpm.io/11.x/cli/link). Both installed binaries were
@@ -90,15 +93,31 @@ preview adapter also remains JavaScript and runs after `pnpm build`.
 
 ## Infrastructure checks
 
+Install Terraform 1.7.0 or later, below 2.0.0 (CI pins 1.15.1), then run from the
+repository root:
+
 ```bash
-cd examples/terraform/aws
-terraform fmt -check
-terraform init -backend=false
-terraform validate
+pnpm terraform:check
 ```
+
+This runs formatting checks, backend-disabled initialization with
+`-lockfile=readonly -input=false`, validation, and mock-provider, plan-only tests.
+Initialization may download providers from the registry; these checks do not
+contact AWS or create resources. CI calls the same `tools/verification/terraform.ts`.
+Terraform remains separate from `pnpm check` and runs in `pnpm worktree:validate`.
 
 Use an explicitly reviewed account/workspace and plan before any apply. The example
 creates resources and can incur charges. Nothing in `pnpm check` deploys anything.
+
+## Workflow checks
+
+With a recent Go toolchain installed, run `pnpm lint:workflows` from the repository
+root. It runs `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck= -pyflakes=`
+against all GitHub workflows. Go downloads the pinned tool and its dependencies
+on first use. Optional shellcheck and pyflakes integrations are disabled so the
+same workflow checks run regardless of which extra tools are installed. CI and
+`pnpm worktree:validate` run this command too; CI installs a pinned Go toolchain
+with a commit-pinned `actions/setup-go` first.
 
 ## Worktrees and Git hooks
 
@@ -114,7 +133,8 @@ Archive downloads are opt-in: `SYNC_S3_ARCHIVES=1 pnpm worktree:init`.
 probe or publication. Install Chromium separately with `pnpm exec playwright install chromium`.
 
 `pnpm worktree:validate` requires a clean tree and runs `check`, HTTP browser tests,
-and package verification, then checks cleanliness again.
+package verification, Terraform checks, and workflow lint, then checks cleanliness
+again. Install Terraform and Go before running this complete gate.
 
 The pre-commit hook runs lint, typecheck, and formatting checks without modifying
 files. The commit-msg hook enforces Conventional Commits. `GIT_HOOKS=0` is an explicit

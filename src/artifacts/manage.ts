@@ -60,7 +60,21 @@ export async function removeArtifact(
     throw new ExhibitError('E_NOT_MANAGED', 'This is a diagnostic probe, not an artifact.');
   if (options.dryRun)
     return { slug, key: existing.key, removed: false, dry_run: true, warnings: [] };
-  await store.remove(slug, existing.etag);
+  const outcome = await store.remove(slug, existing.etag);
+  if (outcome === 'absence-inferred') {
+    return {
+      slug,
+      key: existing.key,
+      removed: false,
+      dry_run: false,
+      warnings: [
+        {
+          code: 'W_DELETE_UNCONFIRMED',
+          message: `Deletion was not confirmed; a listing suggests absence. The password receipt is retained. After independently verifying the origin, preview xbt receipts ${slug} --forget ${existing.bodySha256} --dry-run with the same config and --dir scope; use --force only to intentionally forget that receipt.`,
+        },
+      ],
+    };
+  }
   const warnings: Warning[] = [
     {
       code: 'W_DELETE_LIMITS',

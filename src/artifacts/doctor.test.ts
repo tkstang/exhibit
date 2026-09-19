@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
-import { config, memory } from '#core/fixtures.test-support';
+import { config, memory, s3Error } from '#core/fixtures.test-support';
 import { SECURITY_HEADERS } from '#security/policy';
 import { doctor, readResponseText } from './doctor.js';
 import { createProtector } from '#security/staticrypt';
+import { ExhibitError } from '#core/errors';
 
 describe('deployment doctor', () => {
   it('is read-only without --probe', async () => {
@@ -46,5 +47,105 @@ describe('deployment doctor', () => {
     await assert.rejects(readResponseText(new Response('x'.repeat(100)), 10), {
       code: 'E_NETWORK',
     });
+  });
+  it('reports the exact cleanup key when conditional cleanup fails', async () => {
+    const { store, transport } = memory();
+    const remove = store.remove.bind(store);
+    store.remove = async (slug, etag) => {
+      if (etag === '"exhibit-impossible-etag"') return remove(slug, etag);
+      throw new ExhibitError('E_STORAGE', 'Fixture cleanup failure');
+    };
+    const result = await doctor(
+      config,
+      store,
+      { probe: true },
+      { fetch: async () => new Response('not found', { status: 404 }) },
+    );
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, transport.writes[0]?.Key);
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
+    assert.equal(transport.objects.size, 1);
+  });
+  it('reports no cleanup work when the probe upload is definitively denied', async () => {
+    const { store, transport } = memory();
+    transport.put = async () => {
+      throw s3Error('AccessDenied', 403);
+    };
+    const result = await doctor(config, store, { probe: true });
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, null);
+    assert.ok(result.checks.some((check) => check.name === 'probe' && check.status === 'fail'));
+    assert.ok(
+      result.checks.some((check) => check.name === 'cleanup' && check.status === 'skipped'),
+    );
+    assert.equal(transport.deletes.length, 0);
+  });
+  it('still removes a probe created by an earlier attempt when the final upload is denied', async () => {
+    const { store, transport } = memory();
+    const put = transport.put.bind(transport);
+    transport.put = async (request) => {
+      await put(request);
+      throw s3Error('AccessDenied', 403);
+    };
+    const result = await doctor(config, store, { probe: true });
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, null);
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'pass'));
+    assert.equal(transport.objects.size, 0);
+  });
+  it('keeps cleanup unconfirmed when an uncertain probe upload leaves no visible object', async () => {
+    const { store, transport } = memory();
+    transport.put = async () => {
+      throw s3Error('InternalError', 500);
+    };
+    const result = await doctor(config, store, { probe: true });
+    assert.equal(result.healthy, false);
+    assert.equal(typeof result.cleanup_key, 'string');
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
+  });
+  it('does not certify cleanup based only on inferred deletion', async () => {
+    const { store, transport } = memory();
+    const remove = store.remove.bind(store);
+    store.remove = async (slug, etag) =>
+      etag === '"exhibit-impossible-etag"' ? remove(slug, etag) : 'absence-inferred';
+    const result = await doctor(
+      config,
+      store,
+      { probe: true },
+      {
+        fetch: async () => new Response('not found', { status: 404 }),
+      },
+    );
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, transport.writes[0]?.Key);
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
+    assert.equal(transport.objects.size, 1);
+  });
+  it('reports a cleanup key when HEAD plus a stale listing only suggests probe absence', async () => {
+    const { store, transport } = memory();
+    transport.head = async () => {
+      throw s3Error('AccessDenied', 403);
+    };
+    transport.list = async () => ({ Contents: [], IsTruncated: false });
+    const result = await doctor(
+      config,
+      store,
+      { probe: true },
+      {
+        fetch: async () =>
+          new Response(transport.writes[0]?.Body, {
+            headers: {
+              ...SECURITY_HEADERS,
+              'content-type': 'text/html',
+              'cache-control': 'no-store',
+            },
+          }),
+      },
+    );
+    assert.equal(result.healthy, false);
+    assert.equal(result.cleanup_key, transport.writes[0]?.Key);
+    assert.equal(transport.objects.size, 1);
+    assert.equal(transport.deletes.length, 0);
+    assert.ok(result.checks.some((check) => check.name === 'cleanup' && check.status === 'fail'));
   });
 });

@@ -62,6 +62,7 @@ try {
     'examples/skills/share-exhibit/SKILL.md',
     'examples/skills/share-exhibit/references/exhibit-config.json',
     'examples/terraform/aws/main.tf',
+    'examples/terraform/aws/tests/validation.tftest.hcl',
     'tools/git-hooks/install.mjs',
   ])
     assert.ok(files.includes(`package/${required}`), `Missing packaged resource: ${required}`);
