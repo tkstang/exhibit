@@ -69,7 +69,9 @@ terraform test
 `pnpm terraform:check` runs those same reference-infrastructure checks from the
 repository root. `pnpm lint:workflows` runs actionlint 1.7.12 through Go; it requires
 Go and access to its module proxy on the first run. This pinned check passed locally
-on 2026-09-18; remote CI for these edits has not run.
+on 2026-09-18. PR #2 CI (`verify`, `terraform`, and the release dry run) first ran
+these pinned workflow, Go, and Terraform steps on Linux on 2026-09-19 at `b5324a1`
+and passed.
 
 `pnpm worktree:validate` runs the application, browser, package, Terraform, and
 workflow-lint gates and requires a clean tree before and after. `pnpm check` remains
