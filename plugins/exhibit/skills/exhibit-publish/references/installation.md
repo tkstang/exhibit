@@ -43,7 +43,7 @@ flags you need. Do not infer support from another checkout's documentation.
 
 The source package is `@tkstang/exhibit`. Its metadata permits publication, but
 these instructions do not claim a registry release. Use an approved built package or an approved
-checkout/revision of the private [tkstang/exhibit](https://github.com/tkstang/exhibit)
+checkout/revision of the public [tkstang/exhibit](https://github.com/tkstang/exhibit)
 repository. Do not automatically clone, fetch, or substitute an unapproved download.
 
 ### Install a built package

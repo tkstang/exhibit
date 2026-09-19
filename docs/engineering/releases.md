@@ -12,9 +12,12 @@ preparation sets `private: false`; this permits publication but does not authori
 or perform it. Source merge, npm publication, and hosting qualification
 are separate decisions. No multi-package release tooling or Changesets is needed.
 
-The GitHub repository is currently private. Publishing a public npm package does
-not change that visibility. npm provenance is unavailable for a private source
-repository, even with trusted publishing. See the
+The GitHub repository is public. Repository visibility and npm package visibility
+are separate settings; neither establishes that a package has been published.
+Trusted publishing from GitHub-hosted Actions runners can generate npm provenance
+for a public package from this public repository. The local bootstrap publication
+below does not generate CI provenance. Verify the published version's attestation
+after a trusted-publishing release before claiming provenance. See the
 [official npm trusted publishing guide](https://docs.npmjs.com/trusted-publishers/#automatic-provenance-generation).
 
 ## Prepare and inspect an archive

@@ -202,6 +202,8 @@ handling. The first-release PR confirms the initial version; later releases bump
 it. Each includes a reviewed matching section in `CHANGELOG.md`; validation extracts
 the notes automatically for GitHub Release.
 Keep `NPM_RELEASE_ENABLED` disabled
-until bootstrap publication and trust setup are complete. The private GitHub
-repository remains private when the npm package becomes public, and cannot supply
-npm provenance. No registry publication or remote setup is implied by these docs.
+until bootstrap publication and trust setup are complete. The public GitHub
+repository permits CI provenance for a public npm package through trusted
+publishing; the local bootstrap publication does not generate CI provenance.
+Verify the published attestation as described in [npm releases](releases.md).
+No registry publication or remote setup is implied by these docs.
