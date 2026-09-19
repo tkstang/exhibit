@@ -56,11 +56,12 @@ export async function assertPrivateDirectory(path: string): Promise<void> {
   }
 }
 
-export async function ensurePrivateDirectory(path: string): Promise<void> {
+/** Pass ownedParent only when the parent was itself ensured private by Exhibit. */
+export async function ensurePrivateDirectory(path: string, ownedParent = false): Promise<void> {
   try {
     await mkdir(path, { recursive: true, mode: 0o700 });
     await assertPrivateDirectory(path);
-    await syncDirectory(dirname(path), true);
+    await syncDirectory(dirname(path), !ownedParent);
   } catch {
     throw new ExhibitError('E_STATE', 'Cannot create a private local directory.', {
       hint: 'Use an owned, non-symlink directory. Check EXHIBIT_STATE_DIR and EXHIBIT_CONFIG.',

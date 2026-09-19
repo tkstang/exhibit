@@ -3,7 +3,7 @@ import { mkdtemp, rm, readFile, mkdir, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, it, vi } from 'vitest';
-import { writePrivateJson } from './files.js';
+import { ensurePrivateDirectory, writePrivateJson } from './files.js';
 
 const audit = vi.hoisted(() => ({
   events: [] as string[],
@@ -83,6 +83,25 @@ it.skipIf(process.platform === 'win32')(
       audit.deniedPath = dir;
       audit.deniedCode = 'EIO';
       await assert.rejects(writePrivateJson(join(child, 'receipt.json'), {}), { code: 'E_STATE' });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  },
+);
+
+it.skipIf(process.platform === 'win32')(
+  'keeps the parent sync strict when Exhibit owns the parent directory',
+  async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'exhibit-owned-'));
+    try {
+      const parent = join(dir, 'state');
+      await ensurePrivateDirectory(parent);
+      audit.deniedPath = parent;
+      audit.deniedCode = 'EACCES';
+      await ensurePrivateDirectory(join(parent, 'foreign-parent-semantics'));
+      await assert.rejects(ensurePrivateDirectory(join(parent, 'owned'), true), {
+        code: 'E_STATE',
+      });
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

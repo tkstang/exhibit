@@ -129,8 +129,8 @@ export function createPublicationState(config: Config, stateRoot: string): Publi
       if (!validReceipt(receipt))
         throw new ExhibitError('E_STATE', 'Refusing an invalid publication receipt.');
       await ensurePrivateDirectory(stateRoot);
-      await ensurePrivateDirectory(deployment);
-      await ensurePrivateDirectory(directory(receipt.slug));
+      await ensurePrivateDirectory(deployment, true);
+      await ensurePrivateDirectory(directory(receipt.slug), true);
       await writePrivateJson(path(receipt.slug, receipt.bodySha256), receipt);
     },
     async remove(slug, digest) {
