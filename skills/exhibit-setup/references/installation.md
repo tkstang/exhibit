@@ -5,7 +5,7 @@ description: 'Verify the CLI, install an approved package with npm or pnpm, or b
 
 # Install and verify Exhibit
 
-Use Node 24 to run Exhibit. Install a built package with npm or pnpm; building
+Use Node 24 to run Exhibit. Install the public npm package with npm or pnpm; building
 from source uses the repository's pinned pnpm 11.8.0 toolchain.
 `exhibit` and `xbt` are aliases for the same CLI. A request to share a document does not authorize
 installation, PATH changes, infrastructure changes, or a cloud write/delete probe.
@@ -41,12 +41,37 @@ flags you need. Do not infer support from another checkout's documentation.
 
 ## Install only with authorization
 
-The source package is `@tkstang/exhibit`. Its metadata permits publication, but
-these instructions do not claim a registry release. Use an approved built package or an approved
-checkout/revision of the public [tkstang/exhibit](https://github.com/tkstang/exhibit)
-repository. Do not automatically clone, fetch, or substitute an unapproved download.
+`@tkstang/exhibit@0.1.0` is published on npm and as a GitHub release. Obtain
+installation authorization before running an installer. Choose the registry
+package, an approved built archive, or an approved checkout/revision of the public
+[tkstang/exhibit](https://github.com/tkstang/exhibit) repository. Do not
+automatically clone, fetch, or substitute an unapproved download.
 
-### Install a built package
+### Install from npm
+
+Choose **one** installer. With npm, no pnpm installation or source checkout is
+required:
+
+```bash
+npm install --global @tkstang/exhibit@latest
+```
+
+With pnpm:
+
+```bash
+pnpm add --global @tkstang/exhibit@latest
+```
+
+`@latest` selects the registry's latest release. To pin an approved published
+version, replace `@latest` with `@0.1.0`. Do not use a version from a release
+preparation branch until that version has been published.
+
+Both install the `exhibit` and `xbt` commands. Do not install the same CLI through
+multiple managers into competing PATH entries. See the package managers'
+[npm install](https://docs.npmjs.com/cli/v11/commands/npm-install/) and
+[pnpm add](https://pnpm.io/11.x/cli/add) documentation.
+
+### Install an approved archive
 
 Given an approved `.tgz` package produced by `pnpm pack`, choose **one** installer.
 Replace the example path with the actual approved archive path.
@@ -63,11 +88,8 @@ With pnpm:
 pnpm add --global /absolute/path/to/approved-exhibit.tgz
 ```
 
-Both install the `exhibit` and `xbt` commands. See the package managers'
-[npm install](https://docs.npmjs.com/cli/v11/commands/npm-install/) and
-[pnpm add](https://pnpm.io/11.x/cli/add) documentation. These commands may download
-runtime dependencies; the archive is not an offline dependency bundle.
-Do not install the same CLI through multiple managers into competing PATH entries.
+Both install the `exhibit` and `xbt` commands. These commands may download runtime
+dependencies; the archive is not an offline dependency bundle.
 
 ### Build from source when needed
 
@@ -83,15 +105,15 @@ pnpm pack
 prints the archive path. Install that archive with npm or pnpm as shown above.
 The source checkout uses `pnpm-lock.yaml`; do not substitute `npm install` or
 generate a second lockfile there. This build requirement does not make pnpm a
-runtime requirement for people installing a built archive.
+runtime requirement for people installing from npm or a built archive.
 
 ### Permissions and PATH
 
 Dependency installation can run lifecycle scripts; source installation also sets
 up local Git hooks. Obtain approval before installing or changing the toolchain.
 If the chosen manager's global binary directory is unavailable or unwritable,
-review its PATH/permission configuration. Do not automatically use `sudo`, run
-`pnpm setup`, or edit shell configuration.
+review its PATH/permission configuration. Do not use `sudo`. Do not automatically
+run `pnpm setup` or edit shell configuration.
 
 Return to the original external project directory and repeat both version checks
 and the chosen executable's help check. A command working only inside the source

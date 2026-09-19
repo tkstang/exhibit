@@ -1,6 +1,6 @@
 {
   "name": "@tkstang/exhibit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "Publish Markdown and standalone HTML as encrypted, browser-viewable artifacts on S3.",
   "homepage": "https://github.com/tkstang/exhibit#readme",

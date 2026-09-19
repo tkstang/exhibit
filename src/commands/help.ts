@@ -1,4 +1,4 @@
-export const VERSION = '0.1.0';
+export const VERSION = '0.1.1';
 export const HELP = `Exhibit — share a document, not a workspace.
 
 Usage: exhibit <command> [options]
@@ -71,8 +71,9 @@ Examples:
   xbt publish plan.md --json
   xbt publish report.html --slug weekly-review --overwrite --json
   xbt publish plan.md --dir repositories/exhibit --json
-  xbt publish report.html --dir internal/reviews --no-encrypt --json
-  xbt list --dir internal/reviews --json
+  xbt publish report.html --dir public/reviews --json
+  xbt publish report.html --dir projects/reviews --no-encrypt --json
+  xbt list --dir projects/reviews --json
 
 No account, database, service deployment, or MCP server is required.
 Read docs/user-guide/security-model.md before sharing sensitive material.

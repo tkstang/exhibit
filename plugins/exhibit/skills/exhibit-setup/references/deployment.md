@@ -84,7 +84,8 @@ an artifact password; it does not select `/public/` or bypass infrastructure aut
 Directory names and `publicBaseUrl` do not enforce access controls. Failed
 encryption must never become plaintext publication.
 
-One organization policy is: public DNS routes through CloudFront, exempting only
+The selected example policy is still awaiting infrastructure merge and deployment
+qualification: public DNS routes through CloudFront, exempting only
 `/public/` descendants from Basic Auth; every other route is gated. VPN/private
 DNS routes through a network-restricted internal ALB to the same objects without
 Basic Auth. Gate bare `/public` and public-looking siblings such as `/publicity/`.
@@ -102,8 +103,7 @@ does not adopt an existing bucket automatically.
 ## Delivery headers
 
 Use HTTPS and GET/HEAD viewer access. Set CDN minimum/default/maximum TTLs to zero
-and preserve inline HTML with the following response headers on **both public
-CloudFront and private ALB delivery paths**:
+and preserve inline HTML. The full CloudFront response-header policy is:
 
 ```text
 Content-Type: text/html; charset=utf-8
@@ -123,6 +123,14 @@ blocked. Keep standalone HTML self-contained. Do not replace this with a blanket
 tag cannot enforce it. The private ALB bypasses CloudFront's response headers and
 must supply its own anti-framing policy, even for VPN clients. Review the effect
 of header changes on other applications sharing a listener.
+
+The selected shared-ALB proposal adds only `X-Frame-Options: DENY` and
+`Content-Security-Policy: frame-ancestors 'none'` at the listener. Applying the full
+Exhibit CSP there would also restrict unrelated archive pages. Generated Exhibit
+HTML still contains its meta CSP; S3 supplies the object's content type, inline
+disposition, and no-store cache header. The ALB does not add the other CloudFront
+headers shown above or HSTS. This is not equivalent header coverage: inspect
+`xbt doctor --probe` warnings and verify both routes independently after deployment.
 
 The reference Terraform additionally supplies HSTS. `xbt doctor --probe` does not
 check HSTS; inspect the deployed HTTPS response separately. CloudFront/S3 access

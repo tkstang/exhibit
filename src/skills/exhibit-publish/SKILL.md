@@ -4,7 +4,7 @@ description: Use when sharing a user-selected Markdown or standalone HTML artifa
 license: MIT
 metadata:
   author: Thomas Stang
-  version: '0.2.0'
+  version: '0.2.1'
 ---
 
 # Publish with Exhibit
@@ -25,7 +25,7 @@ If neither works, stop before reading/publishing the artifact. Direct the user t
 the installed `exhibit-setup` skill. If it is unavailable, use the bundled
 [installation guide](../../../docs/user-guide/installation.md) to explain the
 approved setup path and request installation authorization. Do not install
-software automatically, assume an npm release exists, or claim publication.
+software automatically or claim that the artifact has been published.
 Malformed output or an incompatible CLI also requires setup, not a fallback that
 drops safety flags.
 
