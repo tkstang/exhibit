@@ -24,8 +24,15 @@ export function scanSecrets(text: string): readonly SecretFinding[] {
   for (const [rule, pattern] of RULES) {
     const matches: SecretFinding[] = [];
     const regex = new RegExp(pattern.source, pattern.flags);
+    let position = 0;
+    let line = 1;
     for (const match of text.matchAll(regex)) {
-      matches.push({ rule, line: text.slice(0, match.index).split('\n').length });
+      // Each rule advances through the source once, without allocating prefixes.
+      while (position < match.index) {
+        if (text.charCodeAt(position) === 10) line += 1;
+        position += 1;
+      }
+      matches.push({ rule, line });
       if (matches.length >= 50) break;
     }
     groups.push(matches);

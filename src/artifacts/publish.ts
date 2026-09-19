@@ -60,7 +60,9 @@ async function publish(
   );
   const findings = [
     ...scanSecrets(input.text).map((finding) => ({ ...finding, source: 'body' })),
-    ...scanSecrets(input.title).map((finding) => ({ ...finding, source: 'title' })),
+    ...(input.type === 'markdown'
+      ? scanSecrets(input.title).map((finding) => ({ ...finding, source: 'title' }))
+      : []),
   ];
   if (input.type === 'html' && options.title !== undefined) {
     warnings.push({

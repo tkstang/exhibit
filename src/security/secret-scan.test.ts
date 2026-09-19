@@ -28,4 +28,17 @@ describe('best-effort secret guard', () => {
     assert.equal(findings.length, 50);
     assert.ok(findings.some((finding) => finding.rule === 'private-key'));
   });
+  it('counts lines consistently across repeated matches and independent rules in large inputs', () => {
+    const token = 'ghp_' + 'x'.repeat(30);
+    const prefix = 'ordinary line\n'.repeat(100_000);
+    assert.deepEqual(
+      scanSecrets(prefix + `${token} ${token}\n-----BEGIN PRIVATE KEY-----\n${token}`),
+      [
+        { rule: 'github-token', line: 100_001 },
+        { rule: 'private-key', line: 100_002 },
+        { rule: 'github-token', line: 100_001 },
+        { rule: 'github-token', line: 100_003 },
+      ],
+    );
+  });
 });

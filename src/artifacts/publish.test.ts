@@ -161,6 +161,36 @@ describe('publication use case', () => {
     assert.ok(result.warnings.some((warning) => warning.code === 'W_DRY_RUN_LOCAL'));
     assert.equal(transport.listCalls, 0);
   });
+  it('ignores unused HTML filename titles but still scans authored HTML titles', async () => {
+    const { deps } = setup();
+    const token = 'ghp_' + 't'.repeat(30);
+    const html = {
+      ...deps,
+      read: async () => ({ text: '<title>Safe</title>', type: 'html' as const, title: token }),
+    };
+    const result = await publishArtifact(
+      { file: `${token}.html`, public: true, dryRun: true },
+      html,
+    );
+    assert.equal(
+      result.warnings.some((warning) => warning.code === 'W_SECRETS'),
+      false,
+    );
+    await assert.rejects(
+      publishArtifact(
+        { file: 'plan.html', public: true },
+        {
+          ...html,
+          read: async () => ({
+            text: `<title>${token}</title>`,
+            type: 'html' as const,
+            title: 'plan',
+          }),
+        },
+      ),
+      { code: 'E_SECRET_DETECTED' },
+    );
+  });
   it('never uploads or persists a password after encryption failure', async () => {
     const { deps, transport, receipts } = setup();
     await assert.rejects(

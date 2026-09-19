@@ -55,7 +55,9 @@ the previous password. Each protected replacement normally has a new password.
 A PUT response missing its ETag is uncertain `E_STORAGE`, not `E_NOT_MANAGED`.
 An `E_CONFLICT` may follow your own successful earlier write. Retain receipts and
 inspect the same config/directory before retrying. Any scanner finding blocks
-public mode by default; body and title are scanned, without a severity threshold.
+public mode by default; source text and rendered Markdown titles are scanned,
+without a severity threshold. HTML titles are scanned as part of the source text;
+unused HTML filename-derived titles are not scanned separately.
 
 `xbt receipts <slug> [--dir <path>] --json` lists local metadata without cloud
 requests. `--show-passwords` explicitly reveals retained passwords, separately
@@ -70,8 +72,11 @@ preview and deletion carry `W_FORGET_PASSWORD`. Do not combine `--show-passwords
 with `--forget`. Never automatically clean receipts by age or assumed orphan status.
 
 `xbt rm <slug> [--dir <path>] --missing-ok` accepts an absent remote object without
-removing receipts. Normal removal deletes only the receipt matching the observed
+removing receipts. Confirmed removal deletes only the receipt matching the observed
 remote body digest; other revisions remain. No local forgetting revokes remote copies.
+`W_DELETE_UNCONFIRMED` with `removed: false` means a not-found DELETE and a listing
+only suggested absence. Keep all receipts: compatible backends can serve stale
+listings. Independently verify the origin before any exact-digest forgetting.
 
 `xbt doctor` is read-only, but `xbt doctor --probe` writes and deletes a temporary fixture
 and needs separate intentional authorization. Removal needs authorization for the
