@@ -145,18 +145,19 @@ describe('CLI envelopes', () => {
   });
   it('rejects every plaintext/password combination before reading files or opening a session', async () => {
     let opened = false;
-    for (const flag of ['--no-encrypt', '--public']) {
-      for (const source of ['--password', '--password-env', '--password-file']) {
-        const result = await run(['publish', 'missing.md', flag, source, 'never-read-this'], {
+    for (const source of ['--password', '--password-env', '--password-file']) {
+      const result = await run(
+        ['publish', 'missing.md', '--no-encrypt', source, 'never-read-this'],
+        {
           session: async () => {
             opened = true;
             throw new Error('must not open');
           },
-        });
-        assert.equal(result.envelope.ok, false);
-        if (!result.envelope.ok) assert.equal(result.envelope.error.code, 'E_USAGE');
-        assert.equal(JSON.stringify(result).includes('never-read-this'), false);
-      }
+        },
+      );
+      assert.equal(result.envelope.ok, false);
+      if (!result.envelope.ok) assert.equal(result.envelope.error.code, 'E_USAGE');
+      assert.equal(JSON.stringify(result).includes('never-read-this'), false);
     }
     assert.equal(opened, false);
   });

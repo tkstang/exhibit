@@ -27,14 +27,13 @@ Publish:
   --slug <slug>             1–64 lowercase letters/digits/interior hyphens; default opaque
   --title <title>           Markdown title (HTML keeps its authored title; gate is generic)
   --no-encrypt              Deliberately publish readable plaintext (base64 is NOT encryption)
-  --public                  Compatibility alias for --no-encrypt
   --password <value>        Custom 16+ character password; visible in shell history/process args
   --password-env <NAME>     Safer custom password source
   --password-file <path>    Read password from a regular UTF-8 file
   --overwrite               Replace an existing Exhibit object with an ETag condition
   --no-store-password       Do not keep a local password receipt
   --strict-secrets          Block all potential secret matches
-  --allow-secrets           Acknowledge findings (public secret matches otherwise block)
+  --allow-secrets           Acknowledge findings (plaintext secret matches otherwise block)
   --dry-run                 Render/scan only; no cloud requests, writes, or password generated
 
 List:

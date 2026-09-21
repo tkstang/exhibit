@@ -57,8 +57,9 @@ describe('CLI parsing', () => {
     assert.equal(parseCli(['list', '--version', '--dir', 'internal']).command, 'version');
     assert.equal(parseCli(['version', '--json']).command, 'version');
   });
-  it('rejects inappropriate flags', () => {
+  it('rejects removed and inappropriate flags', () => {
     assert.throws(() => parseCli(['list', '--public']), { code: 'E_USAGE' });
+    assert.throws(() => parseCli(['publish', 'plan.md', '--public']), { code: 'E_USAGE' });
     for (const argv of [
       ['list', '--no-encrypt'],
       ['doctor', '--dir', 'internal'],
@@ -66,12 +67,11 @@ describe('CLI parsing', () => {
     ])
       assert.throws(() => parseCli(argv), { code: 'E_USAGE' });
   });
-  it('accepts directory scope for artifact commands and both plaintext flag names', () => {
+  it('accepts directory scope for artifact commands and the plaintext flag', () => {
     for (const argv of [['publish', 'plan.md'], ['list'], ['remove', 'plan'], ['rm', 'plan']]) {
       assert.equal(parseCli([...argv, '--dir=internal/reviews']).text('dir'), 'internal/reviews');
     }
-    for (const flag of ['no-encrypt', 'public'] as const)
-      assert.equal(parseCli(['publish', 'plan.md', `--${flag}`]).flag(flag), true);
+    assert.equal(parseCli(['publish', 'plan.md', '--no-encrypt']).flag('no-encrypt'), true);
   });
   it('rejects extra/missing positional arguments', () => {
     for (const argv of [['publish'], ['list', 'extra'], ['remove', 'a', 'b']])

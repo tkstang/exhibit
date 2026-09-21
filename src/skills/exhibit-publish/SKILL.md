@@ -54,7 +54,7 @@ exhibit publish "/absolute/path/to/artifact.md" --json
 ```
 
 For a dry run, add `--dry-run`; a dry-run URL is not a live publication. Only add
-`--no-encrypt` (alias `--public`), `--overwrite`, `--allow-secrets`, or `--no-store-password` when the user
+`--no-encrypt`, `--overwrite`, `--allow-secrets`, or `--no-store-password` when the user
 has deliberately authorized that behavior. Never use them as automatic error fixes.
 
 Use `--dir <relative/path>` only for the intended destination beneath the configured

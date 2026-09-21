@@ -79,7 +79,7 @@ recognized metadata and an ETag from HEAD are still required for management.
 Metadata dates must be canonical UTC `YYYY-MM-DDTHH:mm:ss.sssZ` timestamps.
 
 Encryption and audience access are separate. Encryption is on by default in every
-directory. `--no-encrypt` (legacy alias `--public`) makes content readable without
+directory. `--no-encrypt` makes content readable without
 an artifact password; it does not select `/public/` or bypass infrastructure auth.
 Directory names and `publicBaseUrl` do not enforce access controls. Failed
 encryption must never become plaintext publication.

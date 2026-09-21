@@ -136,11 +136,11 @@ window.ExhibitViewer = function startExhibit(engine, codec) {
   }
 
   document.getElementById('lock').addEventListener('click', () => window.location.reload());
-  if (payload.mode === 'public') {
+  if (payload.mode === 'plaintext') {
     const bytes = Uint8Array.from(atob(payload.body), (char) => char.charCodeAt(0));
     show(new TextDecoder().decode(bytes));
     document.getElementById('lock').hidden = true;
-    document.getElementById('mode-label').textContent = 'Public artifact';
+    document.getElementById('mode-label').textContent = 'Plaintext artifact';
     return;
   }
   if (!window.isSecureContext || !window.crypto || !window.crypto.subtle) {

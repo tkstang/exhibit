@@ -39,7 +39,7 @@ infrastructure decision.
   needs the artifact password to decrypt, not an infrastructure credential.
 - `/internal/...` is for work: VPN access OR Basic Auth is required before delivery.
   Exhibit still encrypts by default. Plaintext publication remains an explicit
-  `--no-encrypt` choice (`--public` remains an alias), separate from whether the CDN route is public.
+  `--no-encrypt` choice, separate from whether the CDN route is public.
 - Keep OAT project archives and published exhibits separate. Support repository,
   project, and standalone artifact namespaces without adding a service or database.
 

@@ -12,7 +12,7 @@ function setup(text = 'Private source sentinel') {
     read: async () => ({ text, type: 'markdown', title: 'Private title' }),
     render: async (input) => ({ html: `<h1>${input.text}</h1>`, warnings: [] }),
     protect: async () => '<html>opaque encrypted fixture</html>',
-    publicView: async (html) => html,
+    plaintextView: async (html) => html,
     makeSlug: () => 'opaque-fixture',
     now: () => new Date(date),
   };
@@ -53,9 +53,9 @@ describe('publication use case', () => {
     assert.equal([...receipts.values()][0]?.status, 'published');
     assert.equal('password' in result && typeof result.password, 'string');
   });
-  it('requires explicit public mode and never emits a public password', async () => {
+  it('requires explicit plaintext mode and never emits a password', async () => {
     const { deps } = setup();
-    const result = await publishArtifact({ file: 'plan.md', public: true }, deps);
+    const result = await publishArtifact({ file: 'plan.md', noEncrypt: true }, deps);
     assert.equal(result.protected, false);
     assert.ok('password' in result && result.password === null);
   });
@@ -66,12 +66,12 @@ describe('publication use case', () => {
     assert.ok(r.warnings.some((w) => w.code === 'W_SECRETS'));
     assert.equal(JSON.stringify(r).includes(token), false);
   });
-  it('blocks public secret matches unless explicitly acknowledged', async () => {
+  it('blocks plaintext secret matches unless explicitly acknowledged', async () => {
     const { deps } = setup('ghp_' + 'x'.repeat(30));
-    await assert.rejects(publishArtifact({ file: 'plan.md', public: true }, deps), {
+    await assert.rejects(publishArtifact({ file: 'plan.md', noEncrypt: true }, deps), {
       code: 'E_SECRET_DETECTED',
     });
-    const r = await publishArtifact({ file: 'plan.md', public: true, allowSecrets: true }, deps);
+    const r = await publishArtifact({ file: 'plan.md', noEncrypt: true, allowSecrets: true }, deps);
     assert.equal(r.protected, false);
   });
   it('blocks protected matches in strict mode', async () => {
@@ -125,7 +125,10 @@ describe('publication use case', () => {
   it('rejects incompatible flags and short custom passwords', async () => {
     const { deps } = setup();
     await assert.rejects(
-      publishArtifact({ file: 'plan.md', public: true, password: 'long-fixture-password' }, deps),
+      publishArtifact(
+        { file: 'plan.md', noEncrypt: true, password: 'long-fixture-password' },
+        deps,
+      ),
     );
     await assert.rejects(publishArtifact({ file: 'plan.md', password: 'short' }, deps));
     await assert.rejects(publishArtifact({ file: 'plan.md', overwrite: true }, deps));
@@ -137,7 +140,7 @@ describe('publication use case', () => {
       ...deps,
       read: async () => ({ text: 'ordinary body', type: 'markdown' as const, title: token }),
     };
-    for (const options of [{ public: true }, { strictSecrets: true }]) {
+    for (const options of [{ noEncrypt: true }, { strictSecrets: true }]) {
       await assert.rejects(
         publishArtifact({ file: 'plan.md', ...options }, titled),
         (error: unknown) => {
@@ -169,7 +172,7 @@ describe('publication use case', () => {
       read: async () => ({ text: '<title>Safe</title>', type: 'html' as const, title: token }),
     };
     const result = await publishArtifact(
-      { file: `${token}.html`, public: true, dryRun: true },
+      { file: `${token}.html`, noEncrypt: true, dryRun: true },
       html,
     );
     assert.equal(
@@ -178,7 +181,7 @@ describe('publication use case', () => {
     );
     await assert.rejects(
       publishArtifact(
-        { file: 'plan.html', public: true },
+        { file: 'plan.html', noEncrypt: true },
         {
           ...html,
           read: async () => ({

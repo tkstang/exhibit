@@ -100,8 +100,8 @@ The primary delivery policy has two route classes. Choose one policy per deploym
 | `/public/...`                                    | Anyone can fetch ciphertext; password needed to read | Anyone can read the document |
 | All other routes with the proposed gate enforced | VPN or Basic Auth, then artifact password            | VPN or Basic Auth only       |
 
-`--public` remains an alias for `--no-encrypt`. Neither flag changes routing or
-bucket policy. Neither `public` nor `internal` has special meaning to Exhibit.
+`--no-encrypt` changes content protection, not routing or bucket policy. Neither
+`public` nor `internal` has special meaning to Exhibit.
 The CDN does not enforce the convention that externally shareable artifacts are
 encrypted; a publisher choosing `--no-encrypt` there exposes readable content.
 
@@ -173,9 +173,9 @@ xbt --config ./exhibit-config.json publish report.html \
   --dir projects/redesign --no-encrypt --json
 ```
 
-`public/` is only a routing convention. It does not disable encryption. Conversely,
-`--public` is the legacy alias for `--no-encrypt`; it does **not** select the
-`public/` directory or bypass VPN/Basic Auth. Using `--no-encrypt` under `public/`
+`public/` is only a routing convention. It does not disable encryption.
+`--no-encrypt` does **not** select the `public/` directory or bypass VPN/Basic Auth.
+Using `--no-encrypt` under `public/`
 would make the document readable without either kind of credential.
 
 The infrastructure must gate every unmatched route and exempt only the intended

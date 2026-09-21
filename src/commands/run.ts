@@ -91,14 +91,8 @@ async function resolvePassword(
   const variable = args.text('password-env');
   if ([literal, file, variable].filter((value) => value !== undefined).length > 1)
     throw new ExhibitError('E_USAGE', 'Choose only one custom password source.');
-  if (
-    (args.flag('no-encrypt') || args.flag('public')) &&
-    [literal, file, variable].some((value) => value !== undefined)
-  )
-    throw new ExhibitError(
-      'E_USAGE',
-      '--no-encrypt / --public cannot be combined with a password source.',
-    );
+  if (args.flag('no-encrypt') && [literal, file, variable].some((value) => value !== undefined))
+    throw new ExhibitError('E_USAGE', '--no-encrypt cannot be combined with a password source.');
   let password = literal;
   if (file !== undefined)
     password = (await readTextFile(resolve(cwd, file), 1026)).replace(/\r?\n$/, '');
@@ -215,7 +209,7 @@ export async function run(
           title: args.text('title'),
           slug: args.text('slug'),
           password,
-          public: args.flag('no-encrypt') || args.flag('public'),
+          noEncrypt: args.flag('no-encrypt'),
           overwrite: args.flag('overwrite'),
           allowSecrets: args.flag('allow-secrets'),
           strictSecrets: args.flag('strict-secrets'),

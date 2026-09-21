@@ -18,7 +18,7 @@ are visible, so avoid confidential names.
 Under a gated-by-default deployment, `public/repositories/<repo>` selects the
 external route and `repositories/<repo>` the gated route. That is an infrastructure
 convention, not CLI enforcement. Neither route changes default encryption.
-`--no-encrypt`, also named `--public`, exposes plaintext to anyone who can fetch
+`--no-encrypt` exposes plaintext to anyone who can fetch
 the viewer. Never infer permission for it from the word "public" in an audience.
 
 ## Output and state
@@ -55,7 +55,7 @@ the previous password. Each protected replacement normally has a new password.
 A PUT response missing its ETag is uncertain `E_STORAGE`, not `E_NOT_MANAGED`.
 An `E_CONFLICT` may follow your own successful earlier write. Retain receipts and
 inspect the same config/directory before retrying. Any scanner finding blocks
-public mode by default; source text and rendered Markdown titles are scanned,
+plaintext mode by default; source text and rendered Markdown titles are scanned,
 without a severity threshold. HTML titles are scanned as part of the source text;
 unused HTML filename-derived titles are not scanned separately.
 

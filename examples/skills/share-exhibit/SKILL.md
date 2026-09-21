@@ -57,8 +57,8 @@ default; never derive a sensitive slug from the source filename for convenience.
 Keep the same config and directory for listing, removal, and authorized overwrites.
 
 Encryption stays on for both audiences. Add `--no-encrypt` only if the user
-explicitly requests it and organization policy permits it. `--public` is an alias
-for skipping encryption, not a directory selector or authorization override.
+explicitly requests it and organization policy permits it. It is not a directory
+selector or authorization override.
 Never bypass secret findings or overwrite an artifact merely to resolve an error.
 
 ## Step 3: Publish and report

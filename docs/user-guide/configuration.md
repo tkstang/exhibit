@@ -87,7 +87,7 @@ the outer viewer and sandbox/CSP restrictions still apply.
 
 The brand name is visible before entering a password. Do not put confidential
 project names in it. The outer page title remains generic, `Protected exhibit`
-or `Public exhibit`; it does not reveal the source title before unlocking.
+or `Plaintext exhibit`; it does not reveal the source title before unlocking.
 Branding is embedded at publication time. Editing the config does not update
 existing artifacts; an update requires explicit republication/overwrite.
 

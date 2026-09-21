@@ -42,41 +42,41 @@ default; see [configuration](configuration.md) for paths and environment variabl
 name or alias and prints this same general help; an unknown name is an `E_USAGE`
 error (`Unknown help topic.`). Help/version do not contact storage.
 
-| Command        | Option                     | Meaning/default                                                                          |
-| -------------- | -------------------------- | ---------------------------------------------------------------------------------------- |
-| `publish`      | `--slug <slug>`            | Explicit 1-64 character lowercase-letter/digit/interior-hyphen slug; otherwise generated |
-| `publish`      | `--dir <path>`             | Scope storage, URL, and receipts beneath configured roots                                |
-| `publish`      | `--title <title>`          | Markdown title; defaults to the source basename without its extension                    |
-| `publish`      | `--password <value>`       | Custom password; exposed to shell history/process arguments                              |
-| `publish`      | `--password-env <NAME>`    | Read a set environment variable; name matches `[A-Z_][A-Z0-9_]*`                         |
-| `publish`      | `--password-file <path>`   | Read a regular UTF-8 file; remove one trailing LF or CRLF                                |
-| `publish`      | `--no-encrypt`, `--public` | Explicit plaintext mode; `--public` is a compatibility alias                             |
-| `publish`      | `--overwrite`              | Permit conditional replacement; requires explicit `--slug`                               |
-| `publish`      | `--no-store-password`      | Skip local receipt persistence; protect the result's only password copy                  |
-| `publish`      | `--strict-secrets`         | Block any scanner finding in protected or public mode                                    |
-| `publish`      | `--allow-secrets`          | Explicitly acknowledge findings; incompatible with `--strict-secrets`                    |
-| `publish`      | `--dry-run`                | Local validation/render/scan preview only                                                |
-| `list`         | `--dir <path>`             | List immediate artifacts in this scope                                                   |
-| `list`         | `--limit <n>`              | Underlying S3 page size, 1-1000; default 100                                             |
-| `list`         | `--cursor <token>`         | Continue the same scope from `next_cursor`                                               |
-| `list`         | `--show-passwords`         | Include locally known passwords matching current remote digests                          |
-| `remove`, `rm` | `--dir <path>`             | Scope the exact slug                                                                     |
-| `remove`, `rm` | `--dry-run`                | Read remote metadata without deleting                                                    |
-| `remove`, `rm` | `--missing-ok`             | Return success with `removed: false` if absent; leave receipts intact                    |
-| `receipts`     | `--dir <path>`             | Select the local deployment/directory and exact slug                                     |
-| `receipts`     | `--show-passwords`         | Explicitly include plaintext passwords in the local inventory                            |
-| `receipts`     | `--forget <body-sha256>`   | Select exactly one local receipt by its 64-character lowercase hex body digest           |
-| `receipts`     | `--force`                  | Acknowledge password loss for actual forgetting                                          |
-| `receipts`     | `--dry-run`                | Preview `--forget`; no receipt deletion, no `--force` required                           |
-| `doctor`       | `--probe`                  | Opt into temporary write/fetch/conditional-operation/delete checks                       |
-| `init`         | `--bucket <name>`          | Required storage bucket                                                                  |
-| `init`         | `--region <region>`        | Required storage region                                                                  |
-| `init`         | `--public-base-url <url>`  | Required viewer URL root, distinct from the storage endpoint                             |
-| `init`         | `--prefix <prefix>`        | Storage prefix; default `exhibit/`                                                       |
-| `init`         | `--endpoint <url>`         | Optional S3-compatible API endpoint                                                      |
-| `init`         | `--force-path-style`       | Use path-style S3 requests; default false                                                |
-| `init`         | `--brand-name <name>`      | Public gate brand; default `Exhibit`                                                     |
-| `init`         | `--force`                  | Explicitly replace the local config file                                                 |
+| Command        | Option                    | Meaning/default                                                                          |
+| -------------- | ------------------------- | ---------------------------------------------------------------------------------------- |
+| `publish`      | `--slug <slug>`           | Explicit 1-64 character lowercase-letter/digit/interior-hyphen slug; otherwise generated |
+| `publish`      | `--dir <path>`            | Scope storage, URL, and receipts beneath configured roots                                |
+| `publish`      | `--title <title>`         | Markdown title; defaults to the source basename without its extension                    |
+| `publish`      | `--password <value>`      | Custom password; exposed to shell history/process arguments                              |
+| `publish`      | `--password-env <NAME>`   | Read a set environment variable; name matches `[A-Z_][A-Z0-9_]*`                         |
+| `publish`      | `--password-file <path>`  | Read a regular UTF-8 file; remove one trailing LF or CRLF                                |
+| `publish`      | `--no-encrypt`            | Explicit plaintext mode                                                                  |
+| `publish`      | `--overwrite`             | Permit conditional replacement; requires explicit `--slug`                               |
+| `publish`      | `--no-store-password`     | Skip local receipt persistence; protect the result's only password copy                  |
+| `publish`      | `--strict-secrets`        | Block any scanner finding in protected or plaintext mode                                 |
+| `publish`      | `--allow-secrets`         | Explicitly acknowledge findings; incompatible with `--strict-secrets`                    |
+| `publish`      | `--dry-run`               | Local validation/render/scan preview only                                                |
+| `list`         | `--dir <path>`            | List immediate artifacts in this scope                                                   |
+| `list`         | `--limit <n>`             | Underlying S3 page size, 1-1000; default 100                                             |
+| `list`         | `--cursor <token>`        | Continue the same scope from `next_cursor`                                               |
+| `list`         | `--show-passwords`        | Include locally known passwords matching current remote digests                          |
+| `remove`, `rm` | `--dir <path>`            | Scope the exact slug                                                                     |
+| `remove`, `rm` | `--dry-run`               | Read remote metadata without deleting                                                    |
+| `remove`, `rm` | `--missing-ok`            | Return success with `removed: false` if absent; leave receipts intact                    |
+| `receipts`     | `--dir <path>`            | Select the local deployment/directory and exact slug                                     |
+| `receipts`     | `--show-passwords`        | Explicitly include plaintext passwords in the local inventory                            |
+| `receipts`     | `--forget <body-sha256>`  | Select exactly one local receipt by its 64-character lowercase hex body digest           |
+| `receipts`     | `--force`                 | Acknowledge password loss for actual forgetting                                          |
+| `receipts`     | `--dry-run`               | Preview `--forget`; no receipt deletion, no `--force` required                           |
+| `doctor`       | `--probe`                 | Opt into temporary write/fetch/conditional-operation/delete checks                       |
+| `init`         | `--bucket <name>`         | Required storage bucket                                                                  |
+| `init`         | `--region <region>`       | Required storage region                                                                  |
+| `init`         | `--public-base-url <url>` | Required viewer URL root, distinct from the storage endpoint                             |
+| `init`         | `--prefix <prefix>`       | Storage prefix; default `exhibit/`                                                       |
+| `init`         | `--endpoint <url>`        | Optional S3-compatible API endpoint                                                      |
+| `init`         | `--force-path-style`      | Use path-style S3 requests; default false                                                |
+| `init`         | `--brand-name <name>`     | Public gate brand; default `Exhibit`                                                     |
+| `init`         | `--force`                 | Explicitly replace the local config file                                                 |
 
 Choose at most one custom password source. Custom passwords must have at least
 16 characters, no control characters, and at most 1024 UTF-8 bytes. These checks
@@ -119,9 +119,9 @@ absolute paths, `.`/`..`, repeated slashes, backslashes, URL encoding, queries, 
 fragments are rejected. Combined paths must fit the existing prefix/URL limits.
 Directory names are visible in URLs and storage keys; do not put secrets in them.
 
-Encryption is on by default, including under `internal/`. `--no-encrypt` opts out;
-`--public` remains an alias with exactly the same behavior. Neither flag configures
-network access, and `--dir internal` does not create a VPN or Basic Auth gate.
+Encryption is on by default, including under `internal/`. `--no-encrypt` opts out.
+It does not configure network access, and `--dir internal` does not create a VPN or
+Basic Auth gate.
 
 ```bash
 # Encrypted even on an internal route.
