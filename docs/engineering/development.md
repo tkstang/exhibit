@@ -61,7 +61,7 @@ StatiCrypt tests use the actual upstream implementation, not a custom fake ciphe
 Playwright tests start a loopback HTTP server with production-like CSP/security
 headers and inspect the real browser viewer. They cover wrong passwords, tampering,
 Unicode, inline interactivity, opaque-origin isolation, blocked network, locking,
-and public mode. A live HTTPS/S3/CDN test is still required for infrastructure
+and plaintext mode. A live HTTPS/S3/CDN test is still required for infrastructure
 qualification; neither local test type contacts AWS.
 
 ## Source layout

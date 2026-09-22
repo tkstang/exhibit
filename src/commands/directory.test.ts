@@ -180,32 +180,29 @@ it('scopes real CLI sessions, SDK requests, and disk receipts to the selected di
       assert.equal(artifacts.length, 1);
       assert.equal(artifacts[0]?.password, passwords.get(directory));
     }
-    for (const flag of ['--no-encrypt', '--public']) {
-      const slug = flag.slice(2);
-      const published = await invoke([
-        'publish',
-        'plan.md',
-        '--slug',
-        slug,
-        '--dir',
-        'internal/reviews',
-        flag,
-      ]);
-      assert.equal(published.protected, false);
-      assert.equal(published.password, null);
-      const uploaded = objects.get(`/exhibit-test/exhibit/internal/reviews/${slug}.html`)!;
-      assert.equal(uploaded.headers['x-amz-meta-exhibit-protected'], 'false');
-      const payloadText =
-        /<script type="application\/json" id="exhibit-payload">([^<]+)<\/script>/.exec(
-          uploaded.body,
-        )?.[1];
-      assert.ok(payloadText);
-      const payload = JSON.parse(payloadText) as { mode: string; body: string };
-      assert.equal(payload.mode, 'public');
-      assert.ok(
-        Buffer.from(payload.body, 'base64').toString('utf8').includes('Non-sensitive sample.'),
-      );
-    }
+    const published = await invoke([
+      'publish',
+      'plan.md',
+      '--slug',
+      'no-encrypt',
+      '--dir',
+      'internal/reviews',
+      '--no-encrypt',
+    ]);
+    assert.equal(published.protected, false);
+    assert.equal(published.password, null);
+    const uploaded = objects.get('/exhibit-test/exhibit/internal/reviews/no-encrypt.html')!;
+    assert.equal(uploaded.headers['x-amz-meta-exhibit-protected'], 'false');
+    const payloadText =
+      /<script type="application\/json" id="exhibit-payload">([^<]+)<\/script>/.exec(
+        uploaded.body,
+      )?.[1];
+    assert.ok(payloadText);
+    const payload = JSON.parse(payloadText) as { mode: string; body: string };
+    assert.equal(payload.mode, 'plaintext');
+    assert.ok(
+      Buffer.from(payload.body, 'base64').toString('utf8').includes('Non-sensitive sample.'),
+    );
     const beforeDryRun = requests.length;
     const dryRun = await invoke([
       'publish',

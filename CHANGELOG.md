@@ -5,6 +5,11 @@ been published; check npm and GitHub Releases for publication status.
 
 ## [Unreleased]
 
+### Changed
+
+- Remove the `--public` publishing alias. Use `--no-encrypt` to deliberately
+  publish plaintext; choose delivery routes independently with `--dir`.
+
 ## [0.1.1]
 
 ### Fixed

@@ -112,10 +112,9 @@ JavaScript/CSS analyzer; the browser policy is the actual enforcement layer.
 Do not loosen CSP globally just to make one artifact work. Bundle that artifact
 properly, or deliberately design and review a broader hosting mode later.
 
-## Public mode
+## Plaintext mode
 
-`--no-encrypt` is an explicit confidentiality downgrade; `--public` is its legacy
-alias, not a routing flag. The original document is
+`--no-encrypt` is an explicit confidentiality downgrade, not a routing flag. The original document is
 base64-encoded inside the same safe viewer shell to avoid script-tag termination
 bugs. **Base64 is not encryption. Anyone can decode it without a password.**
 
@@ -125,7 +124,7 @@ authentication. See the [route policy examples](deployment/bucket-layout.md).
 
 The scanner checks both body text and title, including the filename-derived
 default title and an explicit `--title`. It warns for protected publishing and
-blocks any finding in public mode unless `--allow-secrets` is explicitly supplied.
+blocks any finding in plaintext mode unless `--allow-secrets` is explicitly supplied.
 There is no severity threshold. `--strict-secrets` blocks matches in protected mode
 too and cannot be combined with `--allow-secrets`. Findings identify their `body`
 or `title` source, rule names, and line numbers, never matched secret values.

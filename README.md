@@ -143,7 +143,7 @@ xbt publish report.html --dir projects/reviews --no-encrypt --json
 ```
 
 Encryption stays on by default in every directory. `--no-encrypt` deliberately
-disables it; `--public` remains a compatibility alias. Naming a directory `internal`
+disables it. Naming a directory `internal`
 does not restrict access: VPN/Basic Auth must already be enforced by your hosting
 infrastructure. See [directory scope](docs/user-guide/cli.md#directory-and-encryption).
 

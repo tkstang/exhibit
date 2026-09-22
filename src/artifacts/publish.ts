@@ -11,7 +11,7 @@ import type {
 import { generatePassword, validatePassword } from '#security/password';
 import { scanSecrets } from '#security/secret-scan';
 import { createProtector } from '#security/staticrypt';
-import { protectHtml, publicHtml } from '#render/viewer';
+import { protectHtml, plaintextHtml } from '#render/viewer';
 import { readArtifact, renderArtifact } from './input.js';
 import type { ArtifactInput } from './input.js';
 
@@ -20,7 +20,7 @@ export interface PublishOptions {
   readonly title?: string;
   readonly slug?: string;
   readonly password?: string;
-  readonly public?: boolean;
+  readonly noEncrypt?: boolean;
   readonly overwrite?: boolean;
   readonly allowSecrets?: boolean;
   readonly strictSecrets?: boolean;
@@ -34,7 +34,7 @@ export interface PublishDependencies {
   readonly read?: typeof readArtifact;
   readonly render?: (input: ArtifactInput, config: Config) => Promise<RenderedArtifact>;
   readonly protect?: (html: string, password: string, config: Config) => Promise<string>;
-  readonly publicView?: typeof publicHtml;
+  readonly plaintextView?: typeof plaintextHtml;
   readonly now?: () => Date;
   readonly makeSlug?: () => string;
 }
@@ -44,8 +44,8 @@ async function publish(
   dependencies: PublishDependencies,
   warnings: Warning[],
 ) {
-  if (options.public && options.password !== undefined)
-    throw new ExhibitError('E_USAGE', '--public cannot be combined with a password.');
+  if (options.noEncrypt && options.password !== undefined)
+    throw new ExhibitError('E_USAGE', '--no-encrypt cannot be combined with a password.');
   if (options.overwrite && !options.slug)
     throw new ExhibitError('E_USAGE', '--overwrite requires an explicit --slug.');
   if (options.allowSecrets && options.strictSecrets)
@@ -72,7 +72,7 @@ async function publish(
     });
   }
   if (findings.length) {
-    if ((options.public || options.strictSecrets) && !options.allowSecrets) {
+    if ((options.noEncrypt || options.strictSecrets) && !options.allowSecrets) {
       throw new ExhibitError(
         'E_SECRET_DETECTED',
         'Potential secrets were found; nothing was uploaded.',
@@ -109,7 +109,7 @@ async function publish(
       slug,
       url,
       source_type: input.type,
-      protected: !options.public,
+      protected: !options.noEncrypt,
       rendered_bytes: Buffer.byteLength(rendered.html),
       would_overwrite: Boolean(options.overwrite),
       warnings,
@@ -122,10 +122,10 @@ async function publish(
     throw new ExhibitError('E_CONFLICT', 'This slug already exists.', {
       hint: 'Choose another slug, or use --overwrite to replace this Exhibit artifact conditionally.',
     });
-  const password = options.public ? null : (options.password ?? generatePassword());
+  const password = options.noEncrypt ? null : (options.password ?? generatePassword());
   const body =
     password === null
-      ? await (dependencies.publicView ?? publicHtml)(rendered.html, config)
+      ? await (dependencies.plaintextView ?? plaintextHtml)(rendered.html, config)
       : await (
           dependencies.protect ??
           ((html, key, settings) => protectHtml(html, key, settings, createProtector()))

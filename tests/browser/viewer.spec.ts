@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
 import type { Config } from '#core/types';
-import { protectHtml, publicHtml, buildViewer } from '#render/viewer';
+import { protectHtml, plaintextHtml, buildViewer } from '#render/viewer';
 import { renderMarkdown } from '#render/markdown';
 import { createProtector } from '#security/staticrypt';
 import {
@@ -59,7 +59,7 @@ test.beforeAll(async () => {
   pages = {
     '/markdown.html': await protectHtml(rendered.html, password, config, protector),
     '/protected.html': await protectHtml(html, password, config, protector),
-    '/public.html': await publicHtml(html, config),
+    '/plaintext.html': await plaintextHtml(html, config),
     '/embed-header.html': '<!doctype html><iframe id="hosted" src="/protected.html"></iframe>',
     '/embed-meta.html':
       '<!doctype html><iframe id="hosted" src="/meta-only/protected.html"></iframe>',
@@ -121,7 +121,7 @@ for (const capture of [true, false]) {
       config,
       protector,
     );
-    pages[`/fragments-${format}-public.html`] = await publicHtml(source, config);
+    pages[`/fragments-${format}-plaintext.html`] = await plaintextHtml(source, config);
   }
   server = createServer((req, res) => {
     const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
@@ -241,14 +241,14 @@ test('Markdown and the gate fit the viewport and preserve document layout', asyn
   await page.screenshot({ path: testInfo.outputPath('markdown.png') });
 });
 
-test('public mode is immediately readable but keeps the same script isolation', async ({
+test('plaintext mode is immediately readable but keeps the same script isolation', async ({
   page,
 }) => {
-  await page.goto(`${origin}/public.html`);
+  await page.goto(`${origin}/plaintext.html`);
   await expect(page.frameLocator('#viewer').locator('h1')).toHaveText(
     'Private Unicode document αβ 🚀',
   );
-  await expect(page.locator('#mode-label')).toHaveText('Public artifact');
+  await expect(page.locator('#mode-label')).toHaveText('Plaintext artifact');
   await expect(page.locator('#lock')).toBeHidden();
   await expect(page.frameLocator('#viewer').locator('#isolation')).toHaveText('isolated');
   await expect(page.frameLocator('#viewer').locator('#network')).toHaveText('blocked');
@@ -258,7 +258,7 @@ test('public mode is immediately readable but keeps the same script isolation', 
 
 for (const delivery of ['headers', 'meta-only']) {
   const prefix = delivery === 'meta-only' ? '/meta-only' : '';
-  for (const mode of ['protected', 'public']) {
+  for (const mode of ['protected', 'plaintext']) {
     test(`authored delegated panels take precedence with ${mode} ${delivery}`, async ({ page }) => {
       await page.goto(`${origin}${prefix}/fragments-html-${mode}.html`);
       if (mode === 'protected') {

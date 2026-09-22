@@ -7,7 +7,7 @@ import { escapeHtml, scriptJson } from './escape.js';
 
 export type ViewerPayload =
   | { readonly mode: 'protected'; readonly ciphertext: string; readonly salt: string }
-  | { readonly mode: 'public'; readonly body: string };
+  | { readonly mode: 'plaintext'; readonly body: string };
 
 export async function buildViewer(
   payload: ViewerPayload,
@@ -24,7 +24,7 @@ export async function buildViewer(
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="${escapeHtml(META_CONTENT_SECURITY_POLICY)}">
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
-<title>${protectedMode ? 'Protected exhibit' : 'Public exhibit'}</title>
+<title>${protectedMode ? 'Protected exhibit' : 'Plaintext exhibit'}</title>
 <style>${css}\n:root{--accent:${accent}}</style></head>
 <body><main class="gate" id="gate"><section class="card" aria-labelledby="gate-title">
 <div class="brand"><span class="mark" aria-hidden="true">×</span>${escapeHtml(config.brand.name)}</div>
@@ -52,9 +52,9 @@ export async function protectHtml(
   return buildViewer({ mode: 'protected', ...payload }, config, await protector.browserSource());
 }
 
-export function publicHtml(html: string, config: Config): Promise<string> {
+export function plaintextHtml(html: string, config: Config): Promise<string> {
   return buildViewer(
-    { mode: 'public', body: Buffer.from(html, 'utf8').toString('base64') },
+    { mode: 'plaintext', body: Buffer.from(html, 'utf8').toString('base64') },
     config,
   );
 }
