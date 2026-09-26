@@ -80,11 +80,11 @@ lint/types/format; commit-msg enforces Conventional Commits.
 
 ## Tool Packs
 
-- **Skills directory:** `.agents/skills/`
-- **Discover available skills:** scan `.agents/skills/*/SKILL.md`
+- **OAT skills at project scope:** none; no OAT tool pack is installed in this repository
+- **OAT skills at user scope:** `~/.agents/skills/` (core, ideas, docs, workflows, utility, project-management, research, brainstorm packs); discover them with `~/.agents/skills/*/SKILL.md`
+- **Locate a skill:** `oat tools info <name>` reports its scope, version, and provider views
 - **Refresh provider views:** `oat sync --scope all`
 - **Update skills to latest versions:** `oat tools update`
-- **User-scoped skills:** `~/.agents/skills/` (core, ideas, docs, workflows, utility, project-management, research, brainstorm packs installed at user scope)
 
 ### Installed Packs
 
