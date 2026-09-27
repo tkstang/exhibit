@@ -1,8 +1,9 @@
 # Exhibit Engineering Contract
 
 Exhibit publishes Markdown and standalone HTML to S3-compatible storage. It is a
-single-package Node 24 / TypeScript ESM CLI. Read `README.md`, `docs/engineering/verification.md`,
-and `docs/engineering/decisions.md` before changing the implementation.
+single-package Node 24 / TypeScript ESM CLI. Read `README.md`, `docs/engineering/architecture.md`,
+`docs/engineering/verification.md`, and `docs/engineering/decisions.md` before changing the
+implementation.
 
 ## Invariants
 
@@ -15,22 +16,42 @@ and `docs/engineering/decisions.md` before changing the implementation.
 - Domain code depends on injected interfaces, not provider SDK imports.
 - Retain prepared receipts before uncertain writes; local state is not canonical remote state.
 - No speculative MCP, account service, database, monorepo, or plugin framework.
-- `AGENTS.md` is canonical; `CLAUDE.md` includes it. Author product skills in `src/skills/` and plugin manifests in `src/plugin/`. `skills/` and `plugins/exhibit/` are generated distribution assets, not development-provider mirrors. Run `pnpm skills:build` after source/reference edits; never hand-edit generated copies.
+- `AGENTS.md` is canonical; `CLAUDE.md` includes it. Author product skills in `src/skills/` and plugin manifests in `src/plugin/`. `skills/` and `plugins/exhibit/` are generated distribution assets, not development-provider mirrors. Run `pnpm skills:build` after source/reference edits; never hand-edit generated copies. Constraints: `docs/engineering/development.md#skill-bundles`.
+
+Canonical commands (more in `docs/engineering/development.md#toolchain`):
+
+```bash
+pnpm worktree:init                                # Node 24; install, hooks, build, OAT views
+pnpm exec tsx src/cli.ts --help                   # run the CLI from source
+pnpm exec vitest run src/<domain>/<file>.test.ts  # focused test
+pnpm test && pnpm typecheck && pnpm lint          # Vitest (src/), tsc (src/ + tools/), lint contracts
+pnpm format                                       # oxfmt --write .
+pnpm build                                        # tsc build + build contract
+pnpm check                                        # Node-only gate (adds test:skills, test:release, format:check)
+pnpm test:browser                                 # Playwright (needs `pnpm exec playwright install chromium`)
+pnpm terraform:check                              # fmt -check, init -backend=false, validate, test
+pnpm worktree:validate                            # full gate from a clean tree before handoff
+```
 
 ## Style and Verification
 
 Use strict TypeScript, named exports, Zod at configuration boundaries, stable
-`E_*` codes, and co-located Vitest tests. Cross-directory source imports use named
-domain maps such as `#core/*`, never parent-relative paths. Keep emitted, TypeScript,
-and Vitest import maps aligned.
+`E_*` codes, and co-located Vitest tests under `src/` (`tools/` tests use `node:test`
+via `pnpm test:skills` and `pnpm test:release`). Cross-directory source imports use named
+domain maps such as `#core/*`, never parent-relative paths; same-directory imports use the
+`.js` extension (NodeNext). Keep emitted, TypeScript, and Vitest import maps aligned.
+See `tools/AGENTS.md` before editing repository tooling.
 
 Run focused tests during iteration, then `pnpm check` and `pnpm test:browser`.
 Keep `assets/`, `src/security/policy.ts`, and Terraform CSP behavior aligned.
-Validate infrastructure with `terraform fmt`, `init -backend=false`, and `validate`.
+Validate infrastructure with `pnpm terraform:check` (fmt, backend-disabled init, validate,
+mocked tests); see `docs/engineering/development.md#infrastructure-checks`.
 Actual HTTP browser checks are required; report only checks that ran.
 
 Use Conventional Commits. Do not commit `dist/`, dependencies, secret configuration,
 receipts, or Terraform state. Read `docs/engineering/development.md` for toolchain guidance.
+Documentation pages follow the `pnpm docs:check` contract in
+`docs/engineering/development.md#documentation-authoring`.
 
 ## External Actions
 
@@ -38,8 +59,10 @@ Release notes come from `CHANGELOG.md`, not generated commit summaries. For a
 release PR, update `package.json` and add a matching `## [X.Y.Z]` changelog section
 with user-facing changes, migration notes, and relevant limitations. Do not claim
 an unreleased feature is deployed. Run `pnpm release:validate --out <unused-directory>`
-to test packaging and note extraction without publishing. Keep `private: true`
-until the first release is explicitly approved. See `docs/engineering/releases.md`.
+to test packaging and note extraction without publishing. `package.json` `private` is
+`false` because `0.1.0` shipped (see `CHANGELOG.md`). Changing `private`, bumping the
+version, tagging, or publishing is a release decision that needs explicit approval;
+follow `docs/engineering/releases.md`.
 
 Ask before deployment, IAM/DNS/CDN changes, destructive data operations, npm
 publication, or GitHub push. `doctor --probe` writes and deletes an object and
@@ -75,3 +98,32 @@ lint/types/format; commit-msg enforces Conventional Commits.
 - Run `oat pjm doctor --json` and inspect `adoption.state` before any decision write.
 - If the decision surface is missing, repository adoption is absent or partial; stop and initialize it with `oat pjm init`.
 <!-- END OAT decisions -->
+
+<!-- OAT tools -->
+
+## Tool Packs
+
+- **OAT skills at project scope:** none; no OAT tool pack is installed in this repository
+- **OAT skills at user scope:** `~/.agents/skills/` (core, ideas, docs, workflows, utility, project-management, research, brainstorm packs); discover them with `~/.agents/skills/*/SKILL.md`
+- **Locate a skill:** `oat tools info <name>` reports its scope, version, and provider views
+- **Refresh provider views:** `oat sync --scope all`
+- **Update skills to latest versions:** `oat tools update`
+
+### Installed Packs
+
+- **core** — Diagnostics and documentation (oat-doctor, oat-docs) _(user scope)_
+- **ideas** — Idea capture and refinement _(user scope)_
+- **docs** — Documentation and instruction governance workflows _(user scope)_
+- **workflows** — Project lifecycle (create, discover, plan, implement, review, complete) _(user scope)_
+- **utility** — Standalone utilities (skill authoring, maintainability review, code reviews) _(user scope)_
+- **project-management** — Local backlog, roadmap, and reference doc management (oat-pjm-* skills) _(user scope)_
+- **research** — Research, analysis, verification, and synthesis _(user scope)_
+- **brainstorm** — Always-on brainstorming entry point with visual companion _(user scope)_
+
+### Workflow Execution Continuation
+
+- This guidance applies only to OAT project lifecycle execution, such as `oat-project-implement`, and OAT project review/receive flows. It does not apply to non-OAT tasks or ad-hoc work outside the OAT project workflow.
+- When executing an OAT project implementation or OAT project review workflow, do not stop at task boundaries, phase boundaries, or other clean checkpoints unless the configured HiLL checkpoint has been reached, a real blocker exists, or explicit user input is required.
+- Status summaries, completed bookkeeping, and "clean boundary" pauses are not valid stop reasons. After updating tracking artifacts, continue execution until an allowed stop condition applies.
+
+<!-- END OAT tools -->

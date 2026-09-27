@@ -11,12 +11,9 @@
     "awsProfile": "tkstang-artifact-sync",
     "awsRegion": "us-east-1"
   },
-  "workflow": {
-    "archiveOnComplete": true,
-    "postImplementSequence": {
-      "preApproval": ["summary", "document", "pr"],
-      "postApproval": []
-    }
+  "pjm": {
+    "initialized": true,
+    "schemaVersion": 1
   },
   "localPaths": [
     ".oat/**/analysis",
@@ -28,8 +25,15 @@
     ".oat/projects/archived",
     ".oat/projects/local"
   ],
-  "pjm": {
-    "initialized": true,
-    "schemaVersion": 1
+  "workflow": {
+    "archiveOnComplete": true,
+    "postImplementSequence": {
+      "preApproval": [
+        "summary",
+        "document",
+        "pr"
+      ],
+      "postApproval": []
+    }
   }
 }
