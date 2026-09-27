@@ -1,7 +1,68 @@
 {
   "version": 2,
-  "oatVersion": "0.2.79",
-  "entries": [],
+  "oatVersion": "0.3.7",
+  "entries": [
+    {
+      "canonicalPath": ".agents/rules/skill-bundles.md",
+      "providerPath": ".claude/rules/skill-bundles.md",
+      "provider": "claude",
+      "contentType": "rule",
+      "contentHash": "864155e4de72e75038ddf219b5ffdeb88f50645e39c422c6e63175921a7d288d",
+      "isFile": true,
+      "lastSynced": "2026-09-27T00:18:17.942Z",
+      "strategy": "copy"
+    },
+    {
+      "canonicalPath": ".agents/rules/vitest-tests.md",
+      "providerPath": ".claude/rules/vitest-tests.md",
+      "provider": "claude",
+      "contentType": "rule",
+      "contentHash": "8daa20e5e0fa236624ca910b9d10843f70134bf048f145b49077c56dbeb7810c",
+      "isFile": true,
+      "lastSynced": "2026-09-27T00:18:17.942Z",
+      "strategy": "copy"
+    },
+    {
+      "canonicalPath": ".agents/rules/skill-bundles.md",
+      "providerPath": ".cursor/rules/skill-bundles.mdc",
+      "provider": "cursor",
+      "contentType": "rule",
+      "contentHash": "7af46910f4da0b7c570af5ee4a971f0badefb6e982fa80b43d0c1b4af439b242",
+      "isFile": true,
+      "lastSynced": "2026-09-27T00:18:17.943Z",
+      "strategy": "copy"
+    },
+    {
+      "canonicalPath": ".agents/rules/vitest-tests.md",
+      "providerPath": ".cursor/rules/vitest-tests.mdc",
+      "provider": "cursor",
+      "contentType": "rule",
+      "contentHash": "8296d3c2d84c0ba13d8ac2dfa0fcbf9c635ac3ded1b6e5390397a3f13dcc656e",
+      "isFile": true,
+      "lastSynced": "2026-09-27T00:18:17.943Z",
+      "strategy": "copy"
+    },
+    {
+      "canonicalPath": ".agents/rules/docs-pages.md",
+      "providerPath": ".claude/rules/docs-pages.md",
+      "provider": "claude",
+      "contentType": "rule",
+      "contentHash": "297f88996aae99d4c8e517d3117af1b9538982571b754cffcb898ff6ef8ad983",
+      "isFile": true,
+      "lastSynced": "2026-09-27T00:18:49.642Z",
+      "strategy": "copy"
+    },
+    {
+      "canonicalPath": ".agents/rules/docs-pages.md",
+      "providerPath": ".cursor/rules/docs-pages.mdc",
+      "provider": "cursor",
+      "contentType": "rule",
+      "contentHash": "b5a85ccba664e6cb324c100bc7849368e115d1699951c028e7098c6af0c3c83b",
+      "isFile": true,
+      "lastSynced": "2026-09-27T00:18:49.642Z",
+      "strategy": "copy"
+    }
+  ],
   "collections": [],
-  "lastUpdated": "2026-09-18T04:11:23.073Z"
+  "lastUpdated": "2026-09-27T00:18:49.642Z"
 }
