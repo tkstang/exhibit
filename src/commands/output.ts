@@ -11,7 +11,7 @@ export function humanOutput(envelope: Envelope): string {
   if (envelope.command === 'help') return String(data.help ?? '');
   if (envelope.command === 'version') return `Exhibit ${String(data.version)}\n`;
   if (envelope.command === 'publish') {
-    return `${data.dry_run ? 'Dry run' : 'Published'} ${data.protected ? 'protected' : 'public'} exhibit\n${String(data.url)}\n${typeof data.password === 'string' ? `Password: ${data.password}\n` : ''}`;
+    return `${data.dry_run ? 'Dry run' : 'Published'} ${data.protected ? 'protected' : 'unencrypted'} exhibit\n${String(data.url)}\n${typeof data.password === 'string' ? `Password: ${data.password}\n` : ''}`;
   }
   if (envelope.command === 'remove') {
     const unconfirmed =
@@ -32,7 +32,7 @@ export function humanOutput(envelope: Envelope): string {
   if (envelope.command === 'list' && Array.isArray(data.artifacts)) {
     const lines = data.artifacts.map((item: unknown) => {
       const artifact = record(item);
-      return `${String(artifact.slug)}  ${artifact.protected ? 'protected' : 'public'}\n  ${String(artifact.url)}${typeof artifact.password === 'string' ? `\n  Password: ${artifact.password}` : ''}`;
+      return `${String(artifact.slug)}  ${artifact.protected ? 'protected' : 'unencrypted'}\n  ${String(artifact.url)}${typeof artifact.password === 'string' ? `\n  Password: ${artifact.password}` : ''}`;
     });
     return `${lines.length ? lines.join('\n') : 'No Exhibit artifacts on this page.'}\n${data.next_cursor ? `Next cursor: ${String(data.next_cursor)}\n` : ''}`;
   }

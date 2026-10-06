@@ -140,7 +140,7 @@ window.ExhibitViewer = function startExhibit(engine, codec) {
     const bytes = Uint8Array.from(atob(payload.body), (char) => char.charCodeAt(0));
     show(new TextDecoder().decode(bytes));
     document.getElementById('lock').hidden = true;
-    document.getElementById('mode-label').textContent = 'Plaintext artifact';
+    document.getElementById('mode-label').textContent = 'Unencrypted artifact';
     return;
   }
   if (!window.isSecureContext || !window.crypto || !window.crypto.subtle) {

@@ -248,7 +248,7 @@ test('plaintext mode is immediately readable but keeps the same script isolation
   await expect(page.frameLocator('#viewer').locator('h1')).toHaveText(
     'Private Unicode document αβ 🚀',
   );
-  await expect(page.locator('#mode-label')).toHaveText('Plaintext artifact');
+  await expect(page.locator('#mode-label')).toHaveText('Unencrypted artifact');
   await expect(page.locator('#lock')).toBeHidden();
   await expect(page.frameLocator('#viewer').locator('#isolation')).toHaveText('isolated');
   await expect(page.frameLocator('#viewer').locator('#network')).toHaveText('blocked');

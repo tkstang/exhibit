@@ -9,6 +9,10 @@ been published; check npm and GitHub Releases for publication status.
 
 - Remove the `--public` publishing alias. Use `--no-encrypt` to deliberately
   publish plaintext; choose delivery routes independently with `--dir`.
+- Label `--no-encrypt` artifacts "Unencrypted artifact" in the viewer toolbar and
+  "unencrypted" in human-readable CLI output, instead of "Plaintext artifact" and
+  "public". Encryption and delivery route are independent, so an unencrypted
+  artifact behind a gated route was misread as public. JSON output is unchanged.
 
 ## [0.1.1]
 
