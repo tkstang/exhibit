@@ -15,6 +15,7 @@ and password with the intended recipients.
 - [Configuration](configuration.md)
 - [CLI reference](cli.md)
 - [Security model](security-model.md)
+- [Artifact location contract](artifact-location.md)
 - [Troubleshooting](troubleshooting.md)
 - [Receipt and publication recovery](recovery.md)
 - [Agents and organization skills](agents/index.md)

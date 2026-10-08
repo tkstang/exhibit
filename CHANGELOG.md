@@ -3,7 +3,17 @@
 These are reviewed release notes. A section here does not mean that version has
 been published; check npm and GitHub Releases for publication status.
 
-## [Unreleased]
+## [0.2.0]
+
+### Added
+
+- Forward the viewer page's query and hash to standalone HTML artifacts through
+  an optional, versioned [location contract](docs/user-guide/artifact-location.md).
+  Artifacts read the link at load from `window.name`, can post validated
+  `exhibit-location` messages to update the address bar's query and hash without
+  navigation, and receive later outer hash changes. It needs no injected script,
+  so it works with artifacts that ship a strict meta CSP. Artifacts that ignore it
+  are unaffected. Storage remains unavailable inside the sandbox.
 
 ### Changed
 
@@ -13,6 +23,11 @@ been published; check npm and GitHub Releases for publication status.
   "unencrypted" in human-readable CLI output, instead of "Plaintext artifact" and
   "public". Encryption and delivery route are independent, so an unencrypted
   artifact behind a gated route was misread as public. JSON output is unchanged.
+
+### Migration
+
+- Replace any `--public` flag with `--no-encrypt`. The alias is removed, and choosing a
+  delivery route remains a separate `--dir` decision.
 
 ## [0.1.1]
 

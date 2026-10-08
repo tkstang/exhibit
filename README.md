@@ -166,6 +166,7 @@ supported but can expose the secret in shell history and process arguments.
 
 - Markdown with GFM tables, tasks, code, headings, and responsive light/dark styling.
 - Standalone HTML with inline JavaScript preserved inside an opaque-origin sandbox.
+- An optional [location contract](docs/user-guide/artifact-location.md) so HTML can read and update the link's query and hash.
 - Upstream StatiCrypt encryption, generic protected gate, no remembered browser keys.
 - AWS SDK v3 storage, conditional updates, paginated listing, and local-only receipts.
 - Agent-first JSON CLI with stable error codes and no interactive prompts.
