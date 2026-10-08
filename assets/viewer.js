@@ -1,4 +1,58 @@
 /* Browser UI only. Cryptographic functions are supplied unchanged by StatiCrypt. */
+
+/* Location contract v1 (docs/user-guide/artifact-location.md). Pure helpers, no DOM. */
+window.ExhibitLocation = (() => {
+  'use strict';
+  const TYPE = 'exhibit-location';
+  const NAME_PREFIX = 'exhibit-location:';
+  const MAX_LENGTH = 2048;
+  const capped = (value) => (value.length <= MAX_LENGTH ? value : '');
+  const snapshot = (location) => ({
+    v: 1,
+    search: capped(location.search),
+    hash: capped(location.hash),
+  });
+  // Structured clone yields realm-local plain objects; reject arrays and class instances.
+  const isPlainObject = (value) => {
+    if (value === null || typeof value !== 'object') return false;
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === null || Object.getPrototypeOf(prototype) === null;
+  };
+  // An omitted field is valid and keeps the current value.
+  const validField = (value, prefix) =>
+    value === undefined ||
+    (typeof value === 'string' &&
+      value.length <= MAX_LENGTH &&
+      (value === '' || value[0] === prefix) &&
+      !/\p{Cc}/u.test(value));
+
+  return {
+    /** Value for frame.name, set before srcdoc so the artifact can read window.name. */
+    windowName: (location) => NAME_PREFIX + JSON.stringify(snapshot(location)),
+    /** Message posted to the artifact after the outer hash changes. */
+    message: (location) => ({ type: TYPE, ...snapshot(location) }),
+    /** Validated { search?, hash? } from the expected frame window, or null. */
+    readUpdate(event, source) {
+      if (!source || event.source !== source) return null;
+      const data = event.data;
+      if (!isPlainObject(data) || data.type !== TYPE || data.v !== 1) return null;
+      const { search, hash } = data;
+      if (!validField(search, '?') || !validField(hash, '#')) return null;
+      const update = {};
+      if (search !== undefined) update.search = search;
+      if (hash !== undefined) update.hash = hash;
+      return update;
+    },
+    /** Same origin and path; only the query and fragment can change. */
+    nextUrl(href, update) {
+      const url = new URL(href);
+      if (update.search !== undefined) url.search = update.search;
+      if (update.hash !== undefined) url.hash = update.hash;
+      return url.href;
+    },
+  };
+})();
+
 window.ExhibitViewer = function startExhibit(engine, codec) {
   'use strict';
   const payload = JSON.parse(document.getElementById('exhibit-payload').textContent);
@@ -8,7 +62,7 @@ window.ExhibitViewer = function startExhibit(engine, codec) {
   const status = document.getElementById('status');
   const button = document.getElementById('unlock');
   const toolbar = document.getElementById('toolbar');
-  const frame = document.getElementById('viewer');
+  let frame = document.getElementById('viewer');
 
   function handleFragments() {
     const fragmentLink = (event) => {
@@ -126,14 +180,42 @@ window.ExhibitViewer = function startExhibit(engine, codec) {
     // Opaque-origin sandbox: document scripts cannot access this page, passwords,
     // sibling artifacts' localStorage, or any trusted application on the CDN host.
     // Execute only inside the opaque frame; never parse artifact HTML in the parent.
-    frame.srcdoc = html + '<script>(' + handleFragments.toString() + ')();<' + '/script>';
-    frame.hidden = false;
+    // A browsing context's name is fixed when it is created, so insert a fresh frame
+    // (same sandbox and attributes) whose name carries the outer location before srcdoc.
+    const fresh = frame.cloneNode(false);
+    fresh.name = locationContract.windowName(window.location);
+    fresh.srcdoc = html + '<script>(' + handleFragments.toString() + ')();<' + '/script>';
+    fresh.hidden = false;
+    frame.replaceWith(fresh);
+    frame = fresh;
     toolbar.hidden = false;
     gate.hidden = true;
     passwordInput.value = '';
     status.textContent = '';
     frame.focus();
   }
+
+  // Location messages carry only the URL the reader already has; postMessage is not
+  // governed by CSP. The opaque frame origin is "null", so trust the source window only.
+  const locationContract = window.ExhibitLocation;
+  window.addEventListener('message', (event) => {
+    const update = locationContract.readUpdate(event, frame.contentWindow);
+    if (!update) return;
+    try {
+      // Never navigate or reload: replace the current entry's query and hash only.
+      window.history.replaceState(
+        window.history.state,
+        '',
+        locationContract.nextUrl(window.location.href, update),
+      );
+    } catch {
+      // Browsers may throttle rapid history updates; the artifact keeps working.
+    }
+  });
+  window.addEventListener('hashchange', () => {
+    if (frame.hidden) return;
+    frame.contentWindow?.postMessage(locationContract.message(window.location), '*');
+  });
 
   document.getElementById('lock').addEventListener('click', () => window.location.reload());
   if (payload.mode === 'plaintext') {

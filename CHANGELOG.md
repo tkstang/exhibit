@@ -5,6 +5,16 @@ been published; check npm and GitHub Releases for publication status.
 
 ## [Unreleased]
 
+### Added
+
+- Forward the viewer page's query and hash to standalone HTML artifacts through
+  an optional, versioned [location contract](docs/user-guide/artifact-location.md).
+  Artifacts read the link at load from `window.name`, can post validated
+  `exhibit-location` messages to update the address bar's query and hash without
+  navigation, and receive later outer hash changes. It needs no injected script,
+  so it works with artifacts that ship a strict meta CSP. Artifacts that ignore it
+  are unaffected. Storage remains unavailable inside the sandbox.
+
 ### Changed
 
 - Remove the `--public` publishing alias. Use `--no-encrypt` to deliberately

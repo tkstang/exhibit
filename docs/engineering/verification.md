@@ -48,7 +48,8 @@ publication and automatic provenance generation remain unverified.
 
 The browser suite uses desktop and mobile viewport sizes. It covers correct/wrong
 passwords, tampering, source isolation, blocked network access, inline HTML
-interaction, fragment navigation in Markdown and HTML, header and meta-only CSP,
+interaction, fragment navigation in Markdown and HTML, the artifact location
+contract (including a strict hashed-script artifact CSP), header and meta-only CSP,
 lock/reload, plaintext mode, and layout. Meta-only CSP does not prevent embedding
 the outer viewer; anti-framing requires delivery headers. Mobile Chromium viewport
 coverage is not native Safari or Android qualification.

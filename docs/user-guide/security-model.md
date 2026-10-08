@@ -64,7 +64,9 @@ supported way to override fragment navigation.
 
 This is not a full hash router: the helper does not update `location.hash`, add
 history entries, emit `hashchange`, or activate CSS `:target`. Standalone HTML that
-depends on those behaviors needs its own inline interaction logic. Closed shadow
+depends on those behaviors needs its own inline interaction logic. To read the
+outer link's query and hash or update the address bar, use the
+[artifact location contract](artifact-location.md). Closed shadow
 roots hide their links from the helper. Handlers using `stopImmediatePropagation()`
 must also call `preventDefault()` for fragment links, since they can suppress the
 helper's guards. Window capture handlers added after helper installation can also

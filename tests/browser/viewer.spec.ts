@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -6,6 +7,7 @@ import { expect, test } from '@playwright/test';
 
 import type { Config } from '#core/types';
 import { protectHtml, plaintextHtml, buildViewer } from '#render/viewer';
+import { renderHtml } from '#render/html';
 import { renderMarkdown } from '#render/markdown';
 import { createProtector } from '#security/staticrypt';
 import {
@@ -42,6 +44,44 @@ catch{document.getElementById('isolation').textContent='isolated';}
 document.addEventListener('securitypolicyviolation',event=>document.getElementById('policy').textContent=event.violatedDirective);
 fetch(new URL('/leak', document.baseURI).href).then(()=>document.getElementById('network').textContent='allowed').catch(()=>document.getElementById('network').textContent='blocked');
 </script></body></html>`;
+
+// The artifact side of the location contract, as an author would write it.
+const locationScript = `
+const out = (id, text) => { document.getElementById(id).textContent = text; };
+const valid = (value, prefix) => typeof value === 'string' && value.length <= 2048 &&
+  (value === '' || value[0] === prefix) && !/\\p{Cc}/u.test(value);
+document.addEventListener('securitypolicyviolation', (event) => out('violation', event.effectiveDirective));
+const prefix = 'exhibit-location:';
+let initial = null;
+if (window.name.startsWith(prefix)) {
+  try {
+    const data = JSON.parse(window.name.slice(prefix.length));
+    if (data && data.v === 1 && valid(data.search, '?') && valid(data.hash, '#')) initial = data;
+  } catch {}
+}
+out('inbound', initial ? initial.search + '|' + initial.hash : 'none');
+window.addEventListener('message', (event) => {
+  const data = event.data;
+  if (event.source !== parent || !data || data.type !== 'exhibit-location' || data.v !== 1) return;
+  if (valid(data.search, '?') && valid(data.hash, '#')) out('forwarded', data.search + '|' + data.hash);
+});
+const post = (data) => parent.postMessage(data, '*');
+document.getElementById('update').onclick = () =>
+  post({ type: 'exhibit-location', v: 1, search: '?theme=dark', hash: '#slide-3' });
+document.getElementById('partial').onclick = () => post({ type: 'exhibit-location', v: 1, hash: '#slide-4' });
+document.getElementById('invalid').onclick = () => {
+  for (const data of [
+    { type: 'exhibit-location', v: 2, search: '?bad=version' },
+    { type: 'exhibit-location', v: 1, search: '?bad=\\n' },
+    { type: 'exhibit-location', v: 1, search: '?' + 'x'.repeat(2048) },
+    { type: 'exhibit-location', v: 1, search: 'bad=shape' },
+    { type: 'other', v: 1, search: '?bad=type' },
+    [{ type: 'exhibit-location', v: 1, search: '?bad=array' }],
+    'exhibit-location',
+  ]) post(data);
+  post({ type: 'exhibit-location', v: 1, hash: '#after-invalid' });
+};
+`;
 
 test.beforeAll(async () => {
   const protector = createProtector();
@@ -122,6 +162,33 @@ for (const capture of [true, false]) {
       protector,
     );
     pages[`/fragments-${format}-plaintext.html`] = await plaintextHtml(source, config);
+  }
+  // Location-contract fixtures: one relies on the viewer's inherited policy; the other
+  // ships a strict meta CSP admitting only its hashed script, which blocks the helper
+  // the viewer appends. The contract must work without any viewer-injected script.
+  const locationHash = createHash('sha256').update(locationScript).digest('base64');
+  for (const [variant, head] of [
+    ['inline', ''],
+    [
+      'strict-csp',
+      `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-${locationHash}'">`,
+    ],
+  ] as const) {
+    const source = renderHtml(
+      `<!doctype html><html><head><meta charset="utf-8">${head}<title>Location fixture</title></head><body>
+<h1>Location fixture</h1><p id="inbound"></p><p id="forwarded"></p><p id="violation"></p>
+<button id="update">Update</button><button id="partial">Partial</button><button id="invalid">Invalid</button>
+<script>${locationScript}</script></body></html>`,
+      'Location fixture',
+      config,
+    ).html;
+    pages[`/location-${variant}-plaintext.html`] = await plaintextHtml(source, config);
+    pages[`/location-${variant}-protected.html`] = await protectHtml(
+      source,
+      password,
+      config,
+      protector,
+    );
   }
   server = createServer((req, res) => {
     const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
@@ -612,4 +679,78 @@ test('frame-ancestors blocks outer viewer embedding only with HTTP headers', asy
   await expect(page.frameLocator('#hosted').locator('#gate')).toHaveCount(0);
   await page.goto(`${origin}/embed-meta.html`);
   await expect(page.frameLocator('#hosted').locator('#gate')).toBeVisible();
+});
+
+for (const mode of ['plaintext', 'protected'] as const) {
+  for (const variant of ['inline', 'strict-csp'] as const) {
+    test(`location contract forwards the page location with ${mode} ${variant}`, async ({
+      page,
+    }) => {
+      const path = `${origin}/location-${variant}-${mode}.html`;
+      await page.goto(`${path}?theme=light#9`);
+      if (mode === 'protected') {
+        // The gate is not the artifact: an edit before unlock is read at load.
+        await page.evaluate(() => {
+          window.location.hash = '#10';
+        });
+        await page.locator('#password').fill(password);
+        await page.locator('#unlock').click();
+      }
+      const artifact = page.frameLocator('#viewer');
+      const initialHash = mode === 'protected' ? '#10' : '#9';
+      await expect(artifact.locator('#inbound')).toHaveText(`?theme=light|${initialHash}`);
+      await expect(artifact.locator('#violation')).toHaveText(
+        variant === 'strict-csp' ? 'script-src-elem' : '',
+      );
+      const historyLength = await page.evaluate(() => {
+        Reflect.set(window, 'exhibitSameDocument', true);
+        return window.history.length;
+      });
+
+      await artifact.locator('#update').click();
+      await expect(page).toHaveURL(`${path}?theme=dark#slide-3`);
+      await artifact.locator('#partial').click();
+      await expect(page).toHaveURL(`${path}?theme=dark#slide-4`);
+      expect(
+        await page.evaluate(() => [
+          Reflect.get(window, 'exhibitSameDocument'),
+          window.history.length,
+        ]),
+      ).toEqual([true, historyLength]);
+
+      await page.evaluate(() => {
+        window.location.hash = '#7';
+      });
+      await expect(artifact.locator('#forwarded')).toHaveText('?theme=dark|#7');
+      await expect(page).toHaveURL(`${path}?theme=dark#7`);
+      expect(await page.evaluate(() => Reflect.get(window, 'exhibitSameDocument'))).toBe(true);
+      expect(await artifact.locator('html').evaluate(() => location.href)).toBe('about:srcdoc');
+      expect(unexpectedRequests).toEqual([]);
+    });
+  }
+}
+
+test('location contract ignores invalid updates and other windows', async ({ page }) => {
+  const path = `${origin}/location-inline-plaintext.html`;
+  await page.goto(`${path}?theme=light#9`);
+  const artifact = page.frameLocator('#viewer');
+  await expect(artifact.locator('#inbound')).toHaveText('?theme=light|#9');
+  // A well-formed update from a window other than the artifact frame is ignored.
+  await page.evaluate(() =>
+    window.postMessage({ type: 'exhibit-location', v: 1, search: '?forged=1' }, '*'),
+  );
+  // Malformed updates are ignored; the final partial update keeps the query.
+  await artifact.locator('#invalid').click();
+  await expect(page).toHaveURL(`${path}?theme=light#after-invalid`);
+  expect(unexpectedRequests).toEqual([]);
+});
+
+test('location contract caps an over-length outer value at load', async ({ page }) => {
+  const path = `${origin}/location-inline-plaintext.html`;
+  await page.goto(`${path}?theme=light#${'h'.repeat(2048)}`);
+  await expect(page.frameLocator('#viewer').locator('#inbound')).toHaveText('?theme=light|');
+  await expect(page.locator('#viewer')).toHaveAttribute(
+    'name',
+    'exhibit-location:{"v":1,"search":"?theme=light","hash":""}',
+  );
 });
