@@ -3,7 +3,7 @@
 These are reviewed release notes. A section here does not mean that version has
 been published; check npm and GitHub Releases for publication status.
 
-## [Unreleased]
+## [0.2.0]
 
 ### Added
 
@@ -23,6 +23,11 @@ been published; check npm and GitHub Releases for publication status.
   "unencrypted" in human-readable CLI output, instead of "Plaintext artifact" and
   "public". Encryption and delivery route are independent, so an unencrypted
   artifact behind a gated route was misread as public. JSON output is unchanged.
+
+### Migration
+
+- Replace any `--public` flag with `--no-encrypt`. The alias is removed, and choosing a
+  delivery route remains a separate `--dir` decision.
 
 ## [0.1.1]
 
