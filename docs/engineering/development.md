@@ -140,9 +140,10 @@ The pre-commit hook runs lint, typecheck, and formatting checks without modifyin
 files. The commit-msg hook enforces Conventional Commits. `GIT_HOOKS=0` is an explicit
 escape hatch; the full validation remains required before handoff.
 
-`AGENTS.md` and its `CLAUDE.md` include are present. Product skills under `src/skills/`
-are independent of any OAT development workflow. Run your normal `oat init` locally
-if you want OAT development skills; the archive does not pre-create lifecycle trees.
+`AGENTS.md` is present; Claude Code reads it directly, so there is no `CLAUDE.md`.
+Product skills under `src/skills/` are independent of any OAT development workflow.
+Run your normal `oat init` locally if you want OAT development skills; the archive
+does not pre-create lifecycle trees.
 
 `prepare` installs hooks only when the package root has its own `.git` directory or
 file, supporting linked worktrees without changing an ancestor repository. It

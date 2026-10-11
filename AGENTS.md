@@ -16,7 +16,7 @@ implementation.
 - Domain code depends on injected interfaces, not provider SDK imports.
 - Retain prepared receipts before uncertain writes; local state is not canonical remote state.
 - No speculative MCP, account service, database, monorepo, or plugin framework.
-- `AGENTS.md` is canonical; `CLAUDE.md` includes it. Author product skills in `src/skills/` and plugin manifests in `src/plugin/`. `skills/` and `plugins/exhibit/` are generated distribution assets, not development-provider mirrors. Run `pnpm skills:build` after source/reference edits; never hand-edit generated copies. Constraints: `docs/engineering/development.md#skill-bundles`.
+- `AGENTS.md` is canonical; Claude Code reads it directly, so the repository keeps no `CLAUDE.md`. Author product skills in `src/skills/` and plugin manifests in `src/plugin/`. `skills/` and `plugins/exhibit/` are generated distribution assets, not development-provider mirrors. Run `pnpm skills:build` after source/reference edits; never hand-edit generated copies. Constraints: `docs/engineering/development.md#skill-bundles`.
 
 Canonical commands (more in `docs/engineering/development.md#toolchain`):
 
