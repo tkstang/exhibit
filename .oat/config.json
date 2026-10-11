@@ -35,5 +35,10 @@
       ],
       "postApproval": []
     }
+  },
+  "instructions": {
+    "claude": {
+      "shims": "none"
+    }
   }
 }
