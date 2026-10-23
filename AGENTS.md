@@ -60,19 +60,14 @@ Documentation pages follow the `pnpm docs:check` contract in
 
 ## Scoped instructions
 
-Read each applicable instruction before editing its scope. For every rule below, read it before editing matching files; globs are canonical `.agents/rules/` frontmatter.
+- `tools/AGENTS.md` — repository tooling.
+- `examples/terraform/aws/AGENTS.md` — AWS Terraform example.
 
-| File | Scope |
-| --- | --- |
-| `tools/AGENTS.md` | Repository tooling under `tools/` |
-| `examples/terraform/aws/AGENTS.md` | AWS Terraform example |
-| `.oat/repo/AGENTS.md` | Repository context entry point |
-| `.oat/repo/pjm/AGENTS.md` | Active project-management records |
-| `.oat/repo/reference/AGENTS.md` | Durable repository reference |
-| `.oat/repo/reference/decisions/AGENTS.md` | Decision records |
-| `.agents/rules/docs-pages.md` | `docs/**/*.md` |
-| `.agents/rules/skill-bundles.md` | `src/skills/**`, `src/plugin/**` |
-| `.agents/rules/vitest-tests.md` | `src/**/*.test.ts`, `src/**/*.test-support.ts` |
+Read these canonical rules before editing matching files:
+
+- `.agents/rules/docs-pages.md` — `docs/**/*.md`.
+- `.agents/rules/skill-bundles.md` — `src/skills/**`, `src/plugin/**`.
+- `.agents/rules/vitest-tests.md` — `src/**/*.test.ts`, `src/**/*.test-support.ts`.
 
 ## Keeping instructions current
 
@@ -82,7 +77,7 @@ Instruction files are part of the code: a change that makes one wrong, or leaves
 - Fix or delete lines made false by the change, including commands, paths, versions, flags, workflow names, and owners. Find renamed or removed names with `git grep -n -F -e '<old-name>' -- '*AGENTS.md' '.agents/rules/'`.
 - Create instruction files when warranted: distinct commands, runtime, or footguns justify a nested `AGENTS.md`; a convention spanning directories belongs in `.agents/rules/<topic>.md` with `globs:`; keep only repo-wide facts here.
 
-  List every new instruction file and rule in "Scoped instructions"; update the list when renaming, removing, or re-globbing one. Include each rule's glob and tell agents to read it before editing matching files.
+  Keep useful routing in "Scoped instructions" current as scopes change. Include each rule's glob and tell agents to read it before editing matching files.
 - After creating or changing a canonical rule, run `npx @open-agent-toolkit/cli sync --scope project` and commit the rule, generated provider views, and `.oat/sync/manifest.json` together. Codex has no generated rule views, so keep the canonical scopes in the index. Finish with `npx @open-agent-toolkit/cli sync --scope project --dry-run` reporting no changes; never hand-edit generated views or managed instruction blocks.
 - Record durable facts an agent would otherwise get wrong; leave out task notes and guesses.
 - In the PR description, list the instruction files created or updated, or write "No instruction changes needed".
