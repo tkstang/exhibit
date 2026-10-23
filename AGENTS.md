@@ -78,7 +78,7 @@ Instruction files are part of the code: a change that makes one wrong, or leaves
 - Create instruction files when warranted: distinct commands, runtime, or footguns justify a nested `AGENTS.md`; a convention spanning directories belongs in `.agents/rules/<topic>.md` with `globs:`; keep only repo-wide facts here.
 
   Keep useful routing in "Scoped instructions" current as scopes change. Include each rule's glob and tell agents to read it before editing matching files.
-- After creating or changing a canonical rule, run `npx @open-agent-toolkit/cli sync --scope project` and commit the rule, generated provider views, and `.oat/sync/manifest.json` together. Codex has no generated rule views, so keep the canonical scopes in the index. Finish with `npx @open-agent-toolkit/cli sync --scope project --dry-run` reporting no changes; never hand-edit generated views or managed instruction blocks.
+- After creating or changing a canonical rule, use the CLI version recorded in `.oat/sync/manifest.json` (currently `0.3.7`) for both commands below; update both pins when it changes. Run `npx @open-agent-toolkit/cli@0.3.7 sync --scope project` and commit the rule, generated provider views, and `.oat/sync/manifest.json` together. Codex has no generated rule views, so keep the canonical scopes in the index. Finish with `npx @open-agent-toolkit/cli@0.3.7 sync --scope project --dry-run` reporting no changes; never hand-edit generated views or managed instruction blocks.
 - Record durable facts an agent would otherwise get wrong; leave out task notes and guesses.
 - In the PR description, list the instruction files created or updated, or write "No instruction changes needed".
 
