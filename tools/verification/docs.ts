@@ -30,7 +30,13 @@ function readDirectory(directory: string): void {
   const tokens = marked.lexer(indexText);
   const start = tokens.findIndex((token) => token.type === 'heading' && token.text === 'Contents');
   assert.ok(start >= 0, `${index}: missing Contents heading`);
-  const end = tokens.findIndex((token, i) => i > start && token.type === 'heading');
+  // Contents ends at the next heading at the same or a higher level; nested
+  // `###` group headings stay inside it.
+  const contentsDepth = (tokens[start] as { depth: number }).depth;
+  const end = tokens.findIndex(
+    (token, i) =>
+      i > start && token.type === 'heading' && (token as { depth: number }).depth <= contentsDepth,
+  );
   const linked = new Set<string>();
   marked.walkTokens(tokens.slice(start + 1, end < 0 ? undefined : end), (token) => {
     if (token.type === 'link') linked.add(resolve(directory, token.href.split('#')[0] ?? ''));
