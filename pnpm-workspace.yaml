@@ -5,8 +5,8 @@ minimumReleaseAge: 1440
 minimumReleaseAgeStrict: true
 minimumReleaseAgeExclude:
   - '@aws-sdk/client-s3@3.1135.0'
-  - '@open-agent-toolkit/cli@0.3.33'
-  - '@open-agent-toolkit/control-plane@0.3.33'
-  - '@open-agent-toolkit/docs-transforms@0.3.33'
+  - '@open-agent-toolkit/cli@0.3.35'
+  - '@open-agent-toolkit/control-plane@0.3.35'
+  - '@open-agent-toolkit/docs-transforms@0.3.35'
 onlyBuiltDependencies:
   - esbuild
