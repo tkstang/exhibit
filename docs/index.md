@@ -13,3 +13,4 @@ the [getting-started guide](user-guide/getting-started.md), then read the
 
 - [User guide](user-guide/index.md): installation, commands, agents, and hosting.
 - [Engineering](engineering/index.md): implementation, development, and verification.
+- [Contributing to documentation](contributing.md): page metadata, Contents maps, and checks.
