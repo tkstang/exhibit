@@ -46,8 +46,9 @@ Use `oat-docs-analyze` to identify content, metadata, and navigation gaps, then
 configuration; review the existing tree before treating it as complete.
 
 Check relative links, Contents maps, metadata, and context after edits. Selected
-existing tools: lint `none`, format `oxfmt`. Use repository
-checks when available; this setup does not install tools or require a site build.
+existing tools: lint `none`, format `oxfmt`. Run `pnpm docs:check` and
+`pnpm exec oat docs check --target-dir docs`; CI runs both and requires 0 errors.
+This setup does not require a site build.
 
 The authored index is not a generated manifest. If an optional inventory is
 needed, run `oat docs generate-index` with an explicit output outside the

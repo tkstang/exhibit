@@ -184,7 +184,11 @@ and child indexes. Use relative links with `.md` extensions.
 
 When moving a page, update links, CLI diagnostic paths, packaged skills, and
 package checks in the same change. `pnpm docs:check` validates local links, page
-metadata, navigation coverage, and docs paths in source/skills. Keep historical
+metadata, navigation coverage, and docs paths in source/skills. CI also runs
+`pnpm exec oat docs check --target-dir docs` with the pinned OAT CLI; it must report
+0 errors. It expects 40–160 character descriptions and `###` groups once a
+Contents list passes 10 entries. See [Contributing to documentation](../contributing.md)
+for the recorded information architecture. Keep historical
 session reports in Git history or repository records, not the product docs.
 This structure can support a future Fumadocs site; no site runtime is installed.
 
