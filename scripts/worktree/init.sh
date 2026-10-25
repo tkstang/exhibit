@@ -34,7 +34,10 @@ if command -v oat >/dev/null 2>&1 && [[ -d .oat ]]; then
   if [[ "$current_root" != "$main_root" ]]; then
     (cd "$main_root" && oat local sync "$current_root")
   fi
-  oat sync --scope project
+  # Sync with the CLI version recorded in the sync manifest (AGENTS.md), not the
+  # newer docs-check devDependency that pnpm puts first on PATH.
+  sync_version="$(node -p "require('./.oat/sync/manifest.json').oatVersion")"
+  npx --yes "@open-agent-toolkit/cli@${sync_version}" sync --scope project
   oat pjm doctor --json
   # Archive downloads use credentials; opt in explicitly, as in the other repo bootstraps.
   if [[ "${SYNC_S3_ARCHIVES:-0}" == "1" && "${SKIP_S3_ARCHIVE_SYNC:-0}" != "1" ]]; then

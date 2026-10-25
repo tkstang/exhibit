@@ -47,9 +47,9 @@
       "providerPath": ".claude/rules/docs-pages.md",
       "provider": "claude",
       "contentType": "rule",
-      "contentHash": "297f88996aae99d4c8e517d3117af1b9538982571b754cffcb898ff6ef8ad983",
+      "contentHash": "fe514e6f0e54d81b62728103a244ccd6348681a35cb96cee1e0e67a09dce3f00",
       "isFile": true,
-      "lastSynced": "2026-09-27T00:18:49.642Z",
+      "lastSynced": "2026-10-25T16:17:59.134Z",
       "strategy": "copy"
     },
     {
@@ -57,12 +57,12 @@
       "providerPath": ".cursor/rules/docs-pages.mdc",
       "provider": "cursor",
       "contentType": "rule",
-      "contentHash": "b5a85ccba664e6cb324c100bc7849368e115d1699951c028e7098c6af0c3c83b",
+      "contentHash": "edd27bd6f5a34bb4623154731fe6470ecb142ed60c407aea658b1e8448a2590f",
       "isFile": true,
-      "lastSynced": "2026-09-27T00:18:49.642Z",
+      "lastSynced": "2026-10-25T16:17:59.134Z",
       "strategy": "copy"
     }
   ],
   "collections": [],
-  "lastUpdated": "2026-09-27T00:18:49.642Z"
+  "lastUpdated": "2026-10-25T16:17:59.134Z"
 }

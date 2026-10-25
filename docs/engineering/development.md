@@ -35,9 +35,11 @@ package-manager versions; the unambiguous source command is
 
 The committed lockfile was resolved with Node 24.18.0 and pnpm 11.8.0 on the Mini.
 CI uses `pnpm install --frozen-lockfile` unconditionally. StatiCrypt 3.5.4 and AWS
-SDK 3.1135.0 resolved without changing their pins. The explicit SDK pin is the only
-minimum-release-age exception; esbuild is the only allowed dependency build script.
-Strict release-age handling prevents automatic future exceptions.
+SDK 3.1135.0 resolved without changing their pins. The minimum-release-age exceptions
+are exact versions only: the explicit SDK pin and the `@open-agent-toolkit/cli`,
+`control-plane`, and `docs-transforms` 0.3.33 packages behind the pinned docs-check
+devDependency. esbuild is the only allowed dependency build script. Strict
+release-age handling prevents automatic future exceptions.
 
 Oxfmt has been run on the imported sources. OAT-generated files and managed
 `AGENTS.md` blocks are excluded so formatting cannot invalidate OAT's exact markers.
@@ -182,7 +184,11 @@ and child indexes. Use relative links with `.md` extensions.
 
 When moving a page, update links, CLI diagnostic paths, packaged skills, and
 package checks in the same change. `pnpm docs:check` validates local links, page
-metadata, navigation coverage, and docs paths in source/skills. Keep historical
+metadata, navigation coverage, and docs paths in source/skills. CI also runs
+`pnpm exec oat docs check --target-dir docs` with the pinned OAT CLI; it must report
+0 errors. It expects 40–160 character descriptions and `###` groups once a
+Contents list passes 10 entries. See [Contributing to documentation](../contributing.md)
+for the recorded information architecture. Keep historical
 session reports in Git history or repository records, not the product docs.
 This structure can support a future Fumadocs site; no site runtime is installed.
 

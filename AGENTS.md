@@ -28,6 +28,7 @@ pnpm test && pnpm typecheck && pnpm lint          # Vitest (src/), tsc (src/ + t
 pnpm format                                       # oxfmt --write .
 pnpm build                                        # tsc build + build contract
 pnpm check                                        # Node-only gate (adds test:skills, test:release, format:check)
+pnpm exec oat docs check --target-dir docs        # OAT docs conformance (pinned CLI; CI runs it)
 pnpm test:browser                                 # Playwright (needs `pnpm exec playwright install chromium`)
 pnpm terraform:check                              # fmt -check, init -backend=false, validate, test
 pnpm worktree:validate                            # full gate from a clean tree before handoff
@@ -51,7 +52,10 @@ Actual HTTP browser checks are required; report only checks that ran.
 Use Conventional Commits. Do not commit `dist/`, dependencies, secret configuration,
 receipts, or Terraform state. Read `docs/engineering/development.md` for toolchain guidance.
 Documentation pages follow the `pnpm docs:check` contract in
-`docs/engineering/development.md#documentation-authoring`.
+`docs/engineering/development.md#documentation-authoring` and must pass
+`pnpm exec oat docs check --target-dir docs` with 0 errors: `title` plus a 40–160 character
+`description` grounded in the page, and an `index.md` `## Contents` map per directory, grouped
+under `###` headings once it passes 10 entries.
 
 ### Definition of Done
 
@@ -156,3 +160,15 @@ lint/types/format; commit-msg enforces Conventional Commits.
 - Status summaries, completed bookkeeping, and "clean boundary" pauses are not valid stop reasons. After updating tracking artifacts, continue execution until an allowed stop condition applies.
 
 <!-- END OAT tools -->
+
+<!-- OAT docs -->
+## Documentation
+
+- **Docs root:** `docs`
+- **Tooling:** Markdown
+- **Authored index:** `docs/index.md`
+- **Contributing:** `docs/contributing.md`
+
+Keep authored context, title/description metadata, and Contents maps with relative Markdown links current. Preserve local instructions; asset-only directories are exempt from indexes.
+Use `oat-docs-analyze` to audit gaps and `oat-docs-apply` for approved repairs. Optional generated inventories belong outside the content tree and do not replace the authored index.
+<!-- END OAT docs -->
