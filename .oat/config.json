@@ -44,6 +44,21 @@
   "documentation": {
     "root": "docs",
     "tooling": "markdown",
-    "index": "docs/index.md"
+    "index": "docs/index.md",
+    "ia": {
+      "preset": "consumer-maintainer",
+      "decision": ".oat/repo/reference/decisions/DR-261025-documentation-information.md",
+      "tracks": [
+        {
+          "path": "docs/user-guide",
+          "principle": "Consumer and operator tasks: install, configure, publish, deploy, recover"
+        },
+        {
+          "path": "docs/engineering",
+          "principle": "Maintainer architecture, development, verification, and releases"
+        }
+      ],
+      "verification": "none"
+    }
   }
 }

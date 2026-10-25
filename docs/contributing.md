@@ -9,6 +9,25 @@ Maintain documentation for **Exhibit** as authored Markdown pages. Start
 from the [documentation index](index.md) to understand the intended audience and
 where each topic belongs.
 
+## Information architecture
+
+The docs follow the Consumer and Maintainer preset (`consumer-maintainer`),
+recorded in `.oat/repo/reference/decisions/DR-261025-documentation-information.md`
+and mirrored in `documentation.ia` in `.oat/config.json`. The record is
+authoritative.
+
+- [User guide](user-guide/index.md) serves people who install, configure,
+  publish with, deploy, and recover Exhibit, organized by task, with `agents/`
+  and `deployment/` subsections.
+- [Engineering](engineering/index.md) serves maintainers: architecture,
+  development, verification, releases, decisions, and sources.
+- This page is the docs-about-docs entry. Detailed authoring rules live in
+  [Documentation authoring](engineering/development.md#documentation-authoring).
+
+Changing tracks or moving pages needs a new decision record and link updates,
+because `docs/` ships in the npm package and its paths appear in CLI
+diagnostics and packaged skills.
+
 ## Structure and context
 
 - Give every Markdown-bearing directory an authored `index.md` with useful

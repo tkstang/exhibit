@@ -9,7 +9,7 @@
 <!-- OAT DECISION-INDEX -->
 | ID | Date | Status | Title | Legacy |
 | --- | --- | --- | --- | --- |
-| _No decisions yet_ | - | - | - | - |
+| DR-261025-documentation-information | 2026-10-25 | accepted | Documentation information architecture: Consumer and Maintainer | - |
 <!-- END OAT DECISION-INDEX -->
 
 ## Notes
