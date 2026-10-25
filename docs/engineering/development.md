@@ -35,9 +35,11 @@ package-manager versions; the unambiguous source command is
 
 The committed lockfile was resolved with Node 24.18.0 and pnpm 11.8.0 on the Mini.
 CI uses `pnpm install --frozen-lockfile` unconditionally. StatiCrypt 3.5.4 and AWS
-SDK 3.1135.0 resolved without changing their pins. The explicit SDK pin is the only
-minimum-release-age exception; esbuild is the only allowed dependency build script.
-Strict release-age handling prevents automatic future exceptions.
+SDK 3.1135.0 resolved without changing their pins. The minimum-release-age exceptions
+are exact versions only: the explicit SDK pin and the `@open-agent-toolkit/cli`,
+`control-plane`, and `docs-transforms` 0.3.33 packages behind the pinned docs-check
+devDependency. esbuild is the only allowed dependency build script. Strict
+release-age handling prevents automatic future exceptions.
 
 Oxfmt has been run on the imported sources. OAT-generated files and managed
 `AGENTS.md` blocks are excluded so formatting cannot invalidate OAT's exact markers.

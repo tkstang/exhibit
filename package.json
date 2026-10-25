@@ -97,6 +97,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
+    "@open-agent-toolkit/cli": "0.3.33",
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.13.2",
     "@types/sanitize-html": "^2.16.0",
