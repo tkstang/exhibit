@@ -34,11 +34,12 @@ package-manager versions; the unambiguous source command is
 ## Installed toolchain
 
 The committed lockfile was resolved with Node 24.18.0 and pnpm 11.8.0 on the Mini.
-CI and Release Dry Run validate ready pull requests targeting `main` on opening,
+CI and Release Dry Run validate ready pull requests on opening,
 reopening, code updates and `ready_for_review`. Draft pull requests skip their
 jobs before runner allocation. CI still validates pushes to `main`, and Release
 Dry Run remains available through manual dispatch. The full local checks remain
-required before handoff.
+required before handoff. CI preserves its existing unrestricted PR base branches;
+Release Dry Run keeps its `main` filter.
 
 CI uses `pnpm install --frozen-lockfile` unconditionally. StatiCrypt 3.5.4 and AWS
 SDK 3.1135.0 resolved without changing their pins. The minimum-release-age exceptions
