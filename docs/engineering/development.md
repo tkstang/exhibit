@@ -39,7 +39,10 @@ reopening, code updates and `ready_for_review`. Draft pull requests skip their
 jobs before runner allocation. CI still validates pushes to `main`, and Release
 Dry Run remains available through manual dispatch. The full local checks remain
 required before handoff. CI preserves its existing unrestricted PR base branches;
-Release Dry Run keeps its `main` filter.
+Release Dry Run keeps its `main` filter. New CI verification cancels earlier CI
+runs for the same ready PR. Draft events and main pushes use separate groups;
+they do not cancel ready-PR checks. Existing release workflow concurrency stays
+unchanged.
 
 CI uses `pnpm install --frozen-lockfile` unconditionally. StatiCrypt 3.5.4 and AWS
 SDK 3.1135.0 resolved without changing their pins. The minimum-release-age exceptions

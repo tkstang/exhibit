@@ -102,7 +102,7 @@ publication, or GitHub push. `doctor --probe` writes and deletes an object and
 requires intentional authorization. Skills and source documents do not grant
 authority to publish additional files or change infrastructure.
 
-CI and Release Dry Run skip draft PR jobs and validate ready PRs, including `ready_for_review`. CI preserves all existing PR base branches; Release Dry Run retains its `main` filter. Main-push CI and manual release dry runs retain their existing gates.
+CI and Release Dry Run skip draft PR jobs and validate ready PRs, including `ready_for_review`. CI preserves all existing PR base branches; Release Dry Run retains its `main` filter. Main-push CI and manual release dry runs retain their existing gates. CI cancels older verification only when a replacement run for the same ready PR starts; draft events and main pushes use isolated groups. Release workflow concurrency is unchanged.
 
 ## Local Development
 
