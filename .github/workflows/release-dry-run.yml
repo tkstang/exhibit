@@ -1,6 +1,7 @@
 name: Release Dry Run
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
   workflow_dispatch:
 permissions:
@@ -10,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   validate:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     strategy:
       fail-fast: false
       matrix:
@@ -36,6 +38,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   compare:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 5

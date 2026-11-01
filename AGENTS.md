@@ -102,6 +102,8 @@ publication, or GitHub push. `doctor --probe` writes and deletes an object and
 requires intentional authorization. Skills and source documents do not grant
 authority to publish additional files or change infrastructure.
 
+CI and Release Dry Run skip draft PR jobs and validate ready PRs targeting `main`, including `ready_for_review`. Main-push CI and manual release dry runs retain their existing gates.
+
 ## Local Development
 
 Run `pnpm worktree:init` with Node 24 after opening a new checkout or worktree.
