@@ -102,6 +102,8 @@ publication, or GitHub push. `doctor --probe` writes and deletes an object and
 requires intentional authorization. Skills and source documents do not grant
 authority to publish additional files or change infrastructure.
 
+CI and Release Dry Run skip draft PR jobs and validate ready PRs, including `ready_for_review`. CI preserves all existing PR base branches; Release Dry Run retains its `main` filter. Main-push CI and manual release dry runs retain their existing gates. CI cancels older verification only when a replacement run for the same ready PR starts; draft events and main pushes use isolated groups. Release workflow concurrency is unchanged.
+
 ## Local Development
 
 Run `pnpm worktree:init` with Node 24 after opening a new checkout or worktree.
@@ -172,3 +174,17 @@ lint/types/format; commit-msg enforces Conventional Commits.
 Keep authored context, title/description metadata, and Contents maps with relative Markdown links current. Preserve local instructions; asset-only directories are exempt from indexes.
 Use `oat-docs-analyze` to audit gaps and `oat-docs-apply` for approved repairs. Optional generated inventories belong outside the content tree and do not replace the authored index.
 <!-- END OAT docs -->
+
+## Reusing verified build output
+
+CI runs `pnpm check` once, then the real browser command and
+`pnpm test:package --reuse-build` against that checkout. The package flag bypasses
+prepack lifecycle scripts only after the caller has verified skills and built
+current output. Standalone `test:browser`, `test:package`, and direct packing
+retain their prerequisite builds. `release:validate` is self-contained: it runs
+the full check once, browsers once, then prepares and tests its archive using
+those outputs. Tag/manual release still starts its own clean validation.
+
+PR release matrices skip changes confined to root `AGENTS.md`, `.oat/`, or
+`.agents/`, which are not packaged. Shipped docs/Markdown, assets, tests,
+configuration, dependencies, workflows and unknown paths still run the matrix.

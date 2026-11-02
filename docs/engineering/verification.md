@@ -190,3 +190,16 @@ Publication-ready package metadata does not authorize publishing. Keep automatio
 disabled until bootstrap publication and trust setup are complete. Historical source-generation
 checks and import handoffs remain in Git history; they are not current acceptance
 evidence and are not shipped as operational instructions.
+
+## CI build reuse
+
+Within one trusted checkout, CI runs `pnpm check`, then `pnpm exec playwright test`
+and `pnpm test:package --reuse-build`. The package flag skips prepack lifecycle
+scripts because the earlier check already validated skills and built the same
+source. Standalone commands keep their builds. Release validation also runs its
+full check and browser proof once before preparing and testing the real archive.
+Tag and manual releases still start with their own clean full validation.
+
+PR release matrices skip only changes confined to root `AGENTS.md`, `.oat/` or
+`.agents/`, which are outside the published package. Shipped Markdown and every
+unknown path retain cross-platform archive parity checks.

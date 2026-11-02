@@ -62,7 +62,8 @@ The tar contents, compressed payload, and checksum trailer are unchanged. This
 removes the host-specific header difference observed between macOS and Linux;
 it does not guarantee that arbitrary toolchain versions produce identical output.
 PR release dry runs build on both operating systems and require all four prepared
-release files to match byte for byte. Plain `pnpm pack` output is not normalized;
+release files to match byte for byte, except changes confined to root `AGENTS.md`,
+`.oat/` or `.agents/`, which are not packaged. Plain `pnpm pack` output is not normalized;
 use the archive from `pnpm release:validate` for publication.
 
 Normalization applies only to newly prepared archives. Never rewrite a retained,
