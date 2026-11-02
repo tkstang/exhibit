@@ -72,7 +72,7 @@
     "skills:check": "node tools/packaging/skills.ts --check",
     "test:skills": "node --test tools/packaging/skills.test.ts",
     "test:release": "node --test tools/release/release.test.ts",
-    "release:validate": "pnpm check && pnpm test:browser && node tools/release/prepare.ts",
+    "release:validate": "pnpm check && pnpm exec playwright test && node tools/release/prepare.ts --reuse-build",
     "docs:check": "node tools/verification/docs.ts",
     "test": "vitest run",
     "test:watch": "vitest",

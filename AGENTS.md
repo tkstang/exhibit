@@ -174,3 +174,17 @@ lint/types/format; commit-msg enforces Conventional Commits.
 Keep authored context, title/description metadata, and Contents maps with relative Markdown links current. Preserve local instructions; asset-only directories are exempt from indexes.
 Use `oat-docs-analyze` to audit gaps and `oat-docs-apply` for approved repairs. Optional generated inventories belong outside the content tree and do not replace the authored index.
 <!-- END OAT docs -->
+
+## Reusing verified build output
+
+CI runs `pnpm check` once, then the real browser command and
+`pnpm test:package --reuse-build` against that checkout. The package flag bypasses
+prepack lifecycle scripts only after the caller has verified skills and built
+current output. Standalone `test:browser`, `test:package`, and direct packing
+retain their prerequisite builds. `release:validate` is self-contained: it runs
+the full check once, browsers once, then prepares and tests its archive using
+those outputs. Tag/manual release still starts its own clean validation.
+
+PR release matrices skip changes confined to root `AGENTS.md`, `.oat/`, or
+`.agents/`, which are not packaged. Shipped docs/Markdown, assets, tests,
+configuration, dependencies, workflows and unknown paths still run the matrix.

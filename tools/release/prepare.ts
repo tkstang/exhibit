@@ -72,7 +72,13 @@ export function validateGit(tag: string, execute = run) {
 }
 
 async function main() {
-  const { values } = parseArgs({ options: { out: { type: 'string' }, tag: { type: 'string' } } });
+  const { values } = parseArgs({
+    options: {
+      out: { type: 'string' },
+      tag: { type: 'string' },
+      'reuse-build': { type: 'boolean' },
+    },
+  });
   assert.ok(values.out, '--out must name a new output directory.');
   const pkg: unknown = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
   validateMetadata(pkg, { tag: values.tag });
@@ -81,7 +87,14 @@ async function main() {
   const notes = releaseNotes(await readFile(join(root, 'CHANGELOG.md'), 'utf8'), pkg.version);
   const out = resolve(values.out);
   await mkdir(out); // Refuse reuse of a directory that could contain stale release files.
-  run('pnpm', ['pack', '--pack-destination', out]);
+  // release:validate already ran check (including skills/build) and real browsers.
+  // Standalone preparation retains normal prepack lifecycle verification.
+  run('pnpm', [
+    ...(values['reuse-build'] ? ['--config.ignore-scripts=true'] : []),
+    'pack',
+    '--pack-destination',
+    out,
+  ]);
   const archives = (await readdir(out)).filter((name) => name.endsWith('.tgz'));
   assert.deepEqual(archives, [`tkstang-exhibit-${pkg.version}.tgz`]);
   const archiveName = archives[0];

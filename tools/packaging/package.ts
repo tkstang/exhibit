@@ -23,15 +23,29 @@ function objectField(value: Record<string, unknown>, key: string): Record<string
 }
 
 const { values } = parseArgs({
-  options: { archive: { type: 'string' }, 'install-smoke': { type: 'boolean' } },
+  options: {
+    archive: { type: 'string' },
+    'install-smoke': { type: 'boolean' },
+    'reuse-build': { type: 'boolean' },
+  },
 });
 const directory = await mkdtemp(join(tmpdir(), 'exhibit-package-'));
 try {
   let archive = values.archive && resolve(values.archive);
   if (!archive) {
-    const packed = spawnSync('pnpm', ['pack', '--pack-destination', directory], {
-      encoding: 'utf8',
-    });
+    // Only callers that just validated this checkout may bypass prepack's build.
+    const packed = spawnSync(
+      'pnpm',
+      [
+        ...(values['reuse-build'] ? ['--config.ignore-scripts=true'] : []),
+        'pack',
+        '--pack-destination',
+        directory,
+      ],
+      {
+        encoding: 'utf8',
+      },
+    );
     assert.equal(packed.status, 0, packed.stderr || packed.stdout);
     const archives = (await readdir(directory)).filter((file) => file.endsWith('.tgz'));
     assert.equal(archives.length, 1);
