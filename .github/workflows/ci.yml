@@ -8,8 +8,15 @@ permissions:
   contents: read
 # Only replacement verification for the same ready PR cancels an earlier run.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && !github.event.pull_request.draft && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' && !github.event.pull_request.draft }}
+  group: >-
+    ${{ github.workflow }}-${{
+    github.event_name == 'pull_request' &&
+    !github.event.pull_request.draft &&
+    format('pr-{0}', github.event.pull_request.number) ||
+    format('run-{0}', github.run_id) }}
+  cancel-in-progress: >-
+    ${{ github.event_name == 'pull_request' &&
+    !github.event.pull_request.draft }}
 
 jobs:
   verify:
